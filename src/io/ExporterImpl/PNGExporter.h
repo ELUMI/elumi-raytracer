@@ -8,7 +8,7 @@
 #ifndef PNGEXPORTER_H_
 #define PNGEXPORTER_H_
 
-#include "IExporter.h"
+#include "../IExporter.h"
 
 namespace raytracer {
 
