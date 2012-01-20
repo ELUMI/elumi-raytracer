@@ -2,7 +2,7 @@
  * ITracer.h
  *
  *  Created on: Jan 20, 2012
- *      Author: david2
+ *      Author: david
  */
 
 #ifndef ITRACER_H_
