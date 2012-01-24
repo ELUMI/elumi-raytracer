@@ -8,10 +8,11 @@
 #ifndef TRIANGLE_H_
 #define TRIANGLE_H_
 
+namespace raytracer{
 class Triangle {
 public:
 	Triangle();
 	virtual ~Triangle();
 };
-
+}
 #endif /* TRIANGLE_H_ */

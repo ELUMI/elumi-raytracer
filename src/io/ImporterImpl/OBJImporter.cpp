@@ -1,7 +1,7 @@
 // Obj_loader.cpp : Defines the entry point for the console application.
 //
 #include <stdio.h>
-#include "objLoader.h"
+#include "OBJImporterUtil\objLoader.h"
 
 void printVector(obj_vector *v)
 {
@@ -10,7 +10,7 @@ void printVector(obj_vector *v)
 	printf("%.2f  ", v->e[2] );
 }
 
-int main(int argc, char **argv)
+int test(int argc, char **argv)
 {
 	objLoader *objData = new objLoader();
 	objData->load("test.obj");

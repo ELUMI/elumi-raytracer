@@ -1,14 +1,12 @@
 /*
- * IExporter.h
+ * IImporter.h
  *
- *  Created on: 20 jan 2012
- *      Author: irri
+ *  Created on: 24 jan 2012
+ *      Author: mille
  */
 
-#ifndef IEXPORTER_H_
-#define IEXPORTER_H_
-
-#include <stdint.h>
+#ifndef IIMPORTER_H_
+#define IIMPORTER_H_
 
 
 namespace raytracer {
@@ -16,7 +14,20 @@ namespace raytracer {
 class IImporter {
 public:
 
-	virtual int importImage(const char* filename) = 0;
+	virtual IImporter(const char* filename);
+	virtual ~IImporter();
+
+	virtual int getVertexList() = 0;
+	virtual int getNormalList() = 0;
+	virtual int getTextureList() = 0;
+
+	virtual int getFaceList() = 0;
+	virtual int getMaterialList() = 0;
+
+	virtual int getLightPointList() = 0;
+	virtual int getLightQuadList() = 0;
+	virtual int getLightDiscList() = 0;
+
 
 };
 

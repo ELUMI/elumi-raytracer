@@ -6,6 +6,7 @@
  */
 
 #include "Triangle.h"
+namespace raytracer{
 
 Triangle::Triangle() {
 	// TODO Auto-generated constructor stub
@@ -14,4 +15,5 @@ Triangle::Triangle() {
 
 Triangle::~Triangle() {
 	// TODO Auto-generated destructor stub
+}
 }
