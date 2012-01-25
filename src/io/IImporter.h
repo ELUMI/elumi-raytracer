@@ -8,21 +8,25 @@
 #ifndef IIMPORTER_H_
 #define IIMPORTER_H_
 
+#include "../raytracer/utilities/Triangle.h"
+#include "../raytracer/scene/Camera.h"
 
 namespace raytracer {
 
 class IImporter {
 public:
 
-	virtual IImporter(const char* filename);
-	virtual ~IImporter();
+	IImporter(){;};
+	virtual ~IImporter() = 0;
 
-	virtual int getVertexList() = 0;
-	virtual int getNormalList() = 0;
-	virtual int getTextureList() = 0;
+	virtual void loadFile(char* filename) = 0;
 
-	virtual int getFaceList() = 0;
+	virtual Triangle gerTriangleList() =0;
+	virtual int getTriangleCount() =0;
+
 	virtual int getMaterialList() = 0;
+
+	virtual Camera getCamera() = 0;
 
 	virtual int getLightPointList() = 0;
 	virtual int getLightQuadList() = 0;
