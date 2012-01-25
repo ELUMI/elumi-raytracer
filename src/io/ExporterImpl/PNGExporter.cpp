@@ -54,10 +54,10 @@ int PNGExporter::exportImage(const char* filename, int width, int height, uint8_
 
   /* Set up error handling. */
 
-  if (setjmp (png_jmpbuf (png_ptr))) {
+/*  if (setjmp (png_jmpbuf (png_ptr))) {
     goto png_failure;
   }
-
+*/
   /* Set image attributes. */
 
   png_set_IHDR (png_ptr,
