@@ -41,9 +41,38 @@ void OBJImporter::loadFile(char* filename){
 	}
 	triangle_count = obj_data->faceCount;
 }
+
+Triangle* OBJImporter::gerTriangleList(){
+	if (triangles!=NULL){
+		return triangles;
+	}
+	else{
+		cout << "Triangle NULL";
+		// Throw exception
+		return NULL;
+	}
+}
 int OBJImporter::getTriangleCount(){
 	if(triangles!=NULL){
 		return triangle_count;
+	}
+	else{
+		return -1;
+	}
+}
+Material* OBJImporter::getMaterialList(){
+	if (materials!=NULL){
+		return materials;
+	}
+	else{
+		cout << "Materials NULL";
+		// Throw exception
+		return NULL;
+	}
+}
+int OBJImporter::getMaterialCount(){
+	if(materials!=NULL){
+		return material_count;
 	}
 	else{
 		return -1;

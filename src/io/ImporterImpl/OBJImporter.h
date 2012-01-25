@@ -18,10 +18,12 @@ public:
 		virtual ~OBJImporter() = 0;
 
 		void loadFile(char* filename);
-		Triangle gerTriangleList();
+		Triangle* gerTriangleList();
 		int getTriangleCount();
 
-		int getMaterialList();
+
+		Material* getMaterialList();
+		int getMaterialCount();
 
 		Camera getCamera();
 
@@ -31,6 +33,9 @@ public:
 private:
 		Triangle* triangles;
 		int triangle_count;
+		Camera camera;
+		Material* materials;
+		int material_count;
 };
 
 }
