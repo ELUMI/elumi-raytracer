@@ -21,7 +21,6 @@ public:
 		Triangle* gerTriangleList();
 		int getTriangleCount();
 
-
 		Material* getMaterialList();
 		int getMaterialCount();
 
@@ -33,9 +32,11 @@ public:
 private:
 		Triangle* triangles;
 		int triangle_count;
-		Camera* camera;
+
 		Material* materials;
 		int material_count;
+
+		Camera* camera;
 };
 
 }

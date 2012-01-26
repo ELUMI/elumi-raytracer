@@ -12,11 +12,7 @@
 
 namespace raytracer {
 
-IExporter::IExporter(){};
 IExporter::~IExporter(){};
-
-PNGExporter::PNGExporter() {
-}
 
 PNGExporter::~PNGExporter() {
 }

@@ -6,6 +6,7 @@
 
 #include "OBJImporter.h"
 #include "../IImporter.h"
+#include "../../raytracer/utilities/Triangle.h"
 #include "OBJImporterUtil/objLoader.h"
 
 using namespace std;
@@ -34,6 +35,7 @@ void OBJImporter::loadFile(char* filename){
 	for(int i=0; i<obj_data->faceCount; i++){
 		obj_face *face = obj_data->faceList[i];
 		Triangle _triangle;
+
 
 		//objData->vertexList[ face->vertex_index[j] ]
 
