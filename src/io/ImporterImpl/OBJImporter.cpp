@@ -12,6 +12,9 @@
 using namespace std;
 namespace raytracer{
 
+//IImporter::IImporter(){};
+IImporter::~IImporter(){};
+
 OBJImporter::OBJImporter(){}
 OBJImporter::~OBJImporter(){
 	free(triangles);
