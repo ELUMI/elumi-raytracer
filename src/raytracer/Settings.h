@@ -8,9 +8,14 @@
 #ifndef SETTINGS_H_
 #define SETTINGS_H_
 
+#include <stdint.h>
+
 namespace raytracer {
 
-	struct Setting {
+	struct Settings {
+	    int width;
+	    int height;
+	    uint8_t* backgroundColor;
 
 	};
 

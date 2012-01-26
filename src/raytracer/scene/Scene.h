@@ -8,6 +8,10 @@
 #ifndef SCENE_H_
 #define SCENE_H_
 
+#include "Material.h"
+#include "Camera.h"
+#include "ILight.h"
+
 namespace raytracer {
 
 class Scene {
