@@ -23,15 +23,15 @@ int main(int argc, char* argv[]) {
   } else { // if we got enough parameters...
 
     char* inputFileName, *outputFileName, *settingsFile;
-    int width = 200;
-    int height = 200;
+    int width = 300;
+    int height = 300;
 
     inputFileName  = argv[1];
     outputFileName = argv[2];
 
     raytracer::Settings settings;
-    settings.width = 200;
-    settings.height = 200;
+    settings.width = 300;
+    settings.height = 300;
     uint8_t bgc[4] = {255,0,255,255};
     settings.backgroundColor = bgc;
 
@@ -45,29 +45,6 @@ int main(int argc, char* argv[]) {
     /* RENDERER
      ***************** */
 
-    //Open an OpenGl window
-    if(!glfwOpenWindow(300,300,0,0,0,0,0,0,GLFW_WINDOW)) {
-      glfwTerminate();
-      exit(EXIT_FAILURE);
-    }
-
-    //Main loop
-    while(running) {
-      //OpenGl rendering goes here...d
-      glClear(GL_COLOR_BUFFER_BIT);
-
-      //Swap front and back rendering buffers
-      glfwSwapBuffers();
-
-      //Check if ESC key was pressed or window was closed
-      running = !glfwGetKey(GLFW_KEY_ESC) &&
-          glfwGetWindowParam(GLFW_OPENED);
-    }
-
-    //Close window and terminate GLFW
-    glfwTerminate();
-
-    // RENDERA HÄR!
 
 
     // testbuffer
@@ -86,6 +63,30 @@ int main(int argc, char* argv[]) {
 
     raytracer::PNGExporter exp;
     exp.exportImage(outputFileName,settings.width,settings.height,buffer);
+
+    //Open an OpenGl window
+      if(!glfwOpenWindow(300,300,0,0,0,0,0,0,GLFW_WINDOW)) {
+        glfwTerminate();
+        exit(EXIT_FAILURE);
+      }
+
+      //Main loop
+      while(running) {
+        //OpenGl rendering goes here...d
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glDrawPixels(300,300,GL_RGBA,GL_UNSIGNED_INT_8_8_8_8,buffer);
+
+        //Swap front and back rendering buffers
+        glfwSwapBuffers();
+
+        //Check if ESC key was pressed or window was closed
+        running = !glfwGetKey(GLFW_KEY_ESC) &&
+            glfwGetWindowParam(GLFW_OPENED);
+      }
+
+      //Close window and terminate GLFW
+      glfwTerminate();
 
   }
 
