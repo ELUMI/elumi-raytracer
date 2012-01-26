@@ -17,12 +17,9 @@ namespace raytracer {
 class IImporter {
 public:
 
-	IImporter(){;};
-	virtual ~IImporter() = 0;
-
 	virtual void loadFile(char* filename) = 0;
 
-	virtual Triangle** gerTriangleList() =0;
+	virtual Triangle** getTriangleList() =0;
 	virtual int getTriangleCount() =0;
 
 	virtual Material** getMaterialList() = 0;

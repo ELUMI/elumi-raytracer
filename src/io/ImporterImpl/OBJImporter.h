@@ -15,11 +15,11 @@ namespace raytracer {
 
 class OBJImporter : public IImporter{
 public:
-		OBJImporter(){;};
-		virtual ~OBJImporter() = 0;
+		OBJImporter();
+		virtual ~OBJImporter();
 
 		void loadFile(char* filename);
-		Triangle** gerTriangleList();
+		Triangle** getTriangleList();
 		int getTriangleCount();
 
 		Material** getMaterialList();

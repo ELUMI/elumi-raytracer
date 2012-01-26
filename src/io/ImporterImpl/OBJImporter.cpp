@@ -12,9 +12,7 @@
 using namespace std;
 namespace raytracer{
 
-IImporter::~IImporter() {
-
-};
+OBJImporter::OBJImporter(){}
 OBJImporter::~OBJImporter(){
 	free(triangles);
 };
@@ -54,15 +52,15 @@ void OBJImporter::loadFile(char* filename){
 
 	materials = new Material*[obj_data->materialCount];
 	for(int i=0; i<obj_data->materialCount; i++){
-		obj_material *material;
-		Material* _material;
-
-		materials[i] = _material;
+		//obj_material *material;
+		//Material* _material;
+		// TODO : Fix materials
+		//materials[i] = _material;
 	}
 	material_count = obj_data->materialCount;
 }
 
-Triangle** OBJImporter::gerTriangleList(){
+Triangle** OBJImporter::getTriangleList(){
 	if (triangles!=NULL){
 		return triangles;
 	}

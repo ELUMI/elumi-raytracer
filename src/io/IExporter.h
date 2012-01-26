@@ -16,8 +16,6 @@ namespace raytracer {
 class IExporter {
 public:
 
-	IExporter();
-	virtual ~IExporter();
 	virtual int exportImage(const char* filename, int width, int height, uint8_t* buffer) = 0;
 
 };
