@@ -22,10 +22,10 @@ public:
 
 	virtual void loadFile(char* filename) = 0;
 
-	virtual Triangle* gerTriangleList() =0;
+	virtual Triangle** gerTriangleList() =0;
 	virtual int getTriangleCount() =0;
 
-	virtual Material* getMaterialList() = 0;
+	virtual Material** getMaterialList() = 0;
 	virtual int getMaterialCount() =0;
 
 	virtual Camera* getCamera() = 0;

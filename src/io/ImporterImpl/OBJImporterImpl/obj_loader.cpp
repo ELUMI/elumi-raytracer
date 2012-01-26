@@ -1,8 +1,8 @@
-#include "objLoader.h"
+#include "obj_loader.h"
 #include "obj_parser.h"
 
 
-int objLoader::load(char *filename)
+int obj_loader::load(char *filename)
 {
 	int no_error = 1;
 	no_error = parse_obj_scene(&data, filename);

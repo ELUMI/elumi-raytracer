@@ -3,11 +3,11 @@
 
 #include "obj_parser.h"
 
-class objLoader
+class obj_loader
 {
 public:
-	objLoader() {}
-	~objLoader()
+	obj_loader() {}
+	~obj_loader()
 	{
 		delete_obj_data(&data);
 	}

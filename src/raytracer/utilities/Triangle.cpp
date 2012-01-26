@@ -13,7 +13,7 @@ Triangle::Triangle() {
 	// TODO Auto-generated constructor stub
 
 }
-Triangle::Triangle(vec3* vertices,vec3* normals,Texture* texture,Material* material){
+Triangle::Triangle(vec3* vertices,vec3* normals,vec3* texture,Material* material){
 	Triangle::set(vertices,normals,texture,material);
 }
 
@@ -24,15 +24,15 @@ Triangle::~Triangle() {
 	free(material);
 }
 
-void Triangle::set(vec3* vertices,vec3* normals,Texture* texture,Material* material){
+void Triangle::set(vec3* vertices,vec3* normals,vec3* texture,Material* material){
 	this->vertices = vertices;
 	this->normals = normals;
 	this->texture = texture;
 	this->material = material;
 }
-vec3* Triangle::getVertices() {return NULL;}
-vec3* Triangle::getNormals() {return NULL;}
-Texture* Triangle::getTexture() {return NULL;}
-Material* Triangle::getMaterial() {return NULL;}
+vec3* Triangle::getVertices() {return vertices;}
+vec3* Triangle::getNormals() {return normals;}
+vec3* Triangle::getTexture() {return texture;}
+Material* Triangle::getMaterial() {return material;}
 
 }

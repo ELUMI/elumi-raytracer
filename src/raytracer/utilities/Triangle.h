@@ -19,19 +19,19 @@ namespace raytracer{
 class Triangle {
 public:
 	Triangle();
-	Triangle(vec3* vertices,vec3* normals,Texture* texture,Material* material);
+	Triangle(vec3* vertices,vec3* normals,vec3* texture,Material* material);
 	virtual ~Triangle();
 
-	void set(vec3* _vertices,vec3* _normals,Texture* _texture,Material* material);
+	void set(vec3* _vertices,vec3* _normals,vec3* _texture,Material* material);
 	vec3* getVertices();
 	vec3* getNormals();
-	Texture* getTexture();
+	vec3* getTexture();
 	Material* getMaterial();
 
 private:
 	vec3* vertices;
 	vec3* normals;
-	Texture* texture;
+	vec3* texture;
 	Material* material;
 };
 }
