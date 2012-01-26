@@ -1,0 +1,17 @@
+# Finder related file
+.DS_Store
+
+# Typical swap buffers
+*~
+
+# Vim files
+*.vim
+*.swp
+
+# Binary files
+*.[oa]
+
+# Eclipse files
+.project
+.cproject
+
