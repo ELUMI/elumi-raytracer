@@ -12,12 +12,13 @@
 
 namespace raytracer {
 
-PNGExporter::PNGExporter() {
+IExporter::IExporter(){};
+IExporter::~IExporter(){};
 
+PNGExporter::PNGExporter() {
 }
 
 PNGExporter::~PNGExporter() {
-
 }
 
 int PNGExporter::exportImage(const char* filename, int width, int height, uint8_t* buffer) {

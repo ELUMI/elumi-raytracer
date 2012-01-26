@@ -8,7 +8,7 @@
 #ifndef OBJIMPORTER_H_
 #define OBJIMPORTER_H_
 
-#include "../IImporter.h";
+#include "../IImporter.h"
 
 namespace raytracer {
 
