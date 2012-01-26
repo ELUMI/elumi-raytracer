@@ -3,11 +3,43 @@
 
 #include <iostream>
 #include <stdlib.h>
+#include <GL/glfw.h>
 #include <string>
 
 using namespace std;
 
 int main(int argc, char* argv[]) {
+
+  int running = GL_TRUE;
+
+  //Initialize GLFW
+  if(!glfwInit()) {
+    exit(EXIT_FAILURE);
+  }
+
+  //Open an OpenGl window
+  if(!glfwOpenWindow(300,300,0,0,0,0,0,0,GLFW_WINDOW)) {
+    glfwTerminate();
+    exit(EXIT_FAILURE);
+  }
+
+  //Main loop
+  while(running) {
+    //OpenGl rendering goes here...d
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    //Swap front and back rendering buffers
+    glfwSwapBuffers();
+
+    //Check if ESC key was pressed or window was closed
+    running = !glfwGetKey(GLFW_KEY_ESC) &&
+                glfwGetWindowParam(GLFW_OPENED);
+  }
+
+  //Close window and terminate GLFW
+  glfwTerminate();
+
+
 
     if (argc < 3) { // Check the value of argc. If not enough parameters have been passed, inform user and exit.
         std::cout << "Usage is <flags> <infile> <outfile>\n"; // Inform the user of how to use the program
@@ -59,6 +91,6 @@ int main(int argc, char* argv[]) {
 
     }
 
-  return 0;
+  exit(EXIT_SUCCESS);
 }
 
