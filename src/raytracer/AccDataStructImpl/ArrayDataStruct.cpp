@@ -1,15 +1,17 @@
 
 #include <vector>
-#include <glm/glm.h>
+#include <glm/glm.hpp>
 
 #include "ArrayDataStruct.h"
 #include "../utilities/Triangle.h"
 #include "../utilities/Ray.h"
 
+using namespace glm;
+
 namespace raytracer {
 
-ArrayDataStruct::ArrayDataStruct() {
-  triangles.reserve(10000);
+ArrayDataStruct::ArrayDataStruct(int size) {
+  triangles.reserve(size);
 }
   
 ArrayDataStruct::~ArrayDataStruct() {
@@ -17,6 +19,12 @@ ArrayDataStruct::~ArrayDataStruct() {
 }
 
 Triangle ArrayDataStruct::findClosestIntersection(Ray ray) {
+  
+  for(int i = 0; i < triangles.size(); i++) {
+    vec3* vertices;
+    vec3* v0;
+  }
+
   return Triangle();
 }
 

@@ -14,4 +14,5 @@
 # Eclipse files
 .project
 .cproject
-
+Debug/**/*
+Release/**/*
