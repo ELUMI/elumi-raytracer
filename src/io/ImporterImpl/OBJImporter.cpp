@@ -96,6 +96,10 @@ Camera* OBJImporter::getCamera(){
 		return NULL;
 	}
 }
+
+int OBJImporter::getLightPointList(){return -1;}
+int OBJImporter::getLightQuadList(){return -1;}
+int OBJImporter::getLightDiscList(){return -1;}
 }
 
 
