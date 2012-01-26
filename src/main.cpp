@@ -1,3 +1,5 @@
+<<<<<<< HEAD
+=======
 #include "io/ExporterImpl/PNGExporter.h"
 #include "raytracer/Renderer.h"
 
@@ -5,11 +7,14 @@
 #include <stdlib.h>
 #include <GL/glfw.h>
 #include <string>
+>>>>>>> 93541a41eb2c624aa21f3ce610f26fa8dc6c0847
 
 using namespace std;
 
 int main(int argc, char* argv[]) {
 
+<<<<<<< HEAD
+=======
   int running = GL_TRUE;
 
   //Initialize GLFW
@@ -91,5 +96,6 @@ int main(int argc, char* argv[]) {
   }
 
   exit(EXIT_SUCCESS);
+>>>>>>> 93541a41eb2c624aa21f3ce610f26fa8dc6c0847
 }
 
