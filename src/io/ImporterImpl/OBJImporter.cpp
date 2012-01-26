@@ -29,17 +29,26 @@ void OBJImporter::loadFile(char* filename){
 		cout << "Couldn't find file '" << filename << "'. Errmsg:" << e << endl;
 	}
 
-	triangles = (Triangle*) malloc (obj_data->faceCount);
+	triangles = new Triangle[obj_data->faceCount];
 	// Start creating the triangles
 	for(int i=0; i<obj_data->faceCount; i++){
-		obj_face *o = obj_data->faceList[i];
+		obj_face *face = obj_data->faceList[i];
 		Triangle _triangle;
 
-		//objData->vertexList[ o->vertex_index[j] ]
+		//objData->vertexList[ face->vertex_index[j] ]
 
 		triangles[i] = _triangle;
 	}
 	triangle_count = obj_data->faceCount;
+
+	materials = new Material[obj_data->materialCount];
+	for(int i=0; i<obj_data->materialCount; i++){
+		obj_material *material;
+		Material _material;
+
+		materials[i] = _material;
+	}
+	material_count = obj_data->materialCount;
 }
 
 Triangle* OBJImporter::gerTriangleList(){
@@ -76,6 +85,15 @@ int OBJImporter::getMaterialCount(){
 	}
 	else{
 		return -1;
+	}
+}
+Camera* OBJImporter::getCamera(){
+	if(camera!=NULL){
+		return camera;
+	}
+	else{
+		//Throw exception
+		return NULL;
 	}
 }
 }

@@ -25,7 +25,7 @@ public:
 		Material* getMaterialList();
 		int getMaterialCount();
 
-		Camera getCamera();
+		Camera* getCamera();
 
 		int getLightPointList();
 		int getLightQuadList();
@@ -33,7 +33,7 @@ public:
 private:
 		Triangle* triangles;
 		int triangle_count;
-		Camera camera;
+		Camera* camera;
 		Material* materials;
 		int material_count;
 };

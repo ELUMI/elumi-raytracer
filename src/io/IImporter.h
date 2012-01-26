@@ -28,7 +28,7 @@ public:
 	virtual Material* getMaterialList() = 0;
 	virtual int getMaterialCount() =0;
 
-	virtual Camera getCamera() = 0;
+	virtual Camera* getCamera() = 0;
 
 	virtual int getLightPointList() = 0;
 	virtual int getLightQuadList() = 0;
