@@ -36,6 +36,7 @@ public:
   
 private:
   Settings* m_settings;
+  Scene m_scene;
 };
 
 }
