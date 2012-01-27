@@ -19,7 +19,8 @@ SimpleTracer::~SimpleTracer() {
 }
 
 void SimpleTracer::trace(Ray* rays, int length, unsigned char* buffer) {
-  //IAccDataStruct *ads = scene.getAccDataStruc();
+  scene.
+  //IAccDataStruct *ads = scene.
 
   for(int i = 0; i < length; i++) {
     //rays[i]

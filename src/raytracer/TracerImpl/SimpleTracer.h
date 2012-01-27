@@ -23,7 +23,7 @@ public:
 private:
   void shade();
 
-  Scene* scene;
+  const Scene* scene;
 };
 
 }
