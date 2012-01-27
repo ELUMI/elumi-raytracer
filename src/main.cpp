@@ -6,6 +6,8 @@
 #include <GL/glfw.h>
 #include <string>
 
+#define GL_UNSIGNED_INT_8_8_8_8_REV 0x8367
+
 using namespace std;
 
 int main(int argc, char* argv[]) {
@@ -83,6 +85,7 @@ int main(int argc, char* argv[]) {
       //Main loop
       while(running) {
         //OpenGl rendering goes here...d
+
         glClear(GL_COLOR_BUFFER_BIT);
 
         glDrawPixels(300,300,GL_RGBA,GL_UNSIGNED_INT_8_8_8_8_REV,buffer);

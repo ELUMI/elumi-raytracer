@@ -11,10 +11,13 @@ using namespace glm;
 
 namespace raytracer {
 
+IAccDataStruct::~IAccDataStruct(){}
+
+ArrayDataStruct::ArrayDataStruct(){}
+
 ArrayDataStruct::ArrayDataStruct(int size) {
   triangles.reserve(size);
 }
-  
 ArrayDataStruct::~ArrayDataStruct() {
 
 }

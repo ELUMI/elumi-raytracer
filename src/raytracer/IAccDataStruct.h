@@ -21,9 +21,9 @@ public:
     vec3 normal;
   };
 
-	virtual ~IAccDataStruct();
-	virtual IntersectionData findClosestIntersection(Ray ray)=0;
-  virtual void addData(Triangle* triangles, int length);
+	virtual ~IAccDataStruct()= 0;
+	virtual Triangle findClosestIntersection(Ray ray)=0;
+	virtual void addData(Triangle* triangles, int length) = 0;
 };
 
 }

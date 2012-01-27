@@ -1,3 +1,4 @@
+
 #ifndef ARRAYDATASTRUCT_H_
 #define ARRAYDATASTRUCT_H_
 
@@ -11,6 +12,7 @@ namespace raytracer {
 
 class ArrayDataStruct : public IAccDataStruct {
 public:
+  ArrayDataStruct();
   ArrayDataStruct(int size = 10000);
   virtual ~ArrayDataStruct();
 
