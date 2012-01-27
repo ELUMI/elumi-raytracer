@@ -18,11 +18,11 @@ Ray::Ray(vec3 pos, vec3 dir) {
 Ray::~Ray() {
 }
 
-Ray::getPos() {
+vec3 Ray::getPos() {
   return pos;
 }
 
-Ray::getDir() {
+vec3 Ray::getDir() {
   return dir;
 }
 

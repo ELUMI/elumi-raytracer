@@ -22,7 +22,7 @@ public:
   };
 
 	virtual ~IAccDataStruct()= 0;
-	virtual Triangle findClosestIntersection(Ray ray)=0;
+	virtual IntersectionData findClosestIntersection(Ray ray)=0;
 	virtual void addData(Triangle* triangles, int length) = 0;
 };
 
