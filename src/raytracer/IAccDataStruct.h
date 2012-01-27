@@ -15,9 +15,15 @@ namespace raytracer {
 
 class IAccDataStruct {
 public:
-	virtual ~IAccDataStruct();
+  struct IntersectionData {
+    Triangle* triangle;
+    vec3 interPoint;
+    vec3 normal;
+  };
+
+	virtual ~IAccDataStruct()= 0;
 	virtual Triangle findClosestIntersection(Ray ray)=0;
-  virtual void addData(Triangle* triangles, int length);
+	virtual void addData(Triangle* triangles, int length) = 0;
 };
 
 }
