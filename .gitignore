@@ -16,3 +16,4 @@
 .cproject
 Debug/**/*
 Release/**/*
+.settings/**/*
