@@ -15,7 +15,7 @@ namespace raytracer {
 class ITracer {
 public:
 	virtual ~ITracer() {};
-	virtual void trace(Ray* ray, unsigned char* buffer) = 0;
+	virtual void trace(Ray* rays, int length, unsigned char* buffer) = 0;
 private:
 	virtual void shade() = 0;
 };

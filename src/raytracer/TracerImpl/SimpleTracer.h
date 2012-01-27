@@ -9,17 +9,21 @@
 #define SIMPLETRACER_H_
 
 #include "../ITracer.h"
+#include "../IAccDataStruct.h"
+#include "../scene/Scene.h"
 
 namespace raytracer {
 
 class SimpleTracer : public ITracer {
 public:
-  SimpleTracer();
+  SimpleTracer(Scene* scene);
   virtual ~SimpleTracer();
 
-  void trace(Ray* ray, unsigned char* buffer);
+  void trace(Ray* rays, int length, unsigned char* buffer);
 private:
   void shade();
+
+  Scene* scene;
 };
 
 }

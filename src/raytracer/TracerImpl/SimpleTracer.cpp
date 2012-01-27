@@ -9,17 +9,21 @@
 
 namespace raytracer {
 
-SimpleTracer::SimpleTracer() {
+SimpleTracer::SimpleTracer(Scene* scene) {
   // TODO Auto-generated constructor stub
-
+  SimpleTracer::scene = scene;
 }
 
 SimpleTracer::~SimpleTracer() {
   // TODO Auto-generated destructor stub
 }
 
-void SimpleTracer::trace(Ray* ray, unsigned char* buffer) {
+void SimpleTracer::trace(Ray* rays, int length, unsigned char* buffer) {
+  //IAccDataStruct *ads = scene.getAccDataStruc();
 
+  for(int i = 0; i < length; i++) {
+    //rays[i]
+  }
 }
 
 void SimpleTracer::shade() {
