@@ -52,10 +52,10 @@ int PNGExporter::exportImage(const char* filename, int width, int height, uint8_
 
   /* Set up error handling. */
 
-  if (setjmp (png_jmpbuf (png_ptr))) {
+/*  if (setjmp (png_jmpbuf (png_ptr))) {
     goto png_failure;
   }
-
+*/
   /* Set image attributes. */
 
   png_set_IHDR (png_ptr,
@@ -99,7 +99,7 @@ int PNGExporter::exportImage(const char* filename, int width, int height, uint8_
   }
   png_free (png_ptr, row_pointers);
 
-  png_failure:
+  //png_failure:
   png_create_info_struct_failed:
      png_destroy_write_struct (&png_ptr, &info_ptr);
   png_create_write_struct_failed:

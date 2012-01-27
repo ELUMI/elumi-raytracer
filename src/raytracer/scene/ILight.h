@@ -12,7 +12,7 @@ namespace raytracer {
 
 class ILight {
 public:
-	virtual ~ILight();
+//	virtual ~ILight();
 };
 
 }

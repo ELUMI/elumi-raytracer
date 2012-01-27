@@ -9,13 +9,42 @@
 
 namespace raytracer {
 
-Renderer::Renderer() {
-	// TODO Auto-generated constructor stub
+Renderer::Renderer()
+  : m_scene() {
 
 }
 
 Renderer::~Renderer() {
-	// TODO Auto-generated destructor stub
+
+}
+
+void Renderer::loadTriangles(Triangle* triangles, int length, bool overwrite) {
+
+}
+
+void Renderer::loadCamera(Camera& camera) {
+
+}
+
+void Renderer::loadLights(ILight* lights, int length, bool overwrite) {
+  m_scene.loadLights(lights,length,overwrite);
+}
+
+void Renderer::loadSettings(Settings& settings) {
+	*m_settings = settings;
+}
+
+uint8_t* Renderer::getFloatArray() {
+	return 0;
+}
+
+void Renderer::render() {
+
+}
+
+int Renderer::renderComplete() {
+
+	return -1;
 }
 
 }

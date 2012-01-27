@@ -9,13 +9,25 @@
 
 namespace raytracer {
 
-Scene::Scene() {
-	// TODO Auto-generated constructor stub
+Scene::Scene()
+  : m_lights(), m_materials() {
+
+
 
 }
 
 Scene::~Scene() {
-	// TODO Auto-generated destructor stub
+
+}
+
+void Scene::loadTriangles(Triangle* triangles, int length, bool overwrite) {
+  //m_AccDataStruct.addData(triangles, length);
+}
+
+void Scene::loadLights(ILight* lights, int length, bool overwrite) {
+  for (size_t i; i<length; ++i) {
+    m_lights.push_back(lights[i]);
+  }
 }
 
 }
