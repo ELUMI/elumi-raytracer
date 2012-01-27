@@ -50,7 +50,7 @@ IAccDataStruct::IntersectionData ArrayDataStruct::findClosestIntersection(Ray ra
     float u = res.y;
     float v = res.z;
 
-    float dist = distance(o, p);
+    float dist = distance(o, closest_pos);
 
     if(u >= 0 && v >= 0 && u + v <= 1) {  // Intersection!
       if(closest_tri == NULL || dist < closest_dist) {
