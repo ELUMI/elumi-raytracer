@@ -9,6 +9,7 @@
 #define RENDERER_H_
 
 #include "Settings.h"
+#include "ITracer.h"
 #include "scene/Scene.h"
 #include "utilities/Triangle.h"
 
@@ -35,8 +36,11 @@ public:
   int renderComplete();
   
 private:
-  Settings* m_settings;
   Scene m_scene;
+  Settings* m_settings;
+  ITracer* m_tracer;
+
+  // SOME KIND OF RAY-ARRAY MEMBER?
 };
 
 }

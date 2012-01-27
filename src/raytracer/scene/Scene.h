@@ -10,8 +10,8 @@
 
 #include <vector>
 
-//#include "../IAccDataStruct.h"
-#include "../utilities/Triangle.h" // AccData inkluderar förmodligen denna
+#include "../IAccDataStruct.h"
+//#include "../utilities/Triangle.h" // AccData inkluderar förmodligen denna
 #include "Material.h"
 #include "Camera.h"
 #include "ILight.h"
@@ -25,14 +25,22 @@ public:
 
 
 	void loadTriangles(Triangle* triangles, int length, bool overwrite=false);
+	void loadCamera(Camera camera);
 	void loadLights(ILight* lights, int length, bool overwrite=false);
+	void loadMaterials(Material* materials, int length);
+
+	const Camera& getCamera();
+	const IAccDataStruct* getAccDataStruct();
+
+	const std::vector<ILight*>& getLightVector();
+	const std::vector<Material*>& getMaterialVector();
+
 
 private:
 	Camera m_camera;
-	std::vector<ILight> m_lights;
-	std::vector<Material> m_materials;
-
-	//IAccDataStructe m_acc_data_struct;
+	IAccDataStruct* m_acc_data_struct;
+	std::vector<ILight*> m_lights;
+	std::vector<Material*> m_materials;
 };
 
 }

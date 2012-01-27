@@ -21,13 +21,35 @@ Scene::~Scene() {
 }
 
 void Scene::loadTriangles(Triangle* triangles, int length, bool overwrite) {
-  //m_AccDataStruct.addData(triangles, length);
+  m_acc_data_struct->addData(triangles, length);
+}
+
+void Scene::loadCamera(Camera camera) {
+  m_camera = camera;
 }
 
 void Scene::loadLights(ILight* lights, int length, bool overwrite) {
   for (size_t i; i<length; ++i) {
-    m_lights.push_back(lights[i]);
+    m_lights.push_back(&lights[i]);
   }
+}
+
+void Scene::loadMaterials(Material* materials, int length) {
+  for (size_t i; i<length; ++i) {
+    m_materials.push_back(&materials[i]);
+  }
+}
+
+const std::vector<ILight*>& Scene::getLightVector() {
+  return m_lights;
+}
+
+const std::vector<Material*>& Scene::getMaterialVector() {
+  return m_materials;
+}
+
+const Camera& Scene::getCamera() {
+  return m_camera;
 }
 
 }

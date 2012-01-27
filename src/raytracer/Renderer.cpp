@@ -6,20 +6,22 @@
  */
 
 #include "Renderer.h"
+#include "TracerImpl/SimpleTracer.h"
 
 namespace raytracer {
 
 Renderer::Renderer()
   : m_scene() {
-
+  //m_settings =
+  m_tracer = new SimpleTracer(&m_scene);
 }
 
 Renderer::~Renderer() {
-
+  delete m_tracer;
 }
 
 void Renderer::loadTriangles(Triangle* triangles, int length, bool overwrite) {
-
+  m_scene.loadTriangles(triangles, length, overwrite);
 }
 
 void Renderer::loadCamera(Camera& camera) {
@@ -39,6 +41,8 @@ uint8_t* Renderer::getFloatArray() {
 }
 
 void Renderer::render() {
+  // Create rays and send to tracer
+  //m_tracer->trace(rays);
 
 }
 

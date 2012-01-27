@@ -1,5 +1,5 @@
 #include "io/ExporterImpl/PNGExporter.h"
-#include "io/IExporter.h"
+#include "io/ImporterImpl/OBJImporter.h"
 #include "raytracer/Renderer.h"
 
 #include <iostream>
@@ -35,16 +35,27 @@ int main(int argc, char* argv[]) {
     settings.backgroundColor[2] = 0;
     settings.backgroundColor[3] = 255;
 
-
     /* IMPORTER
      ***************** */
 
-    // IMPORTERA HÄR
+    raytracer::IImporter* importer = new raytracer::OBJImporter();
+    raytracer::Triangle* triangles = importer->getTriangleList();
+    int nr_of_triangles = importer->getTriangleCount();
 
 
     /* RENDERER
      ***************** */
 
+    raytracer::Camera camera;
+
+    raytracer::Renderer myRenderer;
+    myRenderer.loadSettings(settings);
+    myRenderer.loadCamera(camera);
+    if (triangles != NULL)
+      myRenderer.loadTriangles(triangles, nr_of_triangles);
+    //myRenderer.loadLights();
+
+    myRenderer.render();
 
 
     // testbuffer
@@ -76,8 +87,8 @@ int main(int argc, char* argv[]) {
 
 
 
-    raytracer::IExporter* exp = new raytracer::PNGExporter;
-    exp->exportImage(outputFileName,settings.width,settings.height,buffer);
+    raytracer::IExporter* exporter = new raytracer::PNGExporter;
+    exporter->exportImage(outputFileName,settings.width,settings.height,buffer);
 
     //    //Open an OpenGl window
     //      if(!glfwOpenWindow(300,300,0,0,0,0,0,0,GLFW_WINDOW)) {
@@ -103,6 +114,9 @@ int main(int argc, char* argv[]) {
     //      //Close window and terminate GLFW
     //      glfwTerminate();
 
+    delete importer;
+    delete exporter;
+    std::cout << std::endl << "end of PROGRAM" << std::endl;
   }
 
   exit(EXIT_SUCCESS);
