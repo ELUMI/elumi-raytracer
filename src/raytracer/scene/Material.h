@@ -19,6 +19,7 @@ struct Color {
 class Material {
 
 public:
+  Material();
   Material(int id);
 	virtual ~Material();
 

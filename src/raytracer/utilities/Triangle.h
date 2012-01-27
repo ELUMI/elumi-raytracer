@@ -10,7 +10,7 @@
 #ifndef TRIANGLE_H_
 #define TRIANGLE_H_
 
-#include "..\scene\Material.h"
+#include "../scene/Material.h"
 
 using namespace glm;
 
@@ -22,10 +22,10 @@ public:
 	virtual ~Triangle();
 
 	void set(vec3* _vertices,vec3* _normals,vec3* _texture,Material* material);
-	vec3* getVertices();
-	vec3* getNormals();
-	vec3* getTexture();
-	Material* getMaterial();
+	const vec3* getVertices();
+	const vec3* getNormals();
+	const vec3* getTexture();
+	const Material* getMaterial();
 
 private:
 	vec3* vertices;

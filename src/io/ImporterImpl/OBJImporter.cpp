@@ -8,6 +8,7 @@
 #include "OBJImporter.h"
 #include "../IImporter.h"
 #include "../../raytracer/utilities/Triangle.h"
+#include "../../raytracer/scene/Material.h"
 
 using namespace std;
 namespace raytracer{
@@ -17,7 +18,7 @@ IImporter::~IImporter(){};
 
 OBJImporter::OBJImporter(){}
 OBJImporter::~OBJImporter(){
-	free(triangles);
+	delete(triangles);
 };
 
 
@@ -31,7 +32,7 @@ void OBJImporter::loadFile(char* filename){
 		cout << "Couldn't find file '" << filename << "'. Errmsg:" << e << endl;
 	}
 
-	triangles = new Triangle*[obj_data->faceCount];
+	OBJImporter::triangles = new Triangle[obj_data->faceCount];
 	// Start creating the triangles
 	for(int i=0; i<obj_data->faceCount; i++){
 		obj_face *face = obj_data->faceList[i];
@@ -48,12 +49,13 @@ void OBJImporter::loadFile(char* filename){
 		}
 		//obj_material* _material = obj_data->materialList[face->material_index];
 
-		triangles[i] = new Triangle(_vertices,_normals,_textures,NULL);;
+		OBJImporter::triangles[i] = Triangle(_vertices,_normals,_textures,NULL);
 
 	}
 	triangle_count = obj_data->faceCount;
 
-	materials = new Material*[obj_data->materialCount];
+
+	materials = new Material[obj_data->materialCount];
 	for(int i=0; i<obj_data->materialCount; i++){
 		//obj_material *material;
 		//Material* _material;
@@ -61,9 +63,11 @@ void OBJImporter::loadFile(char* filename){
 		//materials[i] = _material;
 	}
 	material_count = obj_data->materialCount;
+
+	delete(obj_data);
 }
 
-Triangle** OBJImporter::getTriangleList(){
+Triangle* OBJImporter::getTriangleList(){
 	if (triangles!=NULL){
 		return triangles;
 	}
@@ -81,7 +85,7 @@ int OBJImporter::getTriangleCount(){
 		return -1;
 	}
 }
-Material** OBJImporter::getMaterialList(){
+Material* OBJImporter::getMaterialList(){
 	if (materials!=NULL){
 		return materials;
 	}

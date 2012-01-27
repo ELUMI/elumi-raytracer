@@ -30,9 +30,9 @@ void Triangle::set(vec3* vertices,vec3* normals,vec3* texture,Material* material
 	Triangle::texture = texture;
 	Triangle::material = material;
 }
-vec3* Triangle::getVertices() {return Triangle::vertices;}
-vec3* Triangle::getNormals() {return Triangle::normals;}
-vec3* Triangle::getTexture() {return Triangle::texture;}
-Material* Triangle::getMaterial() {return Triangle::material;}
+const vec3* Triangle::getVertices() {return Triangle::vertices;}
+const vec3* Triangle::getNormals() {return Triangle::normals;}
+const vec3* Triangle::getTexture() {return Triangle::texture;}
+const Material* Triangle::getMaterial() {return Triangle::material;}
 
 }

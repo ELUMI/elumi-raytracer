@@ -19,10 +19,10 @@ public:
 	Ray(vec3 position, vec3 direction);
 	virtual ~Ray();
 
-	static Ray generateRay(vec3 position, vec3 direction);
+	static Ray generateRay(vec3 start_position, vec3 end_position);
 
-  vec3 getPosition();
-  vec3 getDirection();
+  const vec3& getPosition();
+  const vec3& getDirection();
 
 private:
   vec3 position;
