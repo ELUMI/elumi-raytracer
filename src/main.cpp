@@ -1,4 +1,5 @@
 #include "io/ExporterImpl/PNGExporter.h"
+#include "io/IExporter.h"
 #include "raytracer/Renderer.h"
 
 #include <iostream>
@@ -74,8 +75,9 @@ int main(int argc, char* argv[]) {
      ***************** */
 
 
-    raytracer::PNGExporter exp;
-    exp.exportImage(outputFileName,settings.width,settings.height,buffer);
+
+    raytracer::IExporter* exp = new raytracer::PNGExporter;
+    exp->exportImage(outputFileName,settings.width,settings.height,buffer);
 
     //    //Open an OpenGl window
     //      if(!glfwOpenWindow(300,300,0,0,0,0,0,0,GLFW_WINDOW)) {
