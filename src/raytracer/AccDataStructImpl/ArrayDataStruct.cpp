@@ -27,7 +27,7 @@ IAccDataStruct::IntersectionData ArrayDataStruct::findClosestIntersection(Ray ra
   vec3 d = ray.getDirection();
 
   for(int i = 0; i < triangles.size(); i++) {
-    vec3* vertices = triangles.at(i)->getVertices();
+    const vec3* vertices = triangles[i]->getVertices();
     vec3 v0 = *vertices;
     vec3 v1 = *(vertices + 1);
     vec3 v2 = *(vertices + 2);
