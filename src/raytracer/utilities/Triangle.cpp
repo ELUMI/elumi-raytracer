@@ -18,21 +18,21 @@ Triangle::Triangle(vec3* vertices,vec3* normals,vec3* texture,Material* material
 }
 
 Triangle::~Triangle() {
-	free(vertices);
-	free(normals);
-	free(texture);
-	free(material);
+	delete(Triangle::vertices);
+	delete(Triangle::normals);
+	delete(Triangle::texture);
+	delete(Triangle::material);
 }
 
 void Triangle::set(vec3* vertices,vec3* normals,vec3* texture,Material* material){
-	this->vertices = vertices;
-	this->normals = normals;
-	this->texture = texture;
-	this->material = material;
+	Triangle::vertices = vertices;
+	Triangle::normals = normals;
+	Triangle::texture = texture;
+	Triangle::material = material;
 }
-vec3* Triangle::getVertices() {return vertices;}
-vec3* Triangle::getNormals() {return normals;}
-vec3* Triangle::getTexture() {return texture;}
-Material* Triangle::getMaterial() {return material;}
+vec3* Triangle::getVertices() {return Triangle::vertices;}
+vec3* Triangle::getNormals() {return Triangle::normals;}
+vec3* Triangle::getTexture() {return Triangle::texture;}
+Material* Triangle::getMaterial() {return Triangle::material;}
 
 }
