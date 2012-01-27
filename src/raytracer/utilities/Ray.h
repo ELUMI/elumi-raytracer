@@ -19,6 +19,8 @@ public:
 	Ray(vec3 position, vec3 direction);
 	virtual ~Ray();
 
+	static Ray generateRay(vec3 position, vec3 direction);
+
   vec3 getPosition();
   vec3 getDirection();
 
