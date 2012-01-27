@@ -10,7 +10,6 @@
 #ifndef TRIANGLE_H_
 #define TRIANGLE_H_
 
-#include "../scene/Texture.h"
 #include "../scene/Material.h"
 
 using namespace glm;

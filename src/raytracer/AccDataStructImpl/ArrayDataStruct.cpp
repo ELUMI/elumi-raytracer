@@ -23,8 +23,8 @@ ArrayDataStruct::~ArrayDataStruct() {
 }
 
 IAccDataStruct::IntersectionData ArrayDataStruct::findClosestIntersection(Ray ray) {
-  vec3 o = ray.getPos();
-  vec3 d = ray.getDir();
+  vec3 o = ray.getPosition();
+  vec3 d = ray.getDirection();
 
   for(int i = 0; i < triangles.size(); i++) {
     vec3* vertices = triangles.at(i)->getVertices();

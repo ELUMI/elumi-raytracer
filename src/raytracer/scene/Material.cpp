@@ -9,6 +9,8 @@
 
 namespace raytracer {
 
+Material::Material(){}
+
 Material::Material(int id) {
 	this->id = id;
 
