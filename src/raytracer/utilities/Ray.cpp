@@ -20,18 +20,18 @@ Ray::Ray(vec3 position, vec3 direction) {
 Ray::~Ray() {
 }
 
-Ray Ray::generateRay(vec3 startPosition, vec3 endPosition) {
-  vec3 direction = endPostion - startPosition;
+Ray Ray::generateRay(vec3 start_position, vec3 end_position) {
+  vec3 direction = end_position - start_position;
   direction = normalize(direction);
 
-  return Ray(startPosition,direction);
+  return Ray(start_position,direction);
 }
 
-vec3 Ray::getPosition() {
+const vec3& Ray::getPosition() {
   return position;
 }
 
-vec3 Ray::getDirection() {
+const vec3& Ray::getDirection() {
   return direction;
 }
 
