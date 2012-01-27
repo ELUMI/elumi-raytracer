@@ -10,20 +10,20 @@
 
 namespace raytracer {
 
-Ray::Ray(vec3 pos, vec3 dir) {
-  Ray::pos = pos;
-  Ray::dir = dir;
+Ray::Ray(vec3 position, vec3 direction) {
+  Ray::pos = position;
+  Ray::dir = direction;
 }
 
 Ray::~Ray() {
 }
 
-Ray::getPos() {
-  return pos;
+vec3 Ray::getPos() {
+  return position;
 }
 
-Ray::getDir() {
-  return dir;
+vec3 Ray::getDir() {
+  return direction;
 }
 
 }

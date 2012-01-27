@@ -16,15 +16,15 @@ namespace raytracer {
 
 class Ray {
 public:
-	Ray(vec3 pos, vec3 dir);
+	Ray(vec3 position, vec3 direction);
 	virtual ~Ray();
 
-  vec3 getPos();
-  vec3 getDir();
+  vec3 getPosition();
+  vec3 getDirection();
 
 private:
-  vec3 pos;
-  vec3 dir;
+  vec3 position;
+  vec3 direction;
 };
 
 }
