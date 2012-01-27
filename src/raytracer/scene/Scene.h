@@ -32,7 +32,7 @@ private:
 	std::vector<ILight> m_lights;
 	std::vector<Material> m_materials;
 
-	//IAccDataStructe
+	//IAccDataStructe m_acc_data_struct;
 };
 
 }
