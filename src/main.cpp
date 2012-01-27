@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
     raytracer::Settings settings;
     settings.width = 300;
     settings.height = 300;
-    uint8_t bgc[4] = {255,0,255,255};
+    uint8_t bgc[4] = {0,50,100,255};
     settings.backgroundColor = bgc;
 
 
@@ -51,11 +51,21 @@ int main(int argc, char* argv[]) {
     uint8_t* buffer = (uint8_t *) calloc (sizeof (uint8_t), width * height * 4);
     for(int i=0;i<height*width*4;i+=4)
     {
-      buffer[i] = settings.backgroundColor[0];
-      buffer[i+1] = settings.backgroundColor[1];
-      buffer[i+2] = settings.backgroundColor[2];
+      if(i<10000){
+      buffer[i] = 255;
+      buffer[i+1] = 0;
+      buffer[i+2] = 0;
       buffer[i+3] = settings.backgroundColor[3];
-    }
+      }
+      else
+      {
+        buffer[i] = settings.backgroundColor[0];
+              buffer[i+1] = settings.backgroundColor[1];
+              buffer[i+2] = settings.backgroundColor[2];
+              buffer[i+3] = settings.backgroundColor[3];
+      }
+
+      }
 
     /* EXPORTER
      ***************** */
@@ -75,7 +85,7 @@ int main(int argc, char* argv[]) {
         //OpenGl rendering goes here...d
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glDrawPixels(300,300,GL_RGBA,GL_UNSIGNED_INT_8_8_8_8,buffer);
+        glDrawPixels(300,300,GL_RGBA,GL_UNSIGNED_INT_8_8_8_8_REV,buffer);
 
         //Swap front and back rendering buffers
         glfwSwapBuffers();

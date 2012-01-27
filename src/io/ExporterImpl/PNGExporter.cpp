@@ -101,7 +101,7 @@ int PNGExporter::exportImage(const char* filename, int width, int height, uint8_
   }
   png_free (png_ptr, row_pointers);
 
-  png_failure:
+  //png_failure:
   png_create_info_struct_failed:
      png_destroy_write_struct (&png_ptr, &info_ptr);
   png_create_write_struct_failed:
