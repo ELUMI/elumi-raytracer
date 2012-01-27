@@ -26,11 +26,12 @@ IAccDataStruct::IntersectionData ArrayDataStruct::findClosestIntersection(Ray ra
   vec3 o = ray.getPosition();
   vec3 d = ray.getDirection();
 
-  Triangle* closest = null;
+  Triangle* closest_tri = NULL;
   float closest_dist = -1;
+  vec3 p;
 
   for(int i = 0; i < triangles.size(); i++) {
-    Triangle* cur_triangle triangles.at(i);
+    Triangle* cur_triangle = triangles.at(i);
     vec3* vertices = cur_triangle->getVertices();
     vec3 v0 = *vertices;
     vec3 v1 = *(vertices + 1);
@@ -49,9 +50,15 @@ IAccDataStruct::IntersectionData ArrayDataStruct::findClosestIntersection(Ray ra
     float u = res.y;
     float v = res.z;
 
-    if(u >= 0 && v >= 0 && u + v <= 1) {  // Intersection
-      if(closest == null) {
-        closest = cur_triangle;
+    float dist = distance(o, p);
+
+    if(u >= 0 && v >= 0 && u + v <= 1) {  // Intersection!
+      if(closest == null || dist < closest_dist) {
+        closest_tri = cur_triangle;
+        closest_pos = o + td;
+        closest_dist = dist;
+      } else {
+        
       }
     }
   }
