@@ -5,17 +5,25 @@
  *      Author: david
  */
 
+#include "glm/glm.hpp"
 #include "Ray.h"
 
 namespace raytracer {
 
-Ray::Ray() {
-	// TODO Auto-generated constructor stub
-
+Ray::Ray(vec3 pos, vec3 dir) {
+  Ray::pos = pos;
+  Ray::dir = dir;
 }
 
 Ray::~Ray() {
-	// TODO Auto-generated destructor stub
+}
+
+Ray::getPos() {
+  return pos;
+}
+
+Ray::getDir() {
+  return dir;
 }
 
 }

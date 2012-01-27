@@ -11,11 +11,12 @@ namespace raytracer {
 
 class ArrayDataStruct : public IAccDataStruct {
 public:
-  ArrayDataStruct();
+  ArrayDataStruct(int size = 10000);
   virtual ~ArrayDataStruct();
 
-  Triangle findClosestIntersection(Ray ray);
+  IAccDataStruct::IntersectionData findClosestIntersection(Ray ray);
   void addData(Triangle* new_triangles, int length);
+
 
 private:
   std::vector<Triangle*> triangles;
