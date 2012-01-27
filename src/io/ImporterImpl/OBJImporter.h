@@ -9,7 +9,7 @@
 #define OBJIMPORTER_H_
 
 #include "../IImporter.h"
-#include <obj_loader.h>
+#include "OBJImporterImpl/obj_loader.h"
 
 namespace raytracer {
 
@@ -19,10 +19,10 @@ public:
 		virtual ~OBJImporter();
 
 		void loadFile(char* filename);
-		Triangle** getTriangleList();
+		Triangle* getTriangleList();
 		int getTriangleCount();
 
-		Material** getMaterialList();
+		Material* getMaterialList();
 		int getMaterialCount();
 
 		Camera* getCamera();
@@ -31,10 +31,10 @@ public:
 		int getLightQuadList();
 		int getLightDiscList();
 private:
-		Triangle** triangles;
+		Triangle* triangles;
 		int triangle_count;
 
-		Material** materials;
+		Material* materials;
 		int material_count;
 
 		Camera* camera;
