@@ -19,12 +19,6 @@ SimpleTracer::~SimpleTracer() {
 }
 
 void SimpleTracer::trace(Ray* rays, int length, unsigned char* buffer) {
-  scene.
-  //IAccDataStruct *ads = scene.
-
-  for(int i = 0; i < length; i++) {
-    //rays[i]
-  }
 }
 
 void SimpleTracer::shade() {
