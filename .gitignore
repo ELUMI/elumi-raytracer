@@ -1,6 +1,13 @@
 # Finder related file
 .DS_Store
 
+# Eclipse files
+.project
+.cproject
+Debug/**/*
+Release/**/*
+.settings/**/*
+
 # Typical swap buffers
 *~
 
@@ -11,9 +18,5 @@
 # Binary files
 *.[oa]
 
-# Eclipse files
-.project
-.cproject
-Debug/**/*
-Release/**/*
-.settings/**/*
+# Mysterious files...
+*.gch
