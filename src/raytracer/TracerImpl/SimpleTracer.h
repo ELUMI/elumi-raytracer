@@ -19,11 +19,13 @@ public:
   SimpleTracer(Scene* scene);
   virtual ~SimpleTracer();
 
-  void trace(Ray* rays, int length, unsigned char* buffer);
-private:
-  void shade();
+  void trace(Ray* rays, int length/*, uint8_t* buffer*/);
 
-  const Scene* scene;
+private:
+  Color shade();
+
+  Scene* scene;
+  uint8_t* buffer;
 };
 
 }

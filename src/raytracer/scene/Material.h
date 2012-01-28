@@ -9,6 +9,7 @@
 #define MATERIAL_H_
 
 #include <stdint.h>
+#include "../IShader.h"
 
 namespace raytracer {
 
@@ -20,14 +21,13 @@ class Material {
 
 public:
   Material();
-  Material(int id);
 	virtual ~Material();
 
 	Color getColor();
 
 private:
-	int id;
 	Color color;
+	IShader* shader;
 
 };
 

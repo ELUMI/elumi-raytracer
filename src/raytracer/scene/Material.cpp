@@ -9,11 +9,7 @@
 
 namespace raytracer {
 
-Material::Material(){}
-
-Material::Material(int id) {
-	this->id = id;
-
+Material::Material() {
 	// Default grey color
 	this->color.r = 100;
 	this->color.g = 100;

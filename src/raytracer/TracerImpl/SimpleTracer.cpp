@@ -6,22 +6,35 @@
  */
 
 #include "SimpleTracer.h"
+#include <stdint.h>
 
 namespace raytracer {
 
+//ITracer::~ITracer() {}
+
 SimpleTracer::SimpleTracer(Scene* scene) {
-  // TODO Auto-generated constructor stub
   SimpleTracer::scene = scene;
 }
 
 SimpleTracer::~SimpleTracer() {
-  // TODO Auto-generated destructor stub
+
 }
 
-void SimpleTracer::trace(Ray* rays, int length, unsigned char* buffer) {
+void SimpleTracer::trace(Ray* rays, int length/*, uint8_t* buffer*/) {
+  for (size_t i=0; i<length; ++i) {
+    Color color;
+    try {
+      IAccDataStruct::IntersectionData intersection_data = scene->getAccDataStruct()->findClosestIntersection(rays[i]);
+
+      color = shade()
+    } catch (NoIntersectionException e) {
+      color = scene->getBackroundColor();
+    }
+
+  }
 }
 
-void SimpleTracer::shade() {
+Color SimpleTracer::shade() {
 
 }
 

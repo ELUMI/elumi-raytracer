@@ -12,7 +12,6 @@ namespace raytracer {
 
 Renderer::Renderer()
   : m_scene() {
-  //m_settings =
   m_tracer = new SimpleTracer(&m_scene);
 }
 

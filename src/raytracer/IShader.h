@@ -13,6 +13,8 @@ namespace raytracer {
 class IShader {
 public:
 	virtual ~IShader();
+
+	Color shade()
 };
 
 }

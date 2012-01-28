@@ -8,10 +8,17 @@
 #ifndef IACCDATASTRUCT_H_
 #define IACCDATASTRUCT_H_
 
+#include <stdexcept>
 #include "utilities/Triangle.h"
 #include "utilities/Ray.h"
+using std::runtime_error;
 
 namespace raytracer {
+
+class NoIntersectionException : public runtime_error {
+public:
+  NoIntersectionException() : runtime_error("No intersection occured.") {}
+};
 
 class IAccDataStruct {
 public:
@@ -21,9 +28,9 @@ public:
     vec3 normal;
   };
 
-  IAccDataStruct();
+//  IAccDataStruct();
 	virtual ~IAccDataStruct()= 0;
-	virtual IntersectionData findClosestIntersection(Ray ray)=0;
+	virtual IntersectionData findClosestIntersection(Ray ray) =0;
 	virtual void addData(Triangle* triangles, int length) = 0;
 };
 

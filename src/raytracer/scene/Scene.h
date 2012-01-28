@@ -30,10 +30,12 @@ public:
 	void loadMaterials(Material* materials, int length);
 
 	const Camera& getCamera();
-	const IAccDataStruct* getAccDataStruct();
+	IAccDataStruct* getAccDataStruct();
 
 	const std::vector<ILight*>& getLightVector();
 	const std::vector<Material*>& getMaterialVector();
+
+	const Color getBackroundColor();
 
 
 private:
@@ -41,6 +43,7 @@ private:
 	IAccDataStruct* m_acc_data_struct;
 	std::vector<ILight*> m_lights;
 	std::vector<Material*> m_materials;
+	Color background_color;
 };
 
 }
