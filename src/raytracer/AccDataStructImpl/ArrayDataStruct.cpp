@@ -13,7 +13,9 @@ namespace raytracer {
 
 IAccDataStruct::~IAccDataStruct(){}
 
-ArrayDataStruct::ArrayDataStruct(){}
+ArrayDataStruct::ArrayDataStruct() {
+  triangles.reserve(10000);
+}
 
 ArrayDataStruct::ArrayDataStruct(int size) {
   triangles.reserve(size);
@@ -22,7 +24,9 @@ ArrayDataStruct::~ArrayDataStruct() {
 
 }
 
-IAccDataStruct::IntersectionData ArrayDataStruct::findClosestIntersection(Ray ray) {
+IAccDataStruct::IntersectionData 
+  ArrayDataStruct::findClosestIntersection(Ray ray) {
+  
   vec3 o = ray.getPosition();
   vec3 d = ray.getDirection();
 
@@ -58,7 +62,13 @@ IAccDataStruct::IntersectionData ArrayDataStruct::findClosestIntersection(Ray ra
         closest_pos = o + t * d;
         closest_dist = dist;
       } else {
-        
+        vec3 v1v0 = v1 - v2;
+        vec3 v2v1 = v2 - v1;
+        vec3 v2v0 = v2 - v0;
+        vec3 pv0 = closest_pos - v0;
+        vec3 pv1 = closest_pos - v1;
+
+
       }
     }
   }
