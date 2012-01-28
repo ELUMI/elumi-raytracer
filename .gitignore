@@ -20,3 +20,6 @@ Release/**/*
 
 # Mysterious files...
 *.gch
+
+# Xcode files
+*.xcodeproj
