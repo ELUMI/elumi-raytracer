@@ -51,8 +51,12 @@ Material::~Material() {
 
 }
 
+void Material::setColor(glm::vec4 color) {
+  Material::color = color;
+}
+
 glm::vec4 Material::getColor() {
-	return Material::shader->shade();
+  return color;
 }
 
 }

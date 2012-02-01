@@ -38,6 +38,7 @@ public:
   		float reflection ,float index_of_reflection,std::string alpha_texture_map);
   virtual ~Material();
 
+  void setColor(glm::vec4 color);
   glm::vec4 getColor();
 
 private:

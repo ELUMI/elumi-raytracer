@@ -5,6 +5,8 @@
  *      Author: david
  */
 
+#include <iostream>
+
 #include "SimpleTracer.h"
 #include <stdint.h>
 
@@ -43,22 +45,21 @@ vec4 SimpleTracer::traceHelper(Ray* ray, int levels) {
   vec4 new_color;
 
   IAccDataStruct::IntersectionData intersection_data = scene->getAccDataStruct()->findClosestIntersection(*ray);
-  //if (intersection_data.triangle == NULL) {
+  if (intersection_data.triangle == NULL) {
     color = background_color;
-    new_color = vec4(0,0,0,255);
-//  //} else {
-//
-//
-//    //SHADER
-//    Color color  = intersection_data.triangle->getMaterial()->getColor();
-//
-//    Ray refl = ray->reflection(*ray, intersection_data.normal, intersection_data.interPoint);
-//    new_color = traceHelper( &refl );
-//  }
+  } else {
 
-  color.r += int(0.5f * new_color.r);
-  color.g += int(0.5f * new_color.g);
-  color.b += int(0.5f * new_color.b);
+
+    //SHADER
+    //vec4 color  = intersection_data.triangle->getMaterial()->getColor();
+    color = vec4(255,0,0,255);
+    //Ray refl = ray->reflection(*ray, intersection_data.normal, intersection_data.interPoint);
+    //new_color = traceHelper( &refl );
+  }
+
+//  color.r += int(0.5f * new_color.r);
+//  color.g += int(0.5f * new_color.g);
+//  color.b += int(0.5f * new_color.b);
   //color.a += int(0.5f * new_color.a);
   return color;
 }
