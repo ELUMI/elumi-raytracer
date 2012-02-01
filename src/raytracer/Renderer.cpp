@@ -49,10 +49,10 @@ void Renderer::render() {
   Camera camera = m_scene.getCamera();
 
   //Create an up vector and align
-  vec3 up_vector = camera.getUpVector() * camera.getFov() * (1/camera.getAspectRatio());
+  vec3 up_vector = camera.getUpVector() * tan(camera.getFov()/2) * 2.0f * (1/camera.getAspectRatio());
 
   //Create an horizontal vector
-  vec3 horizontal_vector = cross(camera.getUpVector(), camera.getDirection()) * camera.getFov();
+  vec3 horizontal_vector = cross(camera.getUpVector(), camera.getDirection()) * tan(camera.getFov()/2) * 2.0f;
 
   //Create a vector for stepping vertically
   vec3 step_h_vector = up_vector * (1/((float)m_settings->height));
@@ -69,7 +69,7 @@ void Renderer::render() {
       //Create a ray for this pixel
       rays[w+h*m_settings->width] = Ray(camera.getPosition(),pixel_vector);
       //Step along the x-axis
-      cout << "x: " << pixel_vector.x << " y: " << pixel_vector.y << " z: " << pixel_vector.z << endl;
+      //cout << "x: " << pixel_vector.x << " y: " << pixel_vector.y << " z: " << pixel_vector.z << endl;
 
       pixel_vector -= step_w_vector;
     }

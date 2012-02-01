@@ -2,6 +2,8 @@
 #include <vector>
 #include <glm/glm.hpp>
 
+#include <iostream>
+
 #include "../IAccDataStruct.h"
 #include "ArrayDataStruct.h"
 #include "../utilities/Triangle.h"
@@ -26,7 +28,6 @@ ArrayDataStruct::~ArrayDataStruct() {
 
 IAccDataStruct::IntersectionData 
   ArrayDataStruct::findClosestIntersection(Ray ray) {
-  
   vec3 o = ray.getPosition();
   vec3 d = ray.getDirection();
 
@@ -45,8 +46,8 @@ IAccDataStruct::IntersectionData
     vec3 e2 = v2 - v0;
     vec3 s = o - v0;
 
-    vec3 dxe2 = d * e2;
-    vec3 sxe1 = s * e1;
+    vec3 dxe2 = cross(d, e2);
+    vec3 sxe1 = cross(s, e1);
     vec3 res = ( 1.0f /  dot(dxe2, e1) ) * 
       vec3( dot(sxe1, e2), dot(dxe2, s), dot(sxe1, d) );
 
@@ -65,20 +66,24 @@ IAccDataStruct::IntersectionData
     }
   }
 
-  vec3 v1v0 = closest_tri->getVertices()[1] - closest_tri->getVertices()[0];
-  vec3 v2v1 = closest_tri->getVertices()[2] - closest_tri->getVertices()[1];
-  vec3 v2v0 = closest_tri->getVertices()[2] - closest_tri->getVertices()[0];
-  vec3 pv0 = closest_pos - closest_tri->getVertices()[0];
-  vec3 pv1 = closest_pos - closest_tri->getVertices()[1];
-  
+  if(closest_dist == -1) {
+    return IntersectionData(NULL, vec3(), vec3());
+  }
+
+  vec3 v1v0 = *(closest_tri->getVertices()[1]) - *(closest_tri->getVertices()[0]);
+  vec3 v2v1 = *(closest_tri->getVertices()[2]) - *(closest_tri->getVertices()[1]);
+  vec3 v2v0 = *(closest_tri->getVertices()[2]) - *(closest_tri->getVertices()[0]);
+  vec3 pv0 = closest_pos - *(closest_tri->getVertices()[0]);
+  vec3 pv1 = closest_pos - *(closest_tri->getVertices()[1]);
+
   float a = length(cross(v1v0, v2v0));
   float a0 = length(cross(v2v1, pv1))/a;
   float a1 = length(cross(v2v0, pv0))/a;
   float a2 = length(cross(v1v0, pv0))/a;
 
-  vec3 inter_normal = a0 * closest_tri->getNormals()[0] + 
-                      a1 * closest_tri->getNormals()[1] + 
-                      a2 * closest_tri->getNormals()[2];
+  vec3 inter_normal = a0 * *(closest_tri->getNormals()[0]) +
+                      a1 * *(closest_tri->getNormals()[1]) +
+                      a2 * *(closest_tri->getNormals()[2]);
 
   return IntersectionData(closest_tri, closest_pos, inter_normal);
 }

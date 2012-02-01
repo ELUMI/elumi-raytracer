@@ -5,6 +5,8 @@
  *      Author: david
  */
 
+#include <iostream>
+
 #include "SimpleTracer.h"
 #include <stdint.h>
 
@@ -50,7 +52,7 @@ vec4 SimpleTracer::traceHelper(Ray* ray, int levels) {
 
     //SHADER
     //vec4 color  = intersection_data.triangle->getMaterial()->getColor();
-    color = vec4(0,0,255,255);
+    color = vec4(255,0,0,255);
     //Ray refl = ray->reflection(*ray, intersection_data.normal, intersection_data.interPoint);
     //new_color = traceHelper( &refl );
   }

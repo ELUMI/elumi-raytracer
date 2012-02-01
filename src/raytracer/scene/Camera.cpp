@@ -15,7 +15,7 @@ Camera::Camera() {
   m_direction = glm::vec3(0.0f, 0.0f, -1.0f);
   m_up_vector = glm::vec3(0.0f, 1.0f, 0.0f);
 
-  m_fov = 45.0f;
+  m_fov = 0.7845f;
   m_aspect_ratio = 4.0f/3.0f;
 }
 

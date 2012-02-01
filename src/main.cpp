@@ -29,8 +29,8 @@ int main(int argc, char* argv[]) {
     outputFileName = argv[2];
 
     raytracer::Settings settings;
-    settings.width = 300;
-    settings.height = 300;
+    settings.width = 50;
+    settings.height = 40;
     settings.backgroundColor[0] = 0;
     settings.backgroundColor[1] = 50;
     settings.backgroundColor[2] = 50;
@@ -39,9 +39,9 @@ int main(int argc, char* argv[]) {
     /* IMPORTER
      ***************** */
 
-//    raytracer::IImporter* importer = new raytracer::OBJImporter();
-//    importer->loadFile(inputFileName);
-//    std::vector<raytracer::Triangle*> triangles = importer->getTriangleList();
+    raytracer::IImporter* importer = new raytracer::OBJImporter();
+    importer->loadFile(inputFileName);
+    std::vector<raytracer::Triangle*> triangles = importer->getTriangleList();
 
     /*for(int i=0;i<triangles.size();++i)
     {
@@ -59,9 +59,9 @@ int main(int argc, char* argv[]) {
 
     std::vector<vec3*> verts, norms, texs;
 
-    vec3 v1 = vec3(0.0f, 0.0f, 0.0f);
-    vec3 v2 = vec3(1.0f, 0.0f, 0.0f);
-    vec3 v3 = vec3(0.0f, 1.0f, 0.0f);
+    vec3 v1 = vec3(-5.0f, -5.0f, 0.0f);
+    vec3 v2 = vec3(5.0f, 0.0f, 0.0f);
+    vec3 v3 = vec3(0.0f, 5.0f, 0.0f);
 
     verts.push_back( &v1 );
     verts.push_back( &v2 );
@@ -91,20 +91,19 @@ int main(int argc, char* argv[]) {
      ***************** */
 
     raytracer::Camera camera;
-    camera.setPosition(vec3(0.0f, 0.0f, -10.0f));
+    camera.setPosition(vec3(0.0f, 1.0f, 5.0f));
 //    vec3 pos = vec3(0,0,0);
 //    vec3 dir = vec3(0,0,1);
 //    vec3 up = vec3(0,1,0);
 //
 //    camera.set()
     raytracer::Renderer myRenderer(&settings);
-    //myRenderer.loadSettings(settings);
     myRenderer.loadCamera(camera);
     if (!triangles2.empty())
-      myRenderer.loadTriangles(triangles2);
+      myRenderer.loadTriangles(triangles);
 
 
-    std::cout << std::endl << "BBBBBBBBB" << std::endl;
+    std::cout << std::endl << "BBBBadsafsdghdfBBBBB" << std::endl;
 
     myRenderer.render();
 
@@ -168,7 +167,7 @@ int main(int argc, char* argv[]) {
     //      //Close window and terminate GLFW
     //      glfwTerminate();
 
-    //delete importer;
+    delete importer;
     delete exporter;
     std::cout << std::endl << "end of PROGRAM" << std::endl;
   }
