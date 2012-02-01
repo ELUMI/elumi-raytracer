@@ -34,7 +34,6 @@ public:
     NoIntersectionException() : std::runtime_error("No intersection!") {};
   };
 
-  IAccDataStruct();
 	virtual ~IAccDataStruct()= 0;
 	virtual IntersectionData findClosestIntersection(Ray ray)=0;
 	virtual void addData(Triangle* triangles, int length) = 0;
