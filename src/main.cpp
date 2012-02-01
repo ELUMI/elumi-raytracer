@@ -26,6 +26,7 @@ int main(int argc, char* argv[]) {
     char* inputFileName, *outputFileName, *settingsFile;
     inputFileName  = argv[1];
     outputFileName = argv[2];
+    std::cout << std::endl << "eAAAAAAAAAAAAAAAAAAAA" << std::endl;
 
     raytracer::Settings settings;
     settings.width = 300;
@@ -47,40 +48,49 @@ int main(int argc, char* argv[]) {
      ***************** */
 
     raytracer::Camera camera;
-
-    raytracer::Renderer myRenderer;
-    myRenderer.loadSettings(settings);
+//    vec3 pos = vec3(0,0,0);
+//    vec3 dir = vec3(0,0,1);
+//    vec3 up = vec3(0,1,0);
+//
+//    camera.set()
+    raytracer::Renderer myRenderer(&settings);
+    //myRenderer.loadSettings(settings);
     myRenderer.loadCamera(camera);
     if (triangles != NULL)
       myRenderer.loadTriangles(triangles, nr_of_triangles);
     //myRenderer.loadLights();
 
+    std::cout << std::endl << "BBBBBBBBB" << std::endl;
+
     myRenderer.render();
 
+    uint8_t* buffer = myRenderer.getFloatArray();
+
+    std::cout << std::endl << "CCCCCCCCCCCCCCCCc" << std::endl;
 
     // testbuffer
-    uint8_t* buffer = (uint8_t *) calloc (sizeof (uint8_t), settings.width * settings.height * 4);
-    for(int i=0;i<settings.height*settings.width*4;i+=4)
-    {
-      if (i<10000){
-        buffer[i] = 255;
-        buffer[i+1] = 0;
-        buffer[i+2] = 0;
-        buffer[i+3] = settings.backgroundColor[3];
-      } else if (i>=10000 && i<30000) {
-
-        buffer[i] = 0;
-        buffer[i+1] = 0;
-        buffer[i+2] = 255;
-        buffer[i+3] = settings.backgroundColor[3];
-      } else {
-        buffer[i] = settings.backgroundColor[0];
-        buffer[i+1] = settings.backgroundColor[1];
-        buffer[i+2] = settings.backgroundColor[2];
-        buffer[i+3] = settings.backgroundColor[3];
-      }
-
-    }
+//    uint8_t* buffer = (uint8_t *) calloc (sizeof (uint8_t), settings.width * settings.height * 4);
+//    for(int i=0;i<settings.height*settings.width*4;i+=4)
+//    {
+//      if (i<10000){
+//        buffer[i] = 255;
+//        buffer[i+1] = 0;
+//        buffer[i+2] = 0;
+//        buffer[i+3] = settings.backgroundColor[3];
+//      } else if (i>=10000 && i<30000) {
+//
+//        buffer[i] = 0;
+//        buffer[i+1] = 0;
+//        buffer[i+2] = 255;
+//        buffer[i+3] = settings.backgroundColor[3];
+//      } else {
+//        buffer[i] = settings.backgroundColor[0];
+//        buffer[i+1] = settings.backgroundColor[1];
+//        buffer[i+2] = settings.backgroundColor[2];
+//        buffer[i+3] = settings.backgroundColor[3];
+//      }
+//
+//    }
 
     /* EXPORTER
      ***************** */

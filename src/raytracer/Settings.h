@@ -10,8 +10,10 @@
 
 #define DEFAULT_PIXEL_BITS 4 // RGBA
 
+#include <glm/glm.hpp>
 #include <stdint.h>
-#include <iostream>
+
+using namespace glm;
 
 namespace raytracer {
 
@@ -21,22 +23,12 @@ struct Settings {
     width = 640;
     height = 480;
 
-    backgroundColor = new uint8_t[DEFAULT_PIXEL_BITS];
-
-    backgroundColor[0] = 0;
-    backgroundColor[1] = 0;
-    backgroundColor[2] = 0;
-    backgroundColor[3] = 255;
-
-  }
-
-  ~Settings() {
-    delete [] backgroundColor;
+    backgroundColor = vec4(0,0,0,255);
   }
 
   int width;
   int height;
-  uint8_t* backgroundColor;
+  vec4 backgroundColor;
 
 };
 

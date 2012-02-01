@@ -13,12 +13,6 @@ namespace raytracer {
 Scene::Scene()
   : m_camera(), m_lights(), m_materials() {
   m_acc_data_struct = new ArrayDataStruct();
-
-  // Detta ska komma från settings skickat hit från renderer typ
-  background_color.r=0;
-  background_color.g=0;
-  background_color.b=255;
-  background_color.a=255;
 }
 
 Scene::~Scene() {}
@@ -59,8 +53,5 @@ IAccDataStruct* Scene::getAccDataStruct() {
   return m_acc_data_struct;
 }
 
-const Color Scene::getBackroundColor() {
-  return background_color;
-}
 
 }

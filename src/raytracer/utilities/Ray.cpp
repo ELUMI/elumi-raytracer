@@ -11,6 +11,10 @@
 namespace raytracer {
 
 
+Ray::Ray() {
+  Ray::position = vec3(0,0,0);
+  Ray::direction = vec3(0,0,1);
+}
 
 Ray::Ray(vec3 position, vec3 direction) {
   Ray::position = position;

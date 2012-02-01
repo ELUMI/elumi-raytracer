@@ -20,7 +20,7 @@ public:
 	virtual ~ITracer() {};
 	virtual void trace(Ray* rays, int length, unsigned char* buffer) = 0;
 private:
-	Color traceHelper(Ray* ray);
+	vec4 traceHelper(Ray* ray);
 
 };
 

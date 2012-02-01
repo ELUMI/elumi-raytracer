@@ -21,7 +21,7 @@ Material::~Material() {
 
 }
 
-Color Material::getColor() {
+vec4 Material::getColor() {
   return color;
 }
 

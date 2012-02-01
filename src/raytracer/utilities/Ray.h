@@ -16,6 +16,7 @@ namespace raytracer {
 
 class Ray {
 public:
+  Ray();
 	Ray(vec3 position, vec3 direction);
 	virtual ~Ray();
 

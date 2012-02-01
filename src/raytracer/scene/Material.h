@@ -9,9 +9,10 @@
 #define MATERIAL_H_
 
 #include <stdint.h>
-//#include <glm/glm.hpp>
-#include "../utilities/Color.h"
+#include <glm/glm.hpp>
 #include "../IShader.h"
+
+using namespace glm;
 
 namespace raytracer {
 
@@ -35,10 +36,10 @@ public:
   Material();
   virtual ~Material();
 
-  Color getColor();
+  vec4 getColor();
 
 private:
-  Color color;
+  vec4 color;
 
   IShader* shader;
 

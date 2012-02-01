@@ -23,7 +23,6 @@ public:
 	Scene();
 	virtual ~Scene();
 
-
 	void loadTriangles(Triangle* triangles, int length, bool overwrite=false);
 	void loadCamera(Camera camera);
 	void loadLights(ILight* lights, int length, bool overwrite=false);
@@ -35,15 +34,11 @@ public:
 	const std::vector<ILight*>& getLightVector();
 	const std::vector<Material*>& getMaterialVector();
 
-	const Color getBackroundColor();
-
-
 private:
 	Camera m_camera;
 	IAccDataStruct* m_acc_data_struct;
 	std::vector<ILight*> m_lights;
 	std::vector<Material*> m_materials;
-	Color background_color;
 };
 
 }
