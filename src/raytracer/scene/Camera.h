@@ -10,6 +10,8 @@
 
 #include <glm/glm.hpp>
 
+using namespace glm;
+
 namespace raytracer {
 
 class Camera {
@@ -18,6 +20,8 @@ public:
 	virtual ~Camera();
 
 	void set(glm::vec3 position, glm::vec3 rotaion, glm::vec3 normal, float fov, float aspect_ratio);
+
+	void setPosition(vec3 position);
 
 	const glm::vec3& getPosition();
 	const glm::vec3& getDirection();

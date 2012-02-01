@@ -36,6 +36,7 @@ public:
   Material();
   virtual ~Material();
 
+  void setColor(vec4 color);
   vec4 getColor();
 
 private:

@@ -69,6 +69,8 @@ void Renderer::render() {
       //Create a ray for this pixel
       rays[w+h*m_settings->width] = Ray(camera.getPosition(),pixel_vector);
       //Step along the x-axis
+      cout << "x: " << pixel_vector.x << " y: " << pixel_vector.y << " z: " << pixel_vector.z << endl;
+
       pixel_vector -= step_w_vector;
     }
     //Reset pixel vector horizontally

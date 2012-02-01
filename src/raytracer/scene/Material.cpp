@@ -21,6 +21,10 @@ Material::~Material() {
 
 }
 
+void Material::setColor(vec4 color) {
+  Material::color = color;
+}
+
 vec4 Material::getColor() {
   return color;
 }

@@ -37,6 +37,6 @@ void Triangle::set(vector<vec3*> vertices,vector<vec3*> normals,vector<vec3*> te
 const vector<vec3*>& Triangle::getVertices() {return Triangle::vertices;}
 const vector<vec3*>& Triangle::getNormals() {return Triangle::normals;}
 const vector<vec3*>& Triangle::getTextures() {return Triangle::textures;}
-const Material* Triangle::getMaterial() {return Triangle::material;}
+Material* Triangle::getMaterial() {return Triangle::material;}
 
 }

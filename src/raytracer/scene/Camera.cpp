@@ -32,6 +32,10 @@ void Camera::set(glm::vec3 position, glm::vec3 direction, glm::vec3 normal, floa
   m_aspect_ratio = aspect_ratio;
 }
 
+void Camera::setPosition(vec3 position) {
+  Camera::m_position = position;
+}
+
 const glm::vec3& Camera::getPosition() {
   return m_position;
 }

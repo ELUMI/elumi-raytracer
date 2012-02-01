@@ -28,7 +28,7 @@ public:
 	const vector<vec3*>& getVertices();
 	const vector<vec3*>& getNormals();
 	const vector<vec3*>& getTextures();
-	const Material* getMaterial();
+	Material* getMaterial();
 
 private:
 	vector<vec3*> vertices;

@@ -8,6 +8,7 @@
 #include <string>
 
 using namespace std;
+using namespace raytracer;
 
 int main(int argc, char* argv[]) {
 
@@ -26,24 +27,23 @@ int main(int argc, char* argv[]) {
     char* inputFileName, *outputFileName, *settingsFile;
     inputFileName  = argv[1];
     outputFileName = argv[2];
-    std::cout << std::endl << "eAAAAAAAAAAAAAAAAAAAA" << std::endl;
 
     raytracer::Settings settings;
     settings.width = 300;
     settings.height = 300;
-    settings.backgroundColor[0] = 255;
-    settings.backgroundColor[1] = 255;
-    settings.backgroundColor[2] = 0;
+    settings.backgroundColor[0] = 0;
+    settings.backgroundColor[1] = 50;
+    settings.backgroundColor[2] = 50;
     settings.backgroundColor[3] = 255;
 
     /* IMPORTER
      ***************** */
 
-    raytracer::IImporter* importer = new raytracer::OBJImporter();
-    importer->loadFile(inputFileName);
-    std::vector<raytracer::Triangle*> triangles = importer->getTriangleList();
+//    raytracer::IImporter* importer = new raytracer::OBJImporter();
+//    importer->loadFile(inputFileName);
+//    std::vector<raytracer::Triangle*> triangles = importer->getTriangleList();
 
-    for(int i=0;i<triangles.size();++i)
+    /*for(int i=0;i<triangles.size();++i)
     {
       vec3* vec0 = triangles[i]->getVertices()[0];
       vec3* vec1 = triangles[i]->getVertices()[1];
@@ -52,12 +52,46 @@ int main(int argc, char* argv[]) {
       std::cout << vec0->x << ", " << vec0->y << ", " << vec0->z << std::endl;
       std::cout << vec1->x << ", " << vec1->y << ", " << vec1->z << std::endl;
       std::cout << vec2->x << ", " << vec2->y << ", " << vec2->z << std::endl << std::endl;
-    }
+    }*/
+
+    Material mat;
+    mat.setColor(vec4(255,0,0,255));
+
+    std::vector<vec3*> verts, norms, texs;
+
+    vec3 v1 = vec3(0.0f, 0.0f, 0.0f);
+    vec3 v2 = vec3(1.0f, 0.0f, 0.0f);
+    vec3 v3 = vec3(0.0f, 1.0f, 0.0f);
+
+    verts.push_back( &v1 );
+    verts.push_back( &v2 );
+    verts.push_back( &v3 );
+
+
+    vec3 n1 = vec3(0.0f, 0.0f, 1.0f);
+    vec3 n2 = vec3(0.0f, 0.0f, 1.0f);
+    vec3 n3 = vec3(0.0f, 0.0f, 1.0f);
+
+    norms.push_back( &n1 );
+    norms.push_back( &n2 );
+    norms.push_back( &n3 );
+
+
+    Triangle tri;
+    tri.set(verts,norms,texs,&mat);
+
+
+
+    std::vector<raytracer::Triangle*> triangles2;
+    triangles2.push_back(&tri);
+    std::cout << std::endl << "eAAAAAAAAAAAAAAAAAAAA" << std::endl;
+
 
     /* RENDERER
      ***************** */
 
     raytracer::Camera camera;
+    camera.setPosition(vec3(0.0f, 0.0f, -10.0f));
 //    vec3 pos = vec3(0,0,0);
 //    vec3 dir = vec3(0,0,1);
 //    vec3 up = vec3(0,1,0);
@@ -66,9 +100,9 @@ int main(int argc, char* argv[]) {
     raytracer::Renderer myRenderer(&settings);
     //myRenderer.loadSettings(settings);
     myRenderer.loadCamera(camera);
-//    if (triangles.empty())
-//      myRenderer.loadTriangles(triangles, nr_of_triangles);
-    //myRenderer.loadLights();
+    if (!triangles2.empty())
+      myRenderer.loadTriangles(triangles2);
+
 
     std::cout << std::endl << "BBBBBBBBB" << std::endl;
 
@@ -134,7 +168,7 @@ int main(int argc, char* argv[]) {
     //      //Close window and terminate GLFW
     //      glfwTerminate();
 
-    delete importer;
+    //delete importer;
     delete exporter;
     std::cout << std::endl << "end of PROGRAM" << std::endl;
   }
