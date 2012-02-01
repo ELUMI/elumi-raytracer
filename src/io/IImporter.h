@@ -8,6 +8,8 @@
 #ifndef IIMPORTER_H_
 #define IIMPORTER_H_
 
+#include <vector>
+
 #include "../raytracer/utilities/Triangle.h"
 #include "../raytracer/scene/Camera.h"
 #include "../raytracer/scene/Material.h"
@@ -21,7 +23,7 @@ public:
 
 	virtual void loadFile(char* filename) = 0;
 
-	virtual Triangle* getTriangleList() =0;
+	virtual std::vector<Triangle*>& getTriangleList() =0;
 	virtual int getTriangleCount() =0;
 
 	virtual Material* getMaterialList() = 0;

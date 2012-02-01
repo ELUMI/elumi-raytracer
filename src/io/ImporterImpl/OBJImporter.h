@@ -19,7 +19,7 @@ public:
 		virtual ~OBJImporter();
 
 		void loadFile(char* filename);
-		Triangle* getTriangleList();
+		std::vector<Triangle*>& getTriangleList();
 		int getTriangleCount();
 
 		Material* getMaterialList();
@@ -31,7 +31,7 @@ public:
 		int getLightQuadList();
 		int getLightDiscList();
 private:
-		Triangle* triangles;
+		std::vector<Triangle*> triangles;
 		int triangle_count;
 
 		Material* materials;
