@@ -13,7 +13,7 @@ namespace raytracer {
 class ArrayDataStruct : public IAccDataStruct {
 public:
   ArrayDataStruct();
-  ArrayDataStruct(int size = 10000);
+  ArrayDataStruct(int size);
   virtual ~ArrayDataStruct();
 
   IAccDataStruct::IntersectionData findClosestIntersection(Ray ray);
