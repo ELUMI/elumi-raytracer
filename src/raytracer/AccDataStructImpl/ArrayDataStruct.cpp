@@ -61,19 +61,26 @@ IAccDataStruct::IntersectionData
         closest_tri = cur_triangle;
         closest_pos = o + t * d;
         closest_dist = dist;
-      } else {
-        vec3 v1v0 = v1 - v2;
-        vec3 v2v1 = v2 - v1;
-        vec3 v2v0 = v2 - v0;
-        vec3 pv0 = closest_pos - v0;
-        vec3 pv1 = closest_pos - v1;
-
-
       }
     }
   }
 
-  return IntersectionData();
+  vec3 v1v0 = closest_tri->getVertices()[1] - closest_tri->getVertices()[0];
+  vec3 v2v1 = closest_tri->getVertices()[2] - closest_tri->getVertices()[1];
+  vec3 v2v0 = closest_tri->getVertices()[2] - closest_tri->getVertices()[0];
+  vec3 pv0 = closest_pos - closest_tri->getVertices()[0];
+  vec3 pv1 = closest_pos - closest_tri->getVertices()[1];
+  
+  float a = length(cross(v1v0, v2v0));
+  float a0 = length(cross(v2v1, pv1))/a;
+  float a1 = length(cross(v2v0, pv0))/a;
+  float a2 = length(cross(v1v0, pv0))/a;
+
+  vec3 inter_normal = a0 * closest_tri->getNormals()[0] + 
+                      a1 * closest_tri->getNormals()[1] + 
+                      a2 * closest_tri->getNormals()[2];
+
+  return IntersectionData(closest_tri, closest_pos, inter_normal);
 }
 
 void ArrayDataStruct::setData(std::vector<Triangle*> new_triangles) {
