@@ -18,11 +18,9 @@ public:
   /*ITracer();
   ITracer(Scene* scene);*/
 	virtual ~ITracer() {};
-	virtual void trace(Ray* rays, int length/*, unsigned char* buffer*/) = 0;
+	virtual void trace(Ray* rays, int length, unsigned char* buffer) = 0;
 private:
 	Color traceHelper(Ray* ray);
-
-	//virtual Color shade(Ray* ray, Material* material,) = 0;
 
 };
 

@@ -19,7 +19,7 @@ public:
   SimpleTracer(Scene* scene);
   virtual ~SimpleTracer();
 
-  void trace(Ray* rays, int length/*, uint8_t* buffer*/);
+  void trace(Ray* rays, int length, uint8_t* buffer);
 
 private:
   Color traceHelper(Ray* ray, int levels=3);

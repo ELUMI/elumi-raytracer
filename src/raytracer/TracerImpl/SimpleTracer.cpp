@@ -20,7 +20,10 @@ SimpleTracer::~SimpleTracer() {
 
 }
 
-void SimpleTracer::trace(Ray* rays, int length/*, uint8_t* buffer*/) {
+void SimpleTracer::trace(Ray* rays, int length, uint8_t* buffer) {
+
+  SimpleTracer::buffer = buffer;
+
   for (size_t i=0; i<length; ++i) {
     Color c = traceHelper(&rays[i]);
     buffer[i*4] = max(255, int(c.r));
