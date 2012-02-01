@@ -12,14 +12,21 @@
 #include "ITracer.h"
 #include "scene/Scene.h"
 #include "utilities/Triangle.h"
+#include "utilities/Ray.h"
 
 #include <stdint.h>
+
+#include <iostream>
+
+#include "glm/glm.hpp"
+
+using namespace glm;
 
 namespace raytracer {
 
 class Renderer {
 public:
-  Renderer();
+  Renderer(Settings& settings);
   virtual ~Renderer();
   
   void loadTriangles(Triangle* triangles, int length, bool overwrite=false);
@@ -41,6 +48,7 @@ private:
   ITracer* m_tracer;
 
   // SOME KIND OF RAY-ARRAY MEMBER?
+  uint8_t* color_buffer;
 };
 
 }
