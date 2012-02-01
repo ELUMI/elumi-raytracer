@@ -36,6 +36,14 @@ void Camera::setPosition(vec3 position) {
   Camera::m_position = position;
 }
 
+void Camera::setDirection(vec3 direction) {
+  Camera::m_direction = direction;
+}
+
+void Camera::setUpVector(vec3 up_vector) {
+  Camera::m_up_vector = up_vector;
+}
+
 const glm::vec3& Camera::getPosition() {
   return m_position;
 }

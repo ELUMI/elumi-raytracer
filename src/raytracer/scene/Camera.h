@@ -22,6 +22,8 @@ public:
 	void set(glm::vec3 position, glm::vec3 rotaion, glm::vec3 normal, float fov, float aspect_ratio);
 
 	void setPosition(vec3 position);
+	void setDirection(vec3 direction);
+	void setUpVector(vec3 up_vector);
 
 	const glm::vec3& getPosition();
 	const glm::vec3& getDirection();

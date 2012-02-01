@@ -29,8 +29,8 @@ int main(int argc, char* argv[]) {
     outputFileName = argv[2];
 
     raytracer::Settings settings;
-    settings.width = 50;
-    settings.height = 40;
+    settings.width = 320;
+    settings.height = 240;
     settings.backgroundColor[0] = 0;
     settings.backgroundColor[1] = 50;
     settings.backgroundColor[2] = 50;
@@ -91,7 +91,9 @@ int main(int argc, char* argv[]) {
      ***************** */
 
     raytracer::Camera camera;
-    camera.setPosition(vec3(0.0f, 1.0f, 5.0f));
+    camera.setPosition(vec3(0.0f, 5.0f, 0.0f));
+    camera.setDirection(vec3(0.0f,-1.0f,0.0f));
+    camera.setUpVector(vec3(0.0f,0.0f,-1.0f));
 //    vec3 pos = vec3(0,0,0);
 //    vec3 dir = vec3(0,0,1);
 //    vec3 up = vec3(0,1,0);
