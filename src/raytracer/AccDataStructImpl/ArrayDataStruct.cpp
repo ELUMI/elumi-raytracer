@@ -76,10 +76,8 @@ IAccDataStruct::IntersectionData
   return IntersectionData();
 }
 
-void ArrayDataStruct::addData(Triangle* new_triangles, int length) {
-  for(int i = 0; i < length; i++) {
-    triangles.push_back(new_triangles++);
-  }
+void ArrayDataStruct::setData(std::vector<Triangle*> new_triangles) {
+  triangles = new_triangles;
 }
 
 }

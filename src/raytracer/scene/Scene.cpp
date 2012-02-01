@@ -20,8 +20,8 @@ Scene::~Scene() {
 
 }
 
-void Scene::loadTriangles(Triangle* triangles, int length, bool overwrite) {
-  m_acc_data_struct->addData(triangles, length);
+void Scene::loadTriangles(vector<Triangle*> triangles, bool overwrite) {
+  m_acc_data_struct->setData(triangles);
 }
 
 void Scene::loadCamera(Camera camera) {
