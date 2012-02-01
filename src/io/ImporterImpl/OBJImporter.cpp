@@ -72,7 +72,7 @@ void OBJImporter::loadFile(char* filename){
 
 			_vertices.push_back(new vec3(_vec->e[0],_vec->e[1],_vec->e[2]));
 			_normals.push_back(new vec3(_norm->e[0],_norm->e[1],_norm->e[2]));
-			_textures.push_back(new vec3(_text->e[0],_text->e[1],_text->e[2]));
+			//_textures.push_back(new vec3(_text->e[0],_text->e[1],_text->e[2]));
 		}
 		Material* _material = OBJImporter::materials[face->material_index];
 

@@ -56,7 +56,7 @@ void Material::setColor(glm::vec4 color) {
 }
 
 glm::vec4 Material::getColor() {
-  return color;
+  return 255*glm::vec4(diffuse,transperancy.x);
 }
 
 }
