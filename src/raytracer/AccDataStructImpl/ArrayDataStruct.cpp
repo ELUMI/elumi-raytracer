@@ -36,10 +36,10 @@ IAccDataStruct::IntersectionData
 
   for(int i = 0; i < triangles.size(); i++) {
     Triangle* cur_triangle = triangles.at(i);
-    const vec3* vertices = cur_triangle->getVertices();
-    vec3 v0 = *vertices;
-    vec3 v1 = *(vertices + 1);
-    vec3 v2 = *(vertices + 2);
+    const vector<vec3*> vertices = cur_triangle->getVertices();
+    vec3 v0 = *(vertices[0]);
+    vec3 v1 = *(vertices[1]);
+    vec3 v2 = *(vertices[2]);
 
     vec3 e1 = v1 - v0;
     vec3 e2 = v2 - v0;
@@ -54,7 +54,7 @@ IAccDataStruct::IntersectionData
     float u = res.y;
     float v = res.z;
 
-    float dist = distance(o, closest_pos);
+    float dist = glm::distance(o, closest_pos);
 
     if(u >= 0 && v >= 0 && u + v <= 1) {  // Intersection!
       if(closest_tri == NULL || dist < closest_dist) {
@@ -76,10 +76,8 @@ IAccDataStruct::IntersectionData
   return IntersectionData();
 }
 
-void ArrayDataStruct::addData(Triangle* new_triangles, int length) {
-  for(int i = 0; i < length; i++) {
-    triangles.push_back(new_triangles++);
-  }
+void ArrayDataStruct::setData(std::vector<Triangle*> new_triangles) {
+  triangles = new_triangles;
 }
 
 }

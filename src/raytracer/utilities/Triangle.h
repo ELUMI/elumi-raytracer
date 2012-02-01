@@ -9,28 +9,31 @@
 
 #ifndef TRIANGLE_H_
 #define TRIANGLE_H_
+#include <vector>
 
 #include "../scene/Material.h"
 
 using namespace glm;
+using namespace std;
 
 namespace raytracer{
 class Triangle {
 public:
 	Triangle();
-	Triangle(vec3* vertices,vec3* normals,vec3* texture,Material* material);
+	Triangle(vector<vec3*> vertices,vector<vec3*> normals,vector<vec3*> texture,Material* material);
 	virtual ~Triangle();
 
-	void set(vec3* _vertices,vec3* _normals,vec3* _texture,Material* material);
-	vec3* getVertices();
-	vec3* getNormals();
-	vec3* getTexture();
-	Material* getMaterial();
+
+	void set(vector<vec3*> _vertices,vector<vec3*> _normals,vector<vec3*> _texture,Material* material);
+	const vector<vec3*>& getVertices();
+	const vector<vec3*>& getNormals();
+	const vector<vec3*>& getTextures();
+	const Material* getMaterial();
 
 private:
-	vec3* vertices;
-	vec3* normals;
-	vec3* texture;
+	vector<vec3*> vertices;
+	vector<vec3*> normals;
+	vector<vec3*> textures;
 	Material* material;
 };
 }

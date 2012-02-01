@@ -24,8 +24,8 @@ Renderer::~Renderer() {
   delete [] color_buffer;
 }
 
-void Renderer::loadTriangles(Triangle* triangles, int length, bool overwrite) {
-  m_scene.loadTriangles(triangles, length, overwrite);
+void Renderer::loadTriangles(vector<Triangle*> triangles, bool overwrite) {
+  m_scene.loadTriangles(triangles, overwrite);
 }
 
 void Renderer::loadCamera(Camera& camera) {

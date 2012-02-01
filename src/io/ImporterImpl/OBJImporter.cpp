@@ -18,7 +18,8 @@ IImporter::~IImporter(){};
 
 OBJImporter::OBJImporter(){}
 OBJImporter::~OBJImporter(){
-	delete(triangles);
+
+	triangles.clear();
 };
 
 
@@ -32,27 +33,28 @@ void OBJImporter::loadFile(char* filename){
 		cout << "Couldn't find file '" << filename << "'. Errmsg:" << e << endl;
 	}
 
-	OBJImporter::triangles = new Triangle[obj_data->faceCount];
 	// Start creating the triangles
 	for(int i=0; i<obj_data->faceCount; i++){
 		obj_face *face = obj_data->faceList[i];
-		vec3* _vertices = new vec3[3];
-		vec3* _normals = new vec3[3];
-		vec3* _textures = new vec3[3];
+
+		vector<vec3*> _vertices;
+		vector<vec3*> _normals;
+		vector<vec3*> _textures;
 		for(int j=0;j<3;j++){
 			obj_vector* _vec  = obj_data->vertexList[ face->vertex_index[j] ];
 			obj_vector* _norm = obj_data->normalList[ face->normal_index[j] ];
 			obj_vector* _text = obj_data->textureList[ face->texture_index[j] ];
-			_vertices[j] = vec3(_vec->e[0],_vec->e[1],_vec->e[2]);
-			_normals[j] = vec3(_norm->e[0],_norm->e[1],_norm->e[2]);
-			_textures[j] = vec3(_text->e[0],_text->e[1],_text->e[2]);
+
+			_vertices.push_back(new vec3(_vec->e[0],_vec->e[1],_vec->e[2]));
+			_normals.push_back(new vec3(_norm->e[0],_norm->e[1],_norm->e[2]));
+			_textures.push_back(new vec3(_text->e[0],_text->e[1],_text->e[2]));
 		}
 		//obj_material* _material = obj_data->materialList[face->material_index];
 
-		OBJImporter::triangles[i] = Triangle(_vertices,_normals,_textures,NULL);
+		OBJImporter::triangles.push_back(new Triangle(_vertices,_normals,_textures,NULL));
 
 	}
-	triangle_count = obj_data->faceCount;
+	OBJImporter::triangle_count = obj_data->faceCount;
 
 
 	materials = new Material[obj_data->materialCount];
@@ -67,23 +69,11 @@ void OBJImporter::loadFile(char* filename){
 	delete(obj_data);
 }
 
-Triangle* OBJImporter::getTriangleList(){
-	if (triangles!=NULL){
-		return triangles;
-	}
-	else{
-		cout << "Triangle NULL";
-		// Throw exception
-		return NULL;
-	}
+std::vector<Triangle*>& OBJImporter::getTriangleList(){
+	return OBJImporter::triangles;
 }
 int OBJImporter::getTriangleCount(){
-	if(triangles!=NULL){
-		return triangle_count;
-	}
-	else{
-		return -1;
-	}
+	triangles.capacity();
 }
 Material* OBJImporter::getMaterialList(){
 	if (materials!=NULL){

@@ -17,7 +17,7 @@ public:
   virtual ~ArrayDataStruct();
 
   IAccDataStruct::IntersectionData findClosestIntersection(Ray ray);
-  void addData(Triangle* new_triangles, int length);
+  void setData(std::vector<Triangle*> new_triangles);
 
 
 private:
