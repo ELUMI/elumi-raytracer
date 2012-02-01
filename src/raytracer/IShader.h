@@ -14,7 +14,7 @@ class IShader {
 public:
 	virtual ~IShader();
 
-	Color shade()
+	//virtual Color shade() = 0;
 };
 
 }

@@ -13,7 +13,7 @@ Camera::Camera() {
 	// Setting default camera values
   m_position  = glm::vec3(0.0f, 0.0f, 0.0f);
   m_direction = glm::vec3(0.0f, 0.0f, -1.0f);
-  m_normal    = glm::vec3(0.0f, 1.0f, 0.0f);
+  m_up_vector    = glm::vec3(0.0f, 1.0f, 0.0f);
 
   m_fov = 45.0f;
   m_aspect_ratio = 4.0f/3.0f;
@@ -26,7 +26,7 @@ Camera::~Camera() {
 void Camera::set(glm::vec3 position, glm::vec3 direction, glm::vec3 normal, float fov, float aspect_ratio) {
   m_position  = position;
   m_direction = direction;
-  m_normal    = normal;
+  m_up_vector    = glm::normalize(normal);
 
   m_fov = fov;
   m_aspect_ratio = aspect_ratio;
@@ -40,8 +40,8 @@ const glm::vec3& Camera::getDirection() {
   return m_direction;
 }
 
-const glm::vec3& Camera::getNormal() {
-  return m_normal;
+const glm::vec3& Camera::getUpVector() {
+  return m_up_vector;
 }
 
 const float& Camera::getFov() {

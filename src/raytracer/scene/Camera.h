@@ -21,14 +21,14 @@ public:
 
 	const glm::vec3& getPosition();
 	const glm::vec3& getDirection();
-	const glm::vec3& getNormal();
+	const glm::vec3& getUpVector();
 	const float& getFov();
 	const float& getAspectRatio();
 
 private:
 	glm::vec3 m_position;
 	glm::vec3 m_direction;
-	glm::vec3 m_normal;
+	glm::vec3 m_up_vector;
 
 	float m_fov;
 	float m_aspect_ratio;

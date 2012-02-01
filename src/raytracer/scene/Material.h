@@ -9,25 +9,38 @@
 #define MATERIAL_H_
 
 #include <stdint.h>
+//#include <glm/glm.hpp>
+#include "../utilities/Color.h"
 #include "../IShader.h"
 
 namespace raytracer {
 
-struct Color {
-    uint8_t r,g,b,a;
-};
+//struct Color {
+//  Color() {
+//    r=g=b=0;
+//    a=255;
+//  }
+//  Color(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha) {
+//    r = red;
+//    g = green;
+//    b = blue;
+//    a = alpha;
+//  }
+//  uint8_t r,g,b,a;
+//};
 
 class Material {
 
 public:
   Material();
-	virtual ~Material();
+  virtual ~Material();
 
-	Color getColor();
+  Color getColor();
 
 private:
-	Color color;
-	IShader* shader;
+  Color color;
+
+  IShader* shader;
 
 };
 

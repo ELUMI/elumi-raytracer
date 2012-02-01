@@ -22,8 +22,7 @@ public:
   void trace(Ray* rays, int length/*, uint8_t* buffer*/);
 
 private:
-  Color shade();
-
+  Color traceHelper(Ray* ray, int levels=3);
   Scene* scene;
   uint8_t* buffer;
 };

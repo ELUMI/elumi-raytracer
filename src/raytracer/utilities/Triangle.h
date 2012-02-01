@@ -22,10 +22,10 @@ public:
 	virtual ~Triangle();
 
 	void set(vec3* _vertices,vec3* _normals,vec3* _texture,Material* material);
-	const vec3* getVertices();
-	const vec3* getNormals();
-	const vec3* getTexture();
-	const Material* getMaterial();
+	vec3* getVertices();
+	vec3* getNormals();
+	vec3* getTexture();
+	Material* getMaterial();
 
 private:
 	vec3* vertices;

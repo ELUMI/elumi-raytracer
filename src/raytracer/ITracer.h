@@ -20,7 +20,9 @@ public:
 	virtual ~ITracer() {};
 	virtual void trace(Ray* rays, int length/*, unsigned char* buffer*/) = 0;
 private:
-	virtual Color shade(Ray* ray, Material* material,) = 0;
+	Color traceHelper(Ray* ray);
+
+	//virtual Color shade(Ray* ray, Material* material,) = 0;
 
 };
 

@@ -20,6 +20,7 @@ public:
 	virtual ~Ray();
 
 	static Ray generateRay(vec3 start_position, vec3 end_position);
+	static Ray reflection(Ray ray, vec3 normal, vec3 intersection_point);
 
   const vec3& getPosition();
   const vec3& getDirection();
