@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
     raytracer::Settings settings;
     settings.width = 300;
     settings.height = 300;
-    settings.backgroundColor[0] = 0;
+    settings.backgroundColor[0] = 255;
     settings.backgroundColor[1] = 255;
     settings.backgroundColor[2] = 0;
     settings.backgroundColor[3] = 255;
@@ -40,9 +40,19 @@ int main(int argc, char* argv[]) {
      ***************** */
 
     raytracer::IImporter* importer = new raytracer::OBJImporter();
-    raytracer::Triangle* triangles = importer->getTriangleList();
-    int nr_of_triangles = importer->getTriangleCount();
+    importer->loadFile(inputFileName);
+    std::vector<raytracer::Triangle*> triangles = importer->getTriangleList();
 
+    for(int i=0;i<triangles.size();++i)
+    {
+      vec3* vec0 = triangles[i]->getVertices()[0];
+      vec3* vec1 = triangles[i]->getVertices()[1];
+      vec3* vec2 = triangles[i]->getVertices()[2];
+
+      std::cout << vec0->x << ", " << vec0->y << ", " << vec0->z << std::endl;
+      std::cout << vec1->x << ", " << vec1->y << ", " << vec1->z << std::endl;
+      std::cout << vec2->x << ", " << vec2->y << ", " << vec2->z << std::endl << std::endl;
+    }
 
     /* RENDERER
      ***************** */
@@ -56,8 +66,8 @@ int main(int argc, char* argv[]) {
     raytracer::Renderer myRenderer(&settings);
     //myRenderer.loadSettings(settings);
     myRenderer.loadCamera(camera);
-    if (triangles != NULL)
-      myRenderer.loadTriangles(triangles, nr_of_triangles);
+//    if (triangles.empty())
+//      myRenderer.loadTriangles(triangles, nr_of_triangles);
     //myRenderer.loadLights();
 
     std::cout << std::endl << "BBBBBBBBB" << std::endl;

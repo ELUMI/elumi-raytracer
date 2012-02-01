@@ -28,10 +28,10 @@ void SimpleTracer::trace(Ray* rays, int length, uint8_t* buffer) {
   for (size_t i=0; i<length; ++i) {
     vec4 c = traceHelper(&rays[i]);
 
-    buffer[i*4] = min(255, int(c.r));
-    buffer[i*4 +1] = min(255, int(c.g));
-    buffer[i*4 +2] = min(255, int(c.b));
-    buffer[i*4 +3] = min(255, int(c.a));
+    buffer[i*4] = glm::min(255, int(c.r));
+    buffer[i*4 +1] = glm::min(255, int(c.g));
+    buffer[i*4 +2] = glm::min(255, int(c.b));
+    buffer[i*4 +3] = glm::min(255, int(c.a));
   }
 }
 
