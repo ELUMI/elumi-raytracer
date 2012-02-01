@@ -20,24 +20,22 @@ public:
 
 		void loadFile(char* filename);
 		std::vector<Triangle*>& getTriangleList();
-		int getTriangleCount();
-
-		Material* getMaterialList();
-		int getMaterialCount();
+		std::vector<Material*>& getMaterialList();
 
 		Camera* getCamera();
 
-		int getLightPointList();
-		int getLightQuadList();
-		int getLightDiscList();
+		std::vector<ILight*>&  getLightPointList();
+		std::vector<ILight*>&  getLightQuadList();
+		std::vector<ILight*>&  getLightDiscList();
 private:
 		std::vector<Triangle*> triangles;
-		int triangle_count;
-
-		Material* materials;
-		int material_count;
+		std::vector<Material*> materials;
 
 		Camera* camera;
+
+		std::vector<ILight*> point_lights;
+		std::vector<ILight*> quad_lights;
+		std::vector<ILight*> disc_lights;
 };
 
 }

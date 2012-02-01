@@ -41,8 +41,13 @@ void obj_set_material_defaults(obj_material *mtl)
 	mtl->spec[0] = 1.0;
 	mtl->spec[1] = 1.0;
 	mtl->spec[2] = 1.0;
+	mtl->emissive[0] = 1.0; //?
+	mtl->emissive[1] = 1.0; //?
+	mtl->emissive[2] = 1.0; //?
 	mtl->reflect = 0.0;
-	mtl->trans = 1;
+	mtl->trans[0] = 1;
+	mtl->trans[1] = 1;
+	mtl->trans[2] = 1;
 	mtl->glossy = 98;
 	mtl->shiny = 0;
 	mtl->refract_index = 1;
@@ -241,6 +246,15 @@ int obj_parse_mtl_file(char *filename, list *material_list)
 			current_mtl->spec[1] = atof( strtok(NULL, " \t"));
 			current_mtl->spec[2] = atof( strtok(NULL, " \t"));
 		}
+
+		//emissive
+		else if( strequal(current_token, "Ke") && material_open)
+		{
+			current_mtl->emissive[0] = atof( strtok(NULL, " \t"));
+			current_mtl->emissive[1] = atof( strtok(NULL, " \t"));
+			current_mtl->emissive[2] = atof( strtok(NULL, " \t"));
+		}
+
 		//shiny
 		else if( strequal(current_token, "Ns") && material_open)
 		{
@@ -249,7 +263,21 @@ int obj_parse_mtl_file(char *filename, list *material_list)
 		//transparent
 		else if( strequal(current_token, "d") && material_open)
 		{
-			current_mtl->trans = atof( strtok(NULL, " \t"));
+			current_mtl->trans[0] = atof( strtok(NULL, " \t"));
+			current_mtl->trans[1] = current_mtl->trans[0];
+			current_mtl->trans[2] = current_mtl->trans[0];
+		}
+		else if( strequal(current_token, "Tr") && material_open)
+		{
+			current_mtl->trans[0] = atof( strtok(NULL, " \t"));
+			current_mtl->trans[1] = current_mtl->trans[0];
+			current_mtl->trans[2] = current_mtl->trans[0];
+		}
+		else if( strequal(current_token, "Tf") && material_open)
+		{
+			current_mtl->trans[0] = atof( strtok(NULL, " \t"));
+			current_mtl->trans[1] = atof( strtok(NULL, " \t"));
+			current_mtl->trans[2] = atof( strtok(NULL, " \t"));
 		}
 		//reflection
 		else if( strequal(current_token, "r") && material_open)
