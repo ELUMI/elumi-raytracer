@@ -9,6 +9,7 @@ class DiffuseLight : public ILight {
 public:
   DiffuseLight();
 	virtual ~DiffuseLight();
+
 };
 
 }
