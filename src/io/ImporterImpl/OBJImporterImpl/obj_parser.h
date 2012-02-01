@@ -47,9 +47,10 @@ typedef struct obj_material
 	double amb[3];
 	double diff[3];
 	double spec[3];
+	double emissive[3];
 	double reflect;
 	double refract;
-	double trans;
+	double trans[3];
 	double shiny;
 	double glossy;
 	double refract_index;

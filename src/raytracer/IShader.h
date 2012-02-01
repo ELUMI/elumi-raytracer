@@ -14,7 +14,7 @@ class IShader {
 public:
 	virtual ~IShader();
 
-	//virtual Color shade() = 0;
+	virtual glm::vec4 shade() = 0;
 };
 
 }

@@ -13,27 +13,22 @@
 #include "../raytracer/utilities/Triangle.h"
 #include "../raytracer/scene/Camera.h"
 #include "../raytracer/scene/Material.h"
+#include "../raytracer/scene/ILight.h"
 
 namespace raytracer {
 
 class IImporter {
 public:
 
-	virtual ~IImporter() = 0;
-
 	virtual void loadFile(char* filename) = 0;
-
 	virtual std::vector<Triangle*>& getTriangleList() =0;
-	virtual int getTriangleCount() =0;
-
-	virtual Material* getMaterialList() = 0;
-	virtual int getMaterialCount() =0;
+	virtual std::vector<Material*>& getMaterialList() = 0;
 
 	virtual Camera* getCamera() = 0;
 
-	virtual int getLightPointList() = 0;
-	virtual int getLightQuadList() = 0;
-	virtual int getLightDiscList() = 0;
+	virtual std::vector<ILight*>& getLightPointList() = 0;
+	virtual std::vector<ILight*>& getLightQuadList() = 0;
+	virtual std::vector<ILight*>& getLightDiscList() = 0;
 
 
 };
