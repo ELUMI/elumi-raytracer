@@ -26,7 +26,7 @@ void Scene::loadCamera(Camera camera) {
 }
 
 void Scene::loadLights(ILight* lights, int length, bool overwrite) {
-  for (size_t i; i<length; ++i) {
+  for (int i=0; i<length; ++i) {
     m_lights.push_back(&lights[i]);
   }
 }

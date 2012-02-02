@@ -10,6 +10,10 @@
 #include "SimpleTracer.h"
 #include <stdint.h>
 
+#include <glm/glm.hpp>
+
+using namespace glm;
+
 namespace raytracer {
 
 //ITracer::~ITracer() {}
@@ -49,10 +53,33 @@ vec4 SimpleTracer::traceHelper(Ray* ray, int levels) {
     color = background_color;
   } else {
 
+    //Light
+    ILight* light = scene->getLightVector().front();
+    Ray lightRay = Ray::generateRay(intersection_data.interPoint,light->getPosition());
+    IAccDataStruct::IntersectionData intersection_data_light = scene->getAccDataStruct()->findClosestIntersection(lightRay);
+    if (false) {
+       color = background_color;
+     } else {
+       //Diffuse
+       float diff = abs(dot(lightRay.getDirection(), intersection_data.normal));
+       float falloff = light->getIntensity(length(light->getPosition()-intersection_data.interPoint));
 
+       //Specular
+       Ray refl = ray->reflection(*ray, intersection_data.normal, intersection_data.interPoint);
+
+       float spec = pow(dot(refl.getDirection(),light->getPosition()-intersection_data.interPoint),0.3);
+       spec = glm::max(1.0f,spec);
+
+       color  =  spec * diff * falloff * intersection_data.triangle->getMaterial()->getColor();
+
+
+       color.a = 255;
+       //cout << dot(lightRay.getDirection(), intersection_data.normal) << endl;
+     }
+    //color  = intersection_data.triangle->getMaterial()->getColor();
     //SHADER
     //std::cout << intersection_data.triangle << "\n\n";
-    color  = intersection_data.triangle->getMaterial()->getColor();
+
     //color = vec4(255,0,0,255);
     //Ray refl = ray->reflection(*ray, intersection_data.normal, intersection_data.interPoint);
     //new_color = traceHelper( &refl );

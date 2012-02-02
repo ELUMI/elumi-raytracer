@@ -1,6 +1,8 @@
 #include "io/ExporterImpl/PNGExporter.h"
 #include "io/ImporterImpl/OBJImporter.h"
 #include "raytracer/Renderer.h"
+#include "raytracer/scene/ILight.h"
+#include "raytracer/scene/LightImpl/OmniLight.h"
 
 #include <iostream>
 #include <stdlib.h>
@@ -91,7 +93,7 @@ int main(int argc, char* argv[]) {
      ***************** */
 
     raytracer::Camera camera;
-    camera.setPosition(vec3(0.0f, 5.0f, 0.0f));
+    camera.setPosition(vec3(0.0f, 8.0f, -1.0f));
     camera.setDirection(vec3(0.0f,-1.0f,0.0f));
     camera.setUpVector(vec3(0.0f,0.0f,-1.0f));
 //    vec3 pos = vec3(0,0,0);
@@ -104,8 +106,12 @@ int main(int argc, char* argv[]) {
     if (!triangles2.empty())
       myRenderer.loadTriangles(triangles);
 
+    ILight* lights = new OmniLight(vec3(5,5,5));
 
-    std::cout << std::endl << "BBBBadsafsdghdfBBBBB" << std::endl;
+    lights->setIntensity(40);
+    lights->setDistanceFalloff(QUADRATIC);
+
+    myRenderer.loadLights(lights,1,false);
 
     myRenderer.render();
 
