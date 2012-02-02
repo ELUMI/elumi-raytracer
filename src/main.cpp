@@ -6,7 +6,7 @@
 
 #include <iostream>
 #include <stdlib.h>
-//#include <GL/glfw.h>
+#include <GL/glfw.h>
 #include <string>
 
 using namespace std;
@@ -14,12 +14,12 @@ using namespace raytracer;
 
 int main(int argc, char* argv[]) {
 
-  //  int running = GL_TRUE;
-  //
-  //  //Initialize GLFW
-  //  if(!glfwInit()) {
-  //    exit(EXIT_FAILURE);
-  //  }
+    int running = GL_TRUE;
+
+    //Initialize GLFW
+    if(!glfwInit()) {
+      exit(EXIT_FAILURE);
+    }
 
   if (argc < 3) { // Check the value of argc. If not enough parameters have been passed, inform user and exit.
     std::cout << "Usage is <flags> <infile> <outfile>\n"; // Inform the user of how to use the program
@@ -31,8 +31,8 @@ int main(int argc, char* argv[]) {
     outputFileName = argv[2];
 
     raytracer::Settings settings;
-    settings.width = 320;
-    settings.height = 240;
+    settings.width = 100;
+    settings.height = 80;
     settings.backgroundColor[0] = 0;
     settings.backgroundColor[1] = 50;
     settings.backgroundColor[2] = 50;
@@ -56,46 +56,43 @@ int main(int argc, char* argv[]) {
       std::cout << vec2->x << ", " << vec2->y << ", " << vec2->z << std::endl << std::endl;
     }*/
 
-    Material mat;
-    mat.setColor(vec4(255,0,0,255));
-
-    std::vector<vec3*> verts, norms, texs;
-
-    vec3 v1 = vec3(-5.0f, -5.0f, 0.0f);
-    vec3 v2 = vec3(5.0f, 0.0f, 0.0f);
-    vec3 v3 = vec3(0.0f, 5.0f, 0.0f);
-
-    verts.push_back( &v1 );
-    verts.push_back( &v2 );
-    verts.push_back( &v3 );
-
-
-    vec3 n1 = vec3(0.0f, 0.0f, 1.0f);
-    vec3 n2 = vec3(0.0f, 0.0f, 1.0f);
-    vec3 n3 = vec3(0.0f, 0.0f, 1.0f);
-
-    norms.push_back( &n1 );
-    norms.push_back( &n2 );
-    norms.push_back( &n3 );
-
-
-    Triangle tri;
-    tri.set(verts,norms,texs,&mat);
-
-
-
-    std::vector<raytracer::Triangle*> triangles2;
-    triangles2.push_back(&tri);
-    std::cout << std::endl << "eAAAAAAAAAAAAAAAAAAAA" << std::endl;
+//    Material mat;
+//    mat.setColor(vec4(255,0,0,255));
+//
+//    std::vector<vec3*> verts, norms, texs;
+//
+//    vec3 v1 = vec3(-5.0f, -5.0f, 0.0f);
+//    vec3 v2 = vec3(5.0f, 0.0f, 0.0f);
+//    vec3 v3 = vec3(0.0f, 5.0f, 0.0f);
+//
+//    verts.push_back( &v1 );
+//    verts.push_back( &v2 );
+//    verts.push_back( &v3 );
+//
+//
+//    vec3 n1 = vec3(0.0f, 0.0f, 1.0f);
+//    vec3 n2 = vec3(0.0f, 0.0f, 1.0f);
+//    vec3 n3 = vec3(0.0f, 0.0f, 1.0f);
+//
+//    norms.push_back( &n1 );
+//    norms.push_back( &n2 );
+//    norms.push_back( &n3 );
+//
+//
+//    Triangle tri;
+//    tri.set(verts,norms,texs,&mat);
+//  std::vector<raytracer::Triangle*> triangles2;
+//    triangles2.push_back(&tri);
+//    std::cout << std::endl << "eAAAAAAAAAAAAAAAAAAAA" << std::endl;
 
 
     /* RENDERER
      ***************** */
 
     raytracer::Camera camera;
-    camera.setPosition(vec3(0.0f, 8.0f, -1.0f));
-    camera.setDirection(vec3(0.0f,-1.0f,0.0f));
-    camera.setUpVector(vec3(0.0f,0.0f,-1.0f));
+    camera.setPosition(vec3(0.0f, 0.0f, 5.0f));
+    camera.setDirection(vec3(0.0f,0.0f,-1.0f));
+    camera.setUpVector(vec3(0.0f,1.0f,0.0f));
 //    vec3 pos = vec3(0,0,0);
 //    vec3 dir = vec3(0,0,1);
 //    vec3 up = vec3(0,1,0);
@@ -103,7 +100,7 @@ int main(int argc, char* argv[]) {
 //    camera.set()
     raytracer::Renderer myRenderer(&settings);
     myRenderer.loadCamera(camera);
-    if (!triangles2.empty())
+    if (!triangles.empty())
       myRenderer.loadTriangles(triangles);
 
     ILight* lights = new OmniLight(vec3(5,5,5));
@@ -151,29 +148,29 @@ int main(int argc, char* argv[]) {
     raytracer::IExporter* exporter = new raytracer::PNGExporter;
     exporter->exportImage(outputFileName,settings.width,settings.height,buffer);
 
-    //    //Open an OpenGl window
-    //      if(!glfwOpenWindow(300,300,0,0,0,0,0,0,GLFW_WINDOW)) {
-    //        glfwTerminate();
-    //        exit(EXIT_FAILURE);
-    //      }
-    //
-    //      //Main loop
-    //      while(running) {
-    //        //OpenGl rendering goes here...d
-    //        glClear(GL_COLOR_BUFFER_BIT);
-    //
-    //        glDrawPixels(300,300,GL_RGBA,GL_UNSIGNED_INT_8_8_8_8_REV,buffer);
-    //
-    //        //Swap front and back rendering buffers
-    //        glfwSwapBuffers();
-    //
-    //        //Check if ESC key was pressed or window was closed
-    //        running = !glfwGetKey(GLFW_KEY_ESC) &&
-    //            glfwGetWindowParam(GLFW_OPENED);
-    //      }
-    //
-    //      //Close window and terminate GLFW
-    //      glfwTerminate();
+        //Open an OpenGl window
+          if(!glfwOpenWindow(300,300,0,0,0,0,0,0,GLFW_WINDOW)) {
+            glfwTerminate();
+            exit(EXIT_FAILURE);
+          }
+
+          //Main loop
+          while(running) {
+            //OpenGl rendering goes here...d
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            glDrawPixels(300,300,GL_RGBA,GL_UNSIGNED_INT_8_8_8_8_REV,buffer);
+
+            //Swap front and back rendering buffers
+            glfwSwapBuffers();
+
+            //Check if ESC key was pressed or window was closed
+            running = !glfwGetKey(GLFW_KEY_ESC) &&
+                glfwGetWindowParam(GLFW_OPENED);
+          }
+
+          //Close window and terminate GLFW
+          glfwTerminate();
 
     delete importer;
     delete exporter;

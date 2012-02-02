@@ -67,7 +67,7 @@ vec4 SimpleTracer::traceHelper(Ray* ray, int levels) {
        //Specular
        Ray refl = ray->reflection(*ray, intersection_data.normal, intersection_data.interPoint);
 
-       float spec = pow(dot(refl.getDirection(),light->getPosition()-intersection_data.interPoint),0.3);
+       float spec = glm::pow( dot(refl.getDirection(),light->getPosition()-intersection_data.interPoint),0.3f);
        spec = glm::max(1.0f,spec);
 
        color  =  spec * diff * falloff * intersection_data.triangle->getMaterial()->getColor();
