@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <GL/glfw.h>
 #include <string>
+#define GL_UNSIGNED_INT_8_8_8_8_REV 0x8367
 
 using namespace std;
 using namespace raytracer;
