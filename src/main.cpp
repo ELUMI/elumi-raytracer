@@ -8,36 +8,42 @@
 #include <stdlib.h>
 #include <GL/glfw.h>
 #include <string>
+#include <omp.h>
+
 #define GL_UNSIGNED_INT_8_8_8_8_REV 0x8367
 
 using namespace std;
 using namespace raytracer;
 
+void GLFWCALL OnWindowSize(int width,int height);
+raytracer::Settings settings;
+uint8_t* buffer;
+
 int main(int argc, char* argv[]) {
 
-    int running = GL_TRUE;
+  int running = GL_TRUE;
 
-    //Initialize GLFW
-    if(!glfwInit()) {
-      exit(EXIT_FAILURE);
-    }
+  //Initialize GLFW
+  if(!glfwInit()) {
+    exit(EXIT_FAILURE);
+  }
 
   if (argc < 3) { // Check the value of argc. If not enough parameters have been passed, inform user and exit.
     std::cout << "Usage is <flags> <infile> <outfile>\n"; // Inform the user of how to use the program
     exit(0);
-  } else { // if we got enough parameters...
-
+  }
+  // if we got enough parameters...
+  else {
     char* inputFileName, *outputFileName, *settingsFile;
     inputFileName  = argv[1];
     outputFileName = argv[2];
 
-    raytracer::Settings settings;
     settings.width = 320;
     settings.height = 240;
     settings.backgroundColor[0] = 0;
-    settings.backgroundColor[1] = 50;
-    settings.backgroundColor[2] = 50;
-    settings.backgroundColor[3] = 255;
+    settings.backgroundColor[1] = 50.0f/255.0f;
+    settings.backgroundColor[2] = 50.0f/255.0f;
+    settings.backgroundColor[3] = 1;
 
     /* IMPORTER
      ***************** */
@@ -46,59 +52,13 @@ int main(int argc, char* argv[]) {
     importer->loadFile(inputFileName);
     std::vector<raytracer::Triangle*> triangles = importer->getTriangleList();
 
-    /*for(int i=0;i<triangles.size();++i)
-    {
-      vec3* vec0 = triangles[i]->getVertices()[0];
-      vec3* vec1 = triangles[i]->getVertices()[1];
-      vec3* vec2 = triangles[i]->getVertices()[2];
-
-      std::cout << vec0->x << ", " << vec0->y << ", " << vec0->z << std::endl;
-      std::cout << vec1->x << ", " << vec1->y << ", " << vec1->z << std::endl;
-      std::cout << vec2->x << ", " << vec2->y << ", " << vec2->z << std::endl << std::endl;
-    }*/
-
-//    Material mat;
-//    mat.setColor(vec4(255,0,0,255));
-//
-//    std::vector<vec3*> verts, norms, texs;
-//
-//    vec3 v1 = vec3(-5.0f, -5.0f, 0.0f);
-//    vec3 v2 = vec3(5.0f, 0.0f, 0.0f);
-//    vec3 v3 = vec3(0.0f, 5.0f, 0.0f);
-//
-//    verts.push_back( &v1 );
-//    verts.push_back( &v2 );
-//    verts.push_back( &v3 );
-//
-//
-//    vec3 n1 = vec3(0.0f, 0.0f, 1.0f);
-//    vec3 n2 = vec3(0.0f, 0.0f, 1.0f);
-//    vec3 n3 = vec3(0.0f, 0.0f, 1.0f);
-//
-//    norms.push_back( &n1 );
-//    norms.push_back( &n2 );
-//    norms.push_back( &n3 );
-//
-//
-//    Triangle tri;
-//    tri.set(verts,norms,texs,&mat);
-//  std::vector<raytracer::Triangle*> triangles2;
-//    triangles2.push_back(&tri);
-//    std::cout << std::endl << "eAAAAAAAAAAAAAAAAAAAA" << std::endl;
-
-
     /* RENDERER
      ***************** */
-
     raytracer::Camera camera;
-    camera.setPosition(vec3(0.0f, 0.0f, 5.0f));
+    camera.setPosition(vec3(0.0f, 0.0f, 7.0f));
     camera.setDirection(vec3(0.0f,0.0f,-1.0f));
     camera.setUpVector(vec3(0.0f,1.0f,0.0f));
-//    vec3 pos = vec3(0,0,0);
-//    vec3 dir = vec3(0,0,1);
-//    vec3 up = vec3(0,1,0);
-//
-//    camera.set()
+
     raytracer::Renderer myRenderer(&settings);
     myRenderer.loadCamera(camera);
     if (!triangles.empty())
@@ -111,53 +71,36 @@ int main(int argc, char* argv[]) {
 
     myRenderer.loadLights(lights,1,false);
 
-    myRenderer.render();
 
-    uint8_t* buffer = myRenderer.getFloatArray();
+    buffer = myRenderer.getFloatArray();
+    #pragma omp parallel
+    {
+      #pragma omp sections
+      {
+        // THREAD 1
+        {
+          myRenderer.render();
+        }
 
-    std::cout << std::endl << "CCCCCCCCCCCCCCCCc" << std::endl;
+        // THREAD 2
+        #pragma omp section
+        {
+          /* WINDOW
+           ***************** */
 
-    // testbuffer
-//    uint8_t* buffer = (uint8_t *) calloc (sizeof (uint8_t), settings.width * settings.height * 4);
-//    for(int i=0;i<settings.height*settings.width*4;i+=4)
-//    {
-//      if (i<10000){
-//        buffer[i] = 255;
-//        buffer[i+1] = 0;
-//        buffer[i+2] = 0;
-//        buffer[i+3] = settings.backgroundColor[3];
-//      } else if (i>=10000 && i<30000) {
-//
-//        buffer[i] = 0;
-//        buffer[i+1] = 0;
-//        buffer[i+2] = 255;
-//        buffer[i+3] = settings.backgroundColor[3];
-//      } else {
-//        buffer[i] = settings.backgroundColor[0];
-//        buffer[i+1] = settings.backgroundColor[1];
-//        buffer[i+2] = settings.backgroundColor[2];
-//        buffer[i+3] = settings.backgroundColor[3];
-//      }
-//
-//    }
-
-    /* EXPORTER
-     ***************** */
-
-
-
-    raytracer::IExporter* exporter = new raytracer::PNGExporter;
-    exporter->exportImage(outputFileName,settings.width,settings.height,buffer);
-
-        //Open an OpenGl window
+          //Open an OpenGl window
           if(!glfwOpenWindow(settings.width,settings.height,0,0,0,0,0,0,GLFW_WINDOW)) {
             glfwTerminate();
             exit(EXIT_FAILURE);
           }
 
-          //Main loop
+          glfwEnable(GLFW_AUTO_POLL_EVENTS);
+          glfwSetWindowSizeCallback(OnWindowSize); // TODO: In settings
+
           while(running) {
             //OpenGl rendering goes here...d
+            glClearColor(settings.backgroundColor.x,settings.backgroundColor.y,settings.backgroundColor.z
+                ,settings.backgroundColor.a);
             glClear(GL_COLOR_BUFFER_BIT);
 
             glDrawPixels(settings.width,settings.height,GL_RGBA,GL_UNSIGNED_INT_8_8_8_8_REV,buffer);
@@ -166,17 +109,28 @@ int main(int argc, char* argv[]) {
             glfwSwapBuffers();
 
             //Check if ESC key was pressed or window was closed
-            running = !glfwGetKey(GLFW_KEY_ESC) &&
-                glfwGetWindowParam(GLFW_OPENED);
+            running = !glfwGetKey(GLFW_KEY_ESC) && glfwGetWindowParam(GLFW_OPENED);
           }
+        }
+      }
+    }
 
-          //Close window and terminate GLFW
-          glfwTerminate();
+    //Close window and terminate GLFW
+    glfwTerminate();
 
+    /* EXPORTER
+     ***************** */
+    raytracer::IExporter* exporter = new raytracer::PNGExporter;
+    exporter->exportImage(outputFileName,settings.width,settings.height,buffer);
     delete importer;
     delete exporter;
     std::cout << std::endl << "end of PROGRAM" << std::endl;
   }
 
   exit(EXIT_SUCCESS);
+}
+void GLFWCALL OnWindowSize(int width,int height){
+  float _width = (float)width/settings.width;
+  float _height = (float)height/settings.height;
+  glPixelZoom(_width,_height);
 }
