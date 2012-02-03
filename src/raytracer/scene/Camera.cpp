@@ -64,4 +64,10 @@ const float& Camera::getAspectRatio() {
   return m_aspect_ratio;
 }
 
+void Camera::rotate(vec2 rotation){
+}
+
+mat4 Camera::getViewMatrix(){
+}
+
 }
