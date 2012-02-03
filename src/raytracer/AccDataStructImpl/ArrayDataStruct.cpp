@@ -35,6 +35,8 @@ IAccDataStruct::IntersectionData
   float closest_dist = -1;
   vec3 closest_pos;
 
+  float closest_t = numeric_limits<float>::infinity( );
+
   for(int i = 0; i < triangles.size(); i++) {
     Triangle* cur_triangle = triangles.at(i);
     const vector<vec3*> vertices = cur_triangle->getVertices();
@@ -59,15 +61,16 @@ IAccDataStruct::IntersectionData
 
     if(u >= 0 && v >= 0 && u + v <= 1
         ) {  // Intersection!
-      if(closest_tri == NULL || dist < closest_dist) {
+      if(t < closest_t) {
         closest_tri = cur_triangle;
         closest_pos = o + t * d;
         closest_dist = dist;
+        closest_t = t;
       }
     }
   }
 
-  if(closest_dist == -1) {
+  if(closest_t == numeric_limits<float>::infinity( )) {
     return IntersectionData(NULL, vec3(), vec3());
   }
 

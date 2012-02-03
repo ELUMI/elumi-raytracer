@@ -47,6 +47,7 @@ vec4 SimpleTracer::traceHelper(Ray* ray, int levels) {
 
   vec4 color;
   vec4 new_color;
+  vec4 color_black = vec4(0,0,0,255);
 
   IAccDataStruct::IntersectionData intersection_data = scene->getAccDataStruct()->findClosestIntersection(*ray);
   if (intersection_data.triangle == NULL) {
@@ -57,21 +58,32 @@ vec4 SimpleTracer::traceHelper(Ray* ray, int levels) {
     ILight* light = scene->getLightVector().front();
     Ray lightRay = Ray::generateRay(intersection_data.interPoint,light->getPosition());
     IAccDataStruct::IntersectionData intersection_data_light = scene->getAccDataStruct()->findClosestIntersection(lightRay);
-    if (false) {
-       color = background_color;
+    if (intersection_data_light.triangle == intersection_data.triangle ||
+        length(light->getPosition()-intersection_data.interPoint) >
+                    length(light->getPosition()-intersection_data_light.interPoint)) {
+       color = color_black;
      } else {
        //Diffuse
        float diff = abs(dot(lightRay.getDirection(), intersection_data.normal));
        float falloff = light->getIntensity(length(light->getPosition()-intersection_data.interPoint));
 
        //Specular
-       Ray refl = ray->reflection(*ray, intersection_data.normal, intersection_data.interPoint);
+       Ray refl = ray->reflection(lightRay, intersection_data.normal, intersection_data.interPoint);
+       vec3 v = normalize(ray->getPosition()-intersection_data.interPoint);
 
-       float spec = glm::pow( dot(refl.getDirection(),light->getPosition()-intersection_data.interPoint),0.3f);
-       spec = glm::max(1.0f,spec);
+       float spec;
+       if(dot(intersection_data.normal,lightRay.getDirection()) < 0) {
+         spec = 0.0f;
+       } else {
+         //spec = glm::max(0.0f,glm::pow( dot(refl.getDirection(),ray->getPosition()-intersection_data.interPoint),0.3f));
+         spec = glm::max(0.0f,glm::pow( dot(normalize(refl.getDirection()),v),1.0f));
+       }
 
-       color  =  spec * diff * falloff * intersection_data.triangle->getMaterial()->getColor();
+       vec4 white = vec4(255,255,255,255);
 
+       color  = falloff * (1.0f * spec * white + diff * intersection_data.triangle->getMaterial()->getColor());
+       //color = falloff * diff * intersection_data.triangle->getMaterial()->getColor();
+       // diff * intersection_data.triangle->getMaterial()->getColor()
 
        color.a = 255;
        //cout << dot(lightRay.getDirection(), intersection_data.normal) << endl;

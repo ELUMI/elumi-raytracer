@@ -31,8 +31,8 @@ int main(int argc, char* argv[]) {
     outputFileName = argv[2];
 
     raytracer::Settings settings;
-    settings.width = 100;
-    settings.height = 80;
+    settings.width = 320;
+    settings.height = 240;
     settings.backgroundColor[0] = 0;
     settings.backgroundColor[1] = 50;
     settings.backgroundColor[2] = 50;
@@ -103,7 +103,7 @@ int main(int argc, char* argv[]) {
     if (!triangles.empty())
       myRenderer.loadTriangles(triangles);
 
-    ILight* lights = new OmniLight(vec3(5,5,5));
+    ILight* lights = new OmniLight(vec3(0,0,5));
 
     lights->setIntensity(40);
     lights->setDistanceFalloff(QUADRATIC);
@@ -149,7 +149,7 @@ int main(int argc, char* argv[]) {
     exporter->exportImage(outputFileName,settings.width,settings.height,buffer);
 
         //Open an OpenGl window
-          if(!glfwOpenWindow(300,300,0,0,0,0,0,0,GLFW_WINDOW)) {
+          if(!glfwOpenWindow(settings.width,settings.height,0,0,0,0,0,0,GLFW_WINDOW)) {
             glfwTerminate();
             exit(EXIT_FAILURE);
           }
@@ -159,7 +159,7 @@ int main(int argc, char* argv[]) {
             //OpenGl rendering goes here...d
             glClear(GL_COLOR_BUFFER_BIT);
 
-            glDrawPixels(300,300,GL_RGBA,GL_UNSIGNED_INT_8_8_8_8_REV,buffer);
+            glDrawPixels(settings.width,settings.height,GL_RGBA,GL_UNSIGNED_INT_8_8_8_8_REV,buffer);
 
             //Swap front and back rendering buffers
             glfwSwapBuffers();
