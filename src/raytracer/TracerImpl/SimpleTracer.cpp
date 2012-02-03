@@ -33,75 +33,63 @@ void SimpleTracer::trace(Ray* rays, int length, uint8_t* buffer) {
 
   for (size_t i=0; i<length; ++i) {
     vec4 c = traceHelper(&rays[i]);
-
-    buffer[i*4] = glm::min(255, int(c.r));
-    buffer[i*4 +1] = glm::min(255, int(c.g));
-    buffer[i*4 +2] = glm::min(255, int(c.b));
-    buffer[i*4 +3] = glm::min(255, int(c.a));
+    buffer[i*4] = 255*glm::min(1.0f, c.r);
+    buffer[i*4 +1] = 255*glm::min(1.0f, c.g);
+    buffer[i*4 +2] = 255*glm::min(1.0f, c.b);
+    buffer[i*4 +3] = 255*glm::min(1.0f, c.a);
   }
 }
 
 vec4 SimpleTracer::traceHelper(Ray* ray, int levels) {
-  if (levels <= 0)
-    return vec4(0,0,0,255);
-
-  vec4 color;
-  vec4 new_color;
-  vec4 color_black = vec4(0,0,0,255);
+  vec3 color_black = vec3(0.0f,0.0f,0.0f);
 
   IAccDataStruct::IntersectionData intersection_data = scene->getAccDataStruct()->findClosestIntersection(*ray);
   if (intersection_data.triangle == NULL) {
-    color = background_color;
+    return background_color;
+
   } else {
 
+    vec3 color;
     //Light
     ILight* light = scene->getLightVector().front();
     Ray lightRay = Ray::generateRay(intersection_data.interPoint,light->getPosition());
     IAccDataStruct::IntersectionData intersection_data_light = scene->getAccDataStruct()->findClosestIntersection(lightRay);
+
     if (intersection_data_light.triangle == intersection_data.triangle ||
         length(light->getPosition()-intersection_data.interPoint) >
-                    length(light->getPosition()-intersection_data_light.interPoint)) {
-       color = color_black;
-     } else {
-       //Diffuse
-       float diff = abs(dot(lightRay.getDirection(), intersection_data.normal));
-       float falloff = light->getIntensity(length(light->getPosition()-intersection_data.interPoint));
+    length(light->getPosition()-intersection_data_light.interPoint)) {
+      color = color_black;
 
-       //Specular
-       Ray refl = ray->reflection(lightRay, intersection_data.normal, intersection_data.interPoint);
-       vec3 v = normalize(ray->getPosition()-intersection_data.interPoint);
+    } else {
 
-       float spec;
-       if(dot(intersection_data.normal,lightRay.getDirection()) < 0) {
-         spec = 0.0f;
-       } else {
-         //spec = glm::max(0.0f,glm::pow( dot(refl.getDirection(),ray->getPosition()-intersection_data.interPoint),0.3f));
-         spec = glm::max(0.0f,glm::pow( dot(normalize(refl.getDirection()),v),1.0f));
-       }
+      //Diffuse
+      float diff = abs(dot(lightRay.getDirection(), intersection_data.normal));
+      float falloff = light->getIntensity(length(light->getPosition()-intersection_data.interPoint));
 
-       vec4 white = vec4(255,255,255,255);
+      //Specular
+      Ray refl = ray->reflection(lightRay, intersection_data.normal, intersection_data.interPoint);
+      vec3 v = normalize(ray->getPosition()-intersection_data.interPoint);
 
-       color  = falloff * (1.0f * spec * white + diff * intersection_data.triangle->getMaterial()->getColor());
-       //color = falloff * diff * intersection_data.triangle->getMaterial()->getColor();
-       // diff * intersection_data.triangle->getMaterial()->getColor()
+      float spec;
+      if(dot(intersection_data.normal,lightRay.getDirection()) < 0) {
+        spec = 0.0f;
+      } else {
+        //spec = glm::max(0.0f,glm::pow( dot(refl.getDirection(),ray->getPosition()-intersection_data.interPoint),0.3f));
+        spec = glm::max(0.0f,glm::pow( dot(normalize(refl.getDirection()),v),1.0f));
+      }
 
-       color.a = 255;
-       //cout << dot(lightRay.getDirection(), intersection_data.normal) << endl;
-     }
-    //color  = intersection_data.triangle->getMaterial()->getColor();
-    //SHADER
-    //std::cout << intersection_data.triangle << "\n\n";
+      vec3 white = vec3(1,1,1);
 
-    //color = vec4(255,0,0,255);
-    //Ray refl = ray->reflection(*ray, intersection_data.normal, intersection_data.interPoint);
-    //new_color = traceHelper( &refl );
+      color  = falloff * (1.0f * spec * white + diff * intersection_data.triangle->getMaterial()->getDiffuse());
+      //color = falloff * diff * intersection_data.triangle->getMaterial()->getColor();
+      // diff * intersection_data.triangle->getMaterial()->getColor()
+
+
+      //cout << dot(lightRay.getDirection(), intersection_data.normal) << endl;
+
+    }
+    return vec4(color, intersection_data.triangle->getMaterial()->getTransparency());
   }
-
-//  color.r += int(0.5f * new_color.r);
-//  color.g += int(0.5f * new_color.g);
-//  color.b += int(0.5f * new_color.b);
-  //color.a += int(0.5f * new_color.a);
-  return color;
 }
 
 }

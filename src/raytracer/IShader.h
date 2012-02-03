@@ -8,13 +8,18 @@
 #ifndef ISHADER_H_
 #define ISHADER_H_
 
+#include "IAccDataStruct.h"
+#include <glm/glm.hpp>
+using namespace glm;
+
 namespace raytracer {
+
 
 class IShader {
 public:
-	virtual ~IShader();
+	virtual ~IShader() {};
 
-	virtual glm::vec4 shade() = 0;
+	virtual glm::vec4 shade(Ray* ray, IAccDataStruct::IntersectionData intersection_data) = 0;
 };
 
 }
