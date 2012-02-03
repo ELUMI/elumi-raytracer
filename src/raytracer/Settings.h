@@ -23,7 +23,7 @@ struct Settings {
     width = 640;
     height = 480;
 
-    backgroundColor = vec4(0,0,0,255);
+    backgroundColor = vec4(0,0,0,1);
   }
 
   int width;

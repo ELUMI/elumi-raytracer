@@ -16,7 +16,7 @@ namespace raytracer {
 
 class SimpleTracer : public ITracer {
 public:
-  SimpleTracer(Scene* scene, vec4 background_color = vec4(0,0,0,255));
+  SimpleTracer(Scene* scene, vec4 background_color = vec4(0,0,0,1));
   virtual ~SimpleTracer();
 
   void trace(Ray* rays, int length, uint8_t* buffer);

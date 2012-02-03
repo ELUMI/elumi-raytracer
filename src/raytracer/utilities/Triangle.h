@@ -1,5 +1,5 @@
 
-#include "glm/glm.hpp"
+#include <glm/glm.hpp>
 /*
  * Triangle.h
  *
