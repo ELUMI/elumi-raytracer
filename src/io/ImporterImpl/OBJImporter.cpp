@@ -62,6 +62,7 @@ void OBJImporter::loadFile(char* filename){
 	for(int i=0; i<obj_data->faceCount; i++){
 		obj_face *face = obj_data->faceList[i];
 
+
 		vector<vec3*> _vertices;
 		vector<vec3*> _normals;
 		vector<vec3*> _textures;
@@ -75,8 +76,26 @@ void OBJImporter::loadFile(char* filename){
 			//_textures.push_back(new vec3(_text->e[0],_text->e[1],_text->e[2]));
 		}
 		Material* _material = OBJImporter::materials[face->material_index];
-
 		OBJImporter::triangles.push_back(new Triangle(_vertices,_normals,_textures,_material));
+
+		// More than one triangle for each face?
+		for(int f=0;f<face->vertex_count%3;f++){
+			vector<vec3*> _vertices;
+			vector<vec3*> _normals;
+			vector<vec3*> _textures;
+			for(int j=0;j<4;j++){
+				if(j!=(f+1)){
+						obj_vector* _vec  = obj_data->vertexList[ face->vertex_index[j] ];
+						obj_vector* _norm = obj_data->normalList[ face->normal_index[j] ];
+						//obj_vector* _text = obj_data->textureList[ face->texture_index[j] ];
+
+						_vertices.push_back(new vec3(_vec->e[0],_vec->e[1],_vec->e[2]));
+						_normals.push_back(new vec3(_norm->e[0],_norm->e[1],_norm->e[2]));
+						//_textures4.push_back(new vec3(_text->e[0],_text->e[1],_text->e[2]));
+				}
+			}
+			OBJImporter::triangles.push_back(new Triangle(_vertices,_normals,_textures,_material));
+		}
 
 	}
 
