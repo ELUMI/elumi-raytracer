@@ -87,6 +87,7 @@ void mouse(int button, int action) {
   //mouseMove(pos.x,pos.y);
 }
 double prevTime;
+int renderMode=1;
 void timedCallback() {
   double diffTime = glfwGetTime() - prevTime;
   prevTime += diffTime;
@@ -98,6 +99,12 @@ void timedCallback() {
   if (glfwGetKey('A')) { camera.translate(vec3(0,-speed,0)); }
   if (glfwGetKey(' ')) { camera.translate(vec3(0,0, speed)); }
   if (glfwGetKey('Z')) { camera.translate(vec3(0,0,-speed)); }
+  if (glfwGetKey('1')) { renderMode=1; }
+  if (glfwGetKey('2')) { renderMode=2; }
+  if (glfwGetKey('3')) { renderMode=3; }
+  if (glfwGetKey('4')) { renderMode=4; }
+  if (glfwGetKey('5')) { renderMode=5; }
+  if (glfwGetKey('6')) { renderMode=6; }
 }
 
 int main(int argc, char* argv[]) {
@@ -171,25 +178,22 @@ int main(int argc, char* argv[]) {
 		//Main loop
 		while (running) {
 			//OpenGl rendering goes here...d
-			glClearColor(0.0, 0.0, 1.0, 1.0);
+			glClearColor(0.0, 0.3, 0.3, 1.0);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			glEnable(GL_DEPTH_TEST);
 			glDisable(GL_CULL_FACE);
 			glViewport(0, 0, 300, 300);
-			glUseProgram(shaderProgram);
 
-			int loc = glGetUniformLocation(shaderProgram,
-					"modelViewProjectionMatrix");
-			setUniformMVPCamera(loc, camera);
-			vec3 p = camera.getPosition();
-	    std::cout << p.x << "," << p.y << "," << p.z << "\t";
-      p = camera.getDirection();
-      std::cout << p.x << "," << p.y << "," << p.z << std::endl;
-
-      timedCallback();
-      glfwSleep(0.01);
-
-			vertices.draw();
+			switch (renderMode) {
+			case 1: {
+	      glUseProgram(shaderProgram);
+	      int loc = glGetUniformLocation(shaderProgram, "modelViewProjectionMatrix");
+	      setUniformMVPCamera(loc, camera);
+	      vertices.draw();
+			} break;
+			case 2:
+			  break;
+			}
 
 			glUseProgram(0);
 			CHECK_GL_ERROR();
@@ -199,6 +203,9 @@ int main(int argc, char* argv[]) {
 			//Swap front and back rendering buffers
 			glfwSwapBuffers();
 			CHECK_GL_ERROR();
+
+			timedCallback();
+      glfwSleep(0.01);
 
 			//Check if ESC key was pressed or window was closed
 			running = !glfwGetKey(GLFW_KEY_ESC) && glfwGetWindowParam(
