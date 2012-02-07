@@ -31,6 +31,10 @@ public:
 	const float& getFov();
 	const float& getAspectRatio();
 
+	void rotate(vec2 rotation);
+  void translate(vec3 rotation);
+  mat4 getViewMatrix();
+
 private:
 	glm::vec3 m_position;
 	glm::vec3 m_direction;

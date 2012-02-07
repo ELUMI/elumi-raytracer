@@ -1,7 +1,6 @@
 #include "obj_loader.h"
 #include "obj_parser.h"
 
-
 int obj_loader::load(char *filename)
 {
 	int no_error = 1;
