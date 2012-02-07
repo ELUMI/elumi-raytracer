@@ -32,6 +32,7 @@ public:
 	const float& getAspectRatio();
 
 	void rotate(vec2 rotation);
+  void translate(vec3 rotation);
   mat4 getViewMatrix();
 
 private:

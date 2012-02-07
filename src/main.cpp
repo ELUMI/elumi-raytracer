@@ -19,13 +19,14 @@ using namespace raytracer;
 GLuint shaderProgram;
 
 void setUniformMVPCamera(GLuint Location, Camera camera) {
-	glm::mat4 Projection = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.f);
+	//glm::mat4 Projection = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.f);
 
-	mat4 View = lookAt(camera.getPosition(), vec3(0,0,0),
-			camera.getUpVector());
-	mat4 Model = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
-	mat4 MVP = Projection * View * Model;
-	glUniformMatrix4fv(Location, 1, GL_FALSE, glm::value_ptr(MVP));
+	//mat4 View = lookAt(camera.getPosition(), vec3(0,0,0),
+	//		camera.getUpVector());
+	//mat4 Model = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
+	//mat4 MVP = Projection * View * Model;
+  mat4 view = camera.getViewMatrix();
+	glUniformMatrix4fv(Location, 1, GL_FALSE, glm::value_ptr(view));
 }
 
 void init() {
@@ -64,26 +65,40 @@ void init() {
 }
 
 raytracer::Camera camera;
-
 vec2 mousePrev;
-void mouse(int button, int action) {
-  vec2 pos;
-  glfwGetMousePos(&pos.x, &pos.y);
-  if(action) {
-    if(GLFW_MOUSE_BUTTON_LEFT) {
-      prev = vec2(x,y);
-    }
-  }
-  mouseMove(pos.x,pos.y);
-}
+
 void mouseMove(int x, int y) {
   vec2 pos = vec2(x,y);
   if(glfwGetMouseButton(GLFW_MOUSE_BUTTON_LEFT)){
-    camera.rotate(pos-mousePrev);
-    mouserPrev = pos;
+    vec2 diff = pos-mousePrev;
+    camera.rotate(0.5f*diff);
+    mousePrev = pos;
   }
 }
+void mouse(int button, int action) {
+  int x,y;
+  glfwGetMousePos(&x, &y);
+  vec2 pos = vec2(x,y);
+  if(action) {
+    if(button==GLFW_MOUSE_BUTTON_LEFT) {
+      mousePrev = pos;
+    }
+  }
+  //mouseMove(pos.x,pos.y);
+}
+double prevTime;
+void timedCallback() {
+  double diffTime = glfwGetTime() - prevTime;
+  prevTime += diffTime;
 
+  double speed = diffTime*10.0;
+  if (glfwGetKey('W')) { camera.translate(vec3( speed,0,0)); }
+  if (glfwGetKey('S')) { camera.translate(vec3(-speed,0,0)); }
+  if (glfwGetKey('D')) { camera.translate(vec3(0, speed,0)); }
+  if (glfwGetKey('A')) { camera.translate(vec3(0,-speed,0)); }
+  if (glfwGetKey(' ')) { camera.translate(vec3(0,0, speed)); }
+  if (glfwGetKey('Z')) { camera.translate(vec3(0,0,-speed)); }
+}
 
 int main(int argc, char* argv[]) {
 
@@ -137,93 +152,18 @@ int main(int argc, char* argv[]) {
 		 std::cout << vec2->x << ", " << vec2->y << ", " << vec2->z << std::endl << std::endl;
 		 }*/
 
-		Material mat;
-		mat.setColor(vec4(1, 0, 0, 1));
-
-		std::vector<vec3*> verts, norms, texs;
-
-		vec3 v1 = vec3(-5.0f, -5.0f, 0.0f);
-		vec3 v2 = vec3(5.0f, 0.0f, 0.0f);
-		vec3 v3 = vec3(0.0f, 5.0f, 0.0f);
-
-		verts.push_back(&v1);
-		verts.push_back(&v2);
-		verts.push_back(&v3);
-
-		vec3 n1 = vec3(0.0f, 0.0f, 1.0f);
-		vec3 n2 = vec3(0.0f, 0.0f, 1.0f);
-		vec3 n3 = vec3(0.0f, 0.0f, 1.0f);
-
-		norms.push_back(&n1);
-		norms.push_back(&n2);
-		norms.push_back(&n3);
-
-		Triangle tri;
-		tri.set(verts, norms, texs, &mat);
-
-		std::vector<raytracer::Triangle*> triangles2;
-		triangles2.push_back(&tri);
 		std::cout << std::endl << "eAAAAAAAAAAAAAAAAAAAA" << std::endl;
 
 		VertexArrayDataStruct vertices;
-		vertices.setData(triangles2);
+		vertices.setData(triangles);
 		CHECK_GL_ERROR();
 
 		/* RENDERER
 		 ***************** */
 
-		camera.setPosition(vec3(0.0f, 5.0f, 0.0f));
-		camera.setDirection(vec3(0.0f, -1.0f, 0.0f));
-		camera.setUpVector(vec3(0.0f, 0.0f, -1.0f));
-		//    vec3 pos = vec3(0,0,0);
-		//    vec3 dir = vec3(0,0,1);
-		//    vec3 up = vec3(0,1,0);
-		//
-		//    camera.set()
-		//    raytracer::Renderer myRenderer(&settings);
-		//    myRenderer.loadCamera(camera);
-		//    if (!triangles2.empty())
-		//      myRenderer.loadTriangles(triangles);
-		//
-		//
-		//    std::cout << std::endl << "BBBBadsafsdghdfBBBBB" << std::endl;
-		//
-		//    //myRenderer.render();
-		//
-		//    uint8_t* buffer = myRenderer.getFloatArray();
-		//
-		//    std::cout << std::endl << "CCCCCCCCCCCCCCCCc" << std::endl;
-
-		// testbuffer
-		//    uint8_t* buffer = (uint8_t *) calloc (sizeof (uint8_t), settings.width * settings.height * 4);
-		//    for(int i=0;i<settings.height*settings.width*4;i+=4)
-		//    {
-		//      if (i<10000){
-		//        buffer[i] = 255;
-		//        buffer[i+1] = 0;
-		//        buffer[i+2] = 0;
-		//        buffer[i+3] = settings.backgroundColor[3];
-		//      } else if (i>=10000 && i<30000) {
-		//
-		//        buffer[i] = 0;
-		//        buffer[i+1] = 0;
-		//        buffer[i+2] = 255;
-		//        buffer[i+3] = settings.backgroundColor[3];
-		//      } else {
-		//        buffer[i] = settings.backgroundColor[0];
-		//        buffer[i+1] = settings.backgroundColor[1];
-		//        buffer[i+2] = settings.backgroundColor[2];
-		//        buffer[i+3] = settings.backgroundColor[3];
-		//      }
-		//
-		//    }
-
-		/* EXPORTER
-		 ***************** */
-
-		//raytracer::IExporter* exporter = new raytracer::PNGExporter;
-		//exporter->exportImage(outputFileName,settings.width,settings.height,buffer);
-
+		camera.setPosition(vec3(0.0f, 0.0f, 10.0f));
+		camera.setDirection(vec3(0.0f, 0.0f, -1.0f));
+		camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
 
 		glfwSetMouseButtonCallback(mouse);
 		glfwSetMousePosCallback(mouseMove);
@@ -241,13 +181,13 @@ int main(int argc, char* argv[]) {
 			int loc = glGetUniformLocation(shaderProgram,
 					"modelViewProjectionMatrix");
 			setUniformMVPCamera(loc, camera);
+			vec3 p = camera.getPosition();
+	    std::cout << p.x << "," << p.y << "," << p.z << "\t";
+      p = camera.getDirection();
+      std::cout << p.x << "," << p.y << "," << p.z << std::endl;
 
-			if (glfwGetKey('W')) {
-				camera.setPosition(camera.getPosition() + vec3(1, 0, 0));
-			}
-			if (glfwGetKey('S')) {
-				camera.setPosition(camera.getPosition() + vec3(-1, 0, 0));
-			}
+      timedCallback();
+      glfwSleep(0.01);
 
 			vertices.draw();
 

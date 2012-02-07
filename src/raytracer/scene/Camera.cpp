@@ -7,6 +7,9 @@
 
 #include "Camera.h"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp> //translate, rotate, scale, perspective
+
 namespace raytracer {
 
 Camera::Camera() {
@@ -65,9 +68,24 @@ const float& Camera::getAspectRatio() {
 }
 
 void Camera::rotate(vec2 rotation){
+  //m_direction += vec3(rotation, 0);
+  mat4 rot = glm::rotate(mat4(1.0f), -rotation.x, m_up_vector);
+  rot = glm::rotate(rot, -rotation.y, cross(m_direction,m_up_vector));
+  m_direction = normalize(vec3(rot * vec4(m_direction,0)));
+}
+
+void Camera::translate(vec3 translation){
+  m_position += mat3(m_direction, cross(m_direction, m_up_vector), m_up_vector) * translation;
 }
 
 mat4 Camera::getViewMatrix(){
+  mat4 proj = perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.f);
+  mat4 view = glm::lookAt(m_position, m_position + m_direction, m_up_vector);;
+  //view = glm::translate(proj, m_position);
+  //view = glm::rotate(view, m_direction.y, m_up_vector);
+  //view = glm::rotate(view, m_direction.x, cross(m_up_vector, m_direction));
+  //glm::mat4 Model = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
+  return proj*view;
 }
 
 }
