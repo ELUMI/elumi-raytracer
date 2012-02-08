@@ -10,10 +10,10 @@
 #endif // ! __linux__
 
 #include <GL/glew.h>
-#include <GL/glut.h>
+//#include <GL/glut.h>
 
-#include <IL/il.h>
-#include <IL/ilut.h>
+//#include <IL/il.h>
+//#include <IL/ilut.h>
 
 //#include "float2.h"
 //#include "float3x3.h"
