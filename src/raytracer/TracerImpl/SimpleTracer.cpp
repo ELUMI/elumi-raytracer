@@ -32,11 +32,14 @@ void SimpleTracer::trace(Ray* rays, int length, uint8_t* buffer) {
   SimpleTracer::buffer = buffer;
 
   for (size_t i=0; i<length; ++i) {
-    vec4 c = traceHelper(&rays[i]);
-    buffer[i*4] = 255*glm::min(1.0f, c.r);
-    buffer[i*4 +1] = 255*glm::min(1.0f, c.g);
-    buffer[i*4 +2] = 255*glm::min(1.0f, c.b);
-    buffer[i*4 +3] = 255*glm::min(1.0f, c.a);
+    #pragma omp task
+    {
+      vec4 c = traceHelper(&rays[i]);
+      buffer[i*4] = 255*glm::min(1.0f, c.r);
+      buffer[i*4 +1] = 255*glm::min(1.0f, c.g);
+      buffer[i*4 +2] = 255*glm::min(1.0f, c.b);
+      buffer[i*4 +3] = 255*glm::min(1.0f, c.a);
+    }
   }
 }
 
