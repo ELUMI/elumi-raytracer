@@ -119,11 +119,13 @@ int main(int argc, char* argv[]) {
       buffer[i * 4 + 11] = 255;
     }
 
+    //omp_set_nested(1);
+    //omp_set_dynamic(1);
     #pragma omp parallel num_threads(omp_get_num_procs()+1)
     {
       if (omp_get_thread_num() != 0)
       {
-        omp_set_num_threads(omp_get_num_threads()-1);
+        //omp_set_num_threads(omp_get_num_procs());
         myRenderer.render();
       } else {
         /* WINDOW
@@ -191,7 +193,7 @@ int main(int argc, char* argv[]) {
 
 void initGL() {
   glewInit();
-  startupGLDiagnostics();
+  //startupGLDiagnostics();
   CHECK_GL_ERROR();
 
   // Workaround for AMD, which hopefully will not be neccessary in the near future...
