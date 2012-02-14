@@ -55,11 +55,13 @@
  *	CHECK_GL_ERROR(); // see if glClear() generated an error
  */
 
+
+#if !defined(_WIN32) || !defined(__debugbreak)
+# define __debugbreak() assert(false)
+#endif
+
 #define CHECK_GL_ERROR() { checkGLError(__FILE__, __LINE__) && (__debugbreak(), 1); }
 
-#if !defined(_WIN32)
-#	define __debugbreak() assert(false)
-#endif
 
 /**
  * Internal function used by macro CHECK_GL_ERROR, use that instead.
