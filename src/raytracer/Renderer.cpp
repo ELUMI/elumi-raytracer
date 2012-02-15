@@ -7,6 +7,8 @@
 
 #include "Renderer.h"
 #include "TracerImpl/SimpleTracer.h"
+#include <boost/thread.hpp>
+#include <boost/bind.hpp>
 
 using namespace std;
 
@@ -17,9 +19,11 @@ Renderer::Renderer(Settings* settings)
   m_settings = settings;
   m_tracer = new SimpleTracer(&m_scene, settings->backgroundColor);
   color_buffer = new uint8_t[m_settings->width * m_settings->height * 4];//(uint8_t *) calloc (sizeof (uint8_t), m_settings->width * m_settings->height * 4);
+  renderthread = 0;
 }
 
 Renderer::~Renderer() {
+  stopRendering();
   delete m_tracer;
   delete [] color_buffer;
 }
@@ -40,6 +44,24 @@ uint8_t* Renderer::getFloatArray() {
 	return color_buffer;
 }
 
+void Renderer::asyncRender() {
+  if(renderthread){
+    stopRendering();
+  }
+  renderthread = new boost::thread( boost::bind(&Renderer::render, this ));
+}
+
+void Renderer::stopRendering() {
+  if(renderthread) {
+    if(m_tracer)
+      m_tracer->stopTracing();
+    renderthread->join();
+    delete renderthread;
+    renderthread = 0;
+  }
+}
+
+
 void Renderer::render() {
   int rays_length = m_settings->width*m_settings->height;
 
@@ -53,7 +75,8 @@ void Renderer::render() {
   //We step over all "pixels" from the cameras viewpoint
   for(int h = 0; h < m_settings->height; h++) {
     for(int w = 0; w < m_settings->width; w++) {
-      vec4 dir = normalize(vec4(2*float(w)/m_settings->width-1, 2*float(h)/m_settings->height-1, 1, 1));
+      vec4 dir = vec4(2.0f*float(w)/(m_settings->width -1)-1.0f,
+                      2.0f*float(h)/(m_settings->height-1)-1.0f, 1.0f, 1.0f);
       dir = view*dir;
 
       rays[w+h*m_settings->width] = Ray(camera.getPosition(),vec3(dir));
@@ -65,12 +88,10 @@ void Renderer::render() {
 
   //Free memory
   delete [] rays;
-
 }
 
-int Renderer::renderComplete() {
-
-	return -1;
+unsigned int Renderer::renderComplete() {
+	return m_tracer->getPixelsLeft();
 }
 
 }

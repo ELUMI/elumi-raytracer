@@ -17,7 +17,7 @@
 #include <stdint.h>
 
 #include <iostream>
-
+#include <boost/thread.hpp>
 #include "glm/glm.hpp"
 
 using namespace glm;
@@ -35,12 +35,14 @@ public:
   void loadSettings(Settings& settings);
 
   uint8_t* getFloatArray();
-  void render();  // asynchronic
+  void render();  // synchronic
+  void asyncRender();  // asynchronic
   
   /*
    * @return The number of pixels left to render
    */
-  int renderComplete();
+  unsigned int renderComplete();
+  void stopRendering();
   
 private:
   Scene m_scene;
@@ -49,6 +51,8 @@ private:
 
   // SOME KIND OF RAY-ARRAY MEMBER?
   uint8_t* color_buffer;
+
+  boost::thread* renderthread;
 };
 
 }

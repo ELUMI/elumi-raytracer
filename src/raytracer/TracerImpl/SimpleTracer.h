@@ -20,12 +20,15 @@ public:
   virtual ~SimpleTracer();
 
   void trace(Ray* rays, int length, uint8_t* buffer);
-
+  void stopTracing();
+  unsigned int getPixelsLeft();
 private:
   vec4 traceHelper(Ray* ray, int levels=3);
   Scene* scene;
   vec4 background_color;
   uint8_t* buffer;
+  bool abort;
+  unsigned int pixelsLeft;
 };
 
 }

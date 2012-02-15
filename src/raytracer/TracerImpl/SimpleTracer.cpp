@@ -21,25 +21,40 @@ namespace raytracer {
 SimpleTracer::SimpleTracer(Scene* scene, vec4 background_color) {
   SimpleTracer::scene = scene;
   SimpleTracer::background_color = background_color;
+  abort = false;
 }
 
 SimpleTracer::~SimpleTracer() {
+  stopTracing();
+}
 
+void SimpleTracer::stopTracing() {
+  abort = true;
+}
+
+unsigned int SimpleTracer::getPixelsLeft(){
+  return pixelsLeft;
 }
 
 void SimpleTracer::trace(Ray* rays, int length, uint8_t* buffer) {
-
+  abort = false;
   SimpleTracer::buffer = buffer;
+  pixelsLeft = length;
 
-  #pragma omp for
+  #pragma omp parallel for
   for (size_t i=0; i<length; ++i) {
     //#pragma omp task
+    #pragma omp flush (abort)
+    if(!abort)
     {
       vec4 c = traceHelper(&rays[i]);
       buffer[i*4] = 255*glm::min(1.0f, c.r);
       buffer[i*4 +1] = 255*glm::min(1.0f, c.g);
       buffer[i*4 +2] = 255*glm::min(1.0f, c.b);
       buffer[i*4 +3] = 255*glm::min(1.0f, c.a);
+
+      #pragma omp atomic
+      --pixelsLeft;
     }
   }
 }

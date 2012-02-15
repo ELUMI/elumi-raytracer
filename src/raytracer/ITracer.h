@@ -17,9 +17,10 @@ class ITracer {
 public:
 	virtual ~ITracer() {};
 	virtual void trace(Ray* rays, int length, unsigned char* buffer) = 0;
+	virtual void stopTracing() = 0;
+  virtual unsigned int getPixelsLeft() = 0;
 private:
 	vec4 traceHelper(Ray* ray);
-
 };
 
 }
