@@ -1,5 +1,10 @@
 #include <GL/glew.h>
 
+#include <boost/program_options.hpp>
+namespace po = boost::program_options;
+
+#include <IL/il.h>
+
 #include "io/ExporterImpl/PNGExporter.h"
 #include "io/ImporterImpl/OBJImporter.h"
 #include "raytracer/Renderer.h"
@@ -40,6 +45,39 @@ int main(int argc, char* argv[]) {
 
   int running = GL_TRUE;
 
+  char* inputFileName, *outputFileName, *settingsFile;
+
+  ilInit();
+
+  // Declare the supported options.
+  po::options_description desc("Allowed options");
+  desc.add_options()
+      ("help", "produce help message")
+      ("input-file", po::value<string>(),"Input file")
+      ("output-file", po::value<string>(),"Output file")
+      ("no_opengl", "Do not use OpenGL");
+
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::notify(vm);
+
+  if (vm.count("help")) {
+      cout << desc << "\n";
+      return 1;
+  }
+
+  if(vm.count("input-file")) {
+  } else {
+  }
+
+  if (vm.count("no_opengl")) {
+    cout << "Not using OpenGL" << endl;
+    settings.use_opengl = false;
+  } else {
+      cout << "Using OpenGL.\n";
+  }
+  /** END TEST**/
+
   //Initialize GLFW
   if (!glfwInit()) {
     exit(EXIT_FAILURE);
@@ -51,7 +89,7 @@ int main(int argc, char* argv[]) {
   }
   // if we got enough parameters...
   else {
-    char* inputFileName, *outputFileName, *settingsFile;
+
     inputFileName = argv[1];
     outputFileName = argv[2];
 
@@ -62,14 +100,19 @@ int main(int argc, char* argv[]) {
     settings.backgroundColor[2] = 50.0f / 255.0f;
     settings.backgroundColor[3] = 1;
 
-    //Open an OpenGl window
-    if (!glfwOpenWindow(settings.width, settings.height, 0, 0, 0, 0, 0, 0,
-        GLFW_WINDOW)) {
-      glfwTerminate();
-      exit(EXIT_FAILURE);
+    if(settings.use_opengl) {
+      //Open an OpenGl window
+      if (!glfwOpenWindow(settings.width, settings.height, 0, 0, 0, 0, 0, 0,
+          GLFW_WINDOW)) {
+        glfwTerminate();
+        exit(EXIT_FAILURE);
+      }
+      initGL();
+      CHECK_GL_ERROR();
+
+      glfwSetMouseButtonCallback(mouse);
+      glfwSetMousePosCallback(mouseMove);
     }
-    initGL();
-    CHECK_GL_ERROR();
 
     /* IMPORTER
      ***************** */
@@ -79,17 +122,15 @@ int main(int argc, char* argv[]) {
     std::vector<raytracer::Triangle*> triangles = importer->getTriangleList();
 
     VertexArrayDataStruct vertices;
-    vertices.setData(triangles);
-    CHECK_GL_ERROR();
+    if(settings.use_opengl) {
+      vertices.setData(triangles);
+    }
 
     /* RENDERER
      ***************** */
     camera.setPosition(vec3(0.2f, 1.0f, 5.0f));
     camera.setDirection(vec3(0.0f, 0.0f, -1.0f));
     camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
-
-    glfwSetMouseButtonCallback(mouse);
-    glfwSetMousePosCallback(mouseMove);
 
     raytracer::Renderer myRenderer(&settings);
     myRenderer.loadCamera(camera);
@@ -119,62 +160,68 @@ int main(int argc, char* argv[]) {
       buffer[i * 4 + 11] = 255;
     }
 
-    #pragma omp parallel num_threads(omp_get_num_procs()+1)
-    {
-      if (omp_get_thread_num() != 0)
+    if(settings.use_opengl) {
+      #pragma omp parallel num_threads(omp_get_num_procs()+1)
       {
-        omp_set_num_threads(omp_get_num_threads()-1);
-        myRenderer.render();
-      } else {
-        /* WINDOW
-         ***************** */
+        if (omp_get_thread_num() != 0)
+        {
+          omp_set_num_threads(omp_get_num_threads()-1);
+          myRenderer.render();
+        } else {
+          /* WINDOW
+           ***************** */
+          glfwEnable(GLFW_AUTO_POLL_EVENTS);
+          glfwSetWindowSizeCallback(windowSize); // TODO: In settings
 
-        glfwEnable(GLFW_AUTO_POLL_EVENTS);
-        glfwSetWindowSizeCallback(windowSize); // TODO: In settings
+          while (running) {
+            //OpenGl rendering goes here...d
+            glClearColor(settings.backgroundColor.x, settings.backgroundColor.y,
+                settings.backgroundColor.z, settings.backgroundColor.a);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glEnable(GL_DEPTH_TEST);
+            glDisable(GL_CULL_FACE);
 
-        while (running) {
-          //OpenGl rendering goes here...d
-          glClearColor(settings.backgroundColor.x, settings.backgroundColor.y,
-              settings.backgroundColor.z, settings.backgroundColor.a);
-          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-          glEnable(GL_DEPTH_TEST);
-          glDisable(GL_CULL_FACE);
+            switch (renderMode) {
+            case 1: {
+              glUseProgram(shaderProgram);
+              int loc = glGetUniformLocation(shaderProgram,
+                  "modelViewProjectionMatrix");
+              mat4 view = camera.getViewMatrix();
+              glUniformMatrix4fv(loc, 1, GL_FALSE, value_ptr(view));
 
-          switch (renderMode) {
-          case 1: {
-            glUseProgram(shaderProgram);
-            int loc = glGetUniformLocation(shaderProgram,
-                "modelViewProjectionMatrix");
-            mat4 view = camera.getViewMatrix();
-            glUniformMatrix4fv(loc, 1, GL_FALSE, value_ptr(view));
+              vertices.draw();
+              break;
+            }
+            case 2:
+              glDrawPixels(settings.width, settings.height, GL_RGBA,
+                  GL_UNSIGNED_INT_8_8_8_8_REV, buffer);
+              break;
+            }
 
-            vertices.draw();
-            break;
+            glUseProgram(0);
+            CHECK_GL_ERROR();
+
+            //Swap front and back rendering buffers
+            glfwSwapBuffers();
+
+            timedCallback();
+            glfwSleep(0.01);
+
+            //Check if ESC key was pressed or window was closed
+            running = !glfwGetKey(GLFW_KEY_ESC)
+                            && glfwGetWindowParam(GLFW_OPENED);
           }
-          case 2:
-            glDrawPixels(settings.width, settings.height, GL_RGBA,
-                GL_UNSIGNED_INT_8_8_8_8_REV, buffer);
-            break;
-          }
-
-          glUseProgram(0);
-          CHECK_GL_ERROR();
-
-          //Swap front and back rendering buffers
-          glfwSwapBuffers();
-
-          timedCallback();
-          glfwSleep(0.01);
-
-          //Check if ESC key was pressed or window was closed
-          running = !glfwGetKey(GLFW_KEY_ESC)
-              && glfwGetWindowParam(GLFW_OPENED);
         }
       }
+      //Close window and terminate GLFW
+      glfwTerminate();
     }
-
-    //Close window and terminate GLFW
-    glfwTerminate();
+    else {  //Not OpenGL
+      #pragma omp parallel
+      {
+        myRenderer.render();
+      }
+    }
 
     /* EXPORTER
      ***************** */
@@ -191,7 +238,7 @@ int main(int argc, char* argv[]) {
 
 void initGL() {
   glewInit();
-  startupGLDiagnostics();
+  //startupGLDiagnostics();
   CHECK_GL_ERROR();
 
   // Workaround for AMD, which hopefully will not be neccessary in the near future...

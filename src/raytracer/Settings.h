@@ -23,13 +23,15 @@ struct Settings {
     width = 640;
     height = 480;
 
+    use_opengl = true;
+
     backgroundColor = vec4(0,0,0,1);
   }
 
   int width;
   int height;
   vec4 backgroundColor;
-
+  bool use_opengl;
 };
 
 }
