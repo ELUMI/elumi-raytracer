@@ -32,7 +32,7 @@ private:
   bool abort;
   unsigned int pixelsLeft;
 
-  DeferredProcesser first_pass;
+  //DeferredProcesser first_pass;
 };
 
 }

@@ -8,10 +8,17 @@
 #ifndef OBJIMPORTER_H_
 #define OBJIMPORTER_H_
 
+#include <stdexcept>
+
 #include "../IImporter.h"
 #include "OBJImporterImpl/obj_loader.h"
 
 namespace raytracer {
+
+class ImageNotLoadedException : public runtime_error {
+public:
+  ImageNotLoadedException() : runtime_error("The image was not loaded.") {}
+};
 
 class OBJImporter : public IImporter{
 public:
@@ -21,6 +28,7 @@ public:
 		void loadFile(char* filename);
 		std::vector<Triangle*>& getTriangleList();
 		std::vector<Material*>& getMaterialList();
+		std::vector<Texture*>& getTextures();
 
 		Camera* getCamera();
 
@@ -30,6 +38,7 @@ public:
 private:
 		std::vector<Triangle*> triangles;
 		std::vector<Material*> materials;
+		std::vector<Texture*> textures;
 
 		Camera* camera;
 

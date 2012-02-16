@@ -1,5 +1,8 @@
 #include <GL/glew.h>
 
+#include <boost/program_options.hpp>
+namespace po = boost::program_options;
+
 #include "io/ExporterImpl/PNGExporter.h"
 #include "io/ImporterImpl/OBJImporter.h"
 #include "raytracer/Renderer.h"
@@ -39,6 +42,35 @@ int main(int argc, char* argv[]) {
 
   int running = GL_TRUE;
 
+  char* inputFileName, *outputFileName, *settingsFile;
+
+  // Declare the supported options.
+  po::options_description desc("Allowed options");
+  desc.add_options()("help", "produce help message")("input-file",
+      po::value<string>(), "Input file")("output-file", po::value<string>(),
+      "Output file")("no_opengl", "Do not use OpenGL");
+
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::notify(vm);
+
+  if (vm.count("help")) {
+    cout << desc << "\n";
+    return 1;
+  }
+
+  if (vm.count("input-file")) {
+  } else {
+  }
+
+  if (vm.count("no_opengl")) {
+    cout << "Not using OpenGL" << endl;
+    settings.use_opengl = false;
+  } else {
+    cout << "Using OpenGL.\n";
+  }
+  /** END TEST**/
+
   //Initialize GLFW
   if (!glfwInit()) {
     exit(EXIT_FAILURE);
@@ -47,20 +79,19 @@ int main(int argc, char* argv[]) {
   if (argc < 3) { // Check the value of argc. If not enough parameters have been passed, inform user and exit.
     std::cout << "Usage is <flags> <infile> <outfile>\n"; // Inform the user of how to use the program
     exit(0);
-  }
-  // if we got enough parameters...
-  else {
-    char* inputFileName, *outputFileName, *settingsFile;
-    inputFileName = argv[1];
-    outputFileName = argv[2];
+  } // else if we got enough parameters...
 
-    settings.width = 100;
-    settings.height = 100;
-    settings.backgroundColor[0] = 0;
-    settings.backgroundColor[1] = 50.0f / 255.0f;
-    settings.backgroundColor[2] = 50.0f / 255.0f;
-    settings.backgroundColor[3] = 0;
+  inputFileName = argv[1];
+  outputFileName = argv[2];
 
+  settings.width = 100;
+  settings.height = 100;
+  settings.backgroundColor[0] = 0;
+  settings.backgroundColor[1] = 50.0f / 255.0f;
+  settings.backgroundColor[2] = 50.0f / 255.0f;
+  settings.backgroundColor[3] = 0;
+
+  if (settings.use_opengl) {
     //Open an OpenGl window
     if (!glfwOpenWindow(settings.width, settings.height, 0, 0, 0, 0, 0, 0,
         GLFW_WINDOW)) {
@@ -70,59 +101,62 @@ int main(int argc, char* argv[]) {
     initGL();
     CHECK_GL_ERROR();
 
-    /* IMPORTER
-     ***************** */
-
-    raytracer::IImporter* importer = new raytracer::OBJImporter();
-    importer->loadFile(inputFileName);
-    std::vector<raytracer::Triangle*> triangles = importer->getTriangleList();
-    std::vector<raytracer::Material*> materials = importer->getMaterialList();
-    CHECK_GL_ERROR();
-
-    /* RENDERER
-     ***************** */
-    camera.setPosition(vec3(3.512f, 2.5f, 3.5f));
-    camera.setDirection(normalize(vec3(-1.0f, -0.5f, -1.0f)));
-    camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
-
     glfwSetMouseButtonCallback(mouse);
     glfwSetMousePosCallback(mouseMove);
+  }
 
-    myRenderer = new Renderer(&settings);
-    myRenderer->loadCamera(camera);
-    if (!triangles.empty()) {
-      myRenderer->getScene().loadMaterials(materials); //load materials BEFORE triangles!
-      myRenderer->loadTriangles(triangles);
-    }
+  /* IMPORTER
+   ***************** */
 
-    ILight* lights = new OmniLight(vec3(2, 3, 5));
+  raytracer::IImporter* importer = new raytracer::OBJImporter();
+  importer->loadFile(inputFileName);
+  std::vector<raytracer::Triangle*> triangles = importer->getTriangleList();
+  std::vector<raytracer::Material*> materials = importer->getMaterialList();
+  CHECK_GL_ERROR();
 
-    lights->setIntensity(40);
-    lights->setDistanceFalloff(QUADRATIC);
+  /* RENDERER
+   ***************** */
+  camera.setPosition(vec3(3.512f, 2.5f, 3.5f));
+  camera.setDirection(normalize(vec3(-1.0f, -0.5f, -1.0f)));
+  camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
 
-    myRenderer->loadLights(lights, 1, false);
+  myRenderer = new Renderer(&settings);
+  myRenderer->loadCamera(camera);
+  if (!triangles.empty()) {
+    myRenderer->getScene().loadMaterials(materials); //load materials BEFORE triangles!
+    myRenderer->loadTriangles(triangles);
+  }
 
-    buffer = myRenderer->getFloatArray();
-    for (int i = 0; i < settings.width * settings.height; i += 3) {
-      buffer[i * 4 + 0] = 0;
-      buffer[i * 4 + 1] = 50;
-      buffer[i * 4 + 2] = 50;
-      buffer[i * 4 + 3] = 255;
-      buffer[i * 4 + 4] = 0;
-      buffer[i * 4 + 5] = 0;
-      buffer[i * 4 + 6] = 0;
-      buffer[i * 4 + 7] = 255;
-      buffer[i * 4 + 8] = 0;
-      buffer[i * 4 + 9] = 0;
-      buffer[i * 4 + 10] = 0;
-      buffer[i * 4 + 11] = 255;
-    }
+  ILight* lights = new OmniLight(vec3(2, 3, 5));
 
+  lights->setIntensity(40);
+  lights->setDistanceFalloff(QUADRATIC);
+
+  myRenderer->loadLights(lights, 1, false);
+
+  buffer = myRenderer->getFloatArray();
+  for (int i = 0; i < settings.width * settings.height; i += 3) {
+    buffer[i * 4 + 0] = 0;
+    buffer[i * 4 + 1] = 50;
+    buffer[i * 4 + 2] = 50;
+    buffer[i * 4 + 3] = 255;
+    buffer[i * 4 + 4] = 0;
+    buffer[i * 4 + 5] = 0;
+    buffer[i * 4 + 6] = 0;
+    buffer[i * 4 + 7] = 255;
+    buffer[i * 4 + 8] = 0;
+    buffer[i * 4 + 9] = 0;
+    buffer[i * 4 + 10] = 0;
+    buffer[i * 4 + 11] = 255;
+  }
+
+  if (!settings.use_opengl) {
+    myRenderer->render();
+  } else {
     myRenderer->asyncRender();
 
     /* WINDOW
      ***************** */
-
     glfwEnable(GLFW_AUTO_POLL_EVENTS);
     glfwSetWindowSizeCallback(windowSize); // TODO: In settings
 
@@ -164,20 +198,17 @@ int main(int argc, char* argv[]) {
       running = !glfwGetKey(GLFW_KEY_ESC) && glfwGetWindowParam(GLFW_OPENED);
     }
 
-    delete myRenderer;
-
     //Close window and terminate GLFW
     glfwTerminate();
-
-    /* EXPORTER
-     ***************** */
-    raytracer::IExporter* exporter = new raytracer::PNGExporter;
-    exporter->exportImage(outputFileName, settings.width, settings.height,
-        buffer);
-    delete importer;
-    delete exporter;
-    std::cout << std::endl << "end of PROGRAM" << std::endl;
   }
+  delete myRenderer;
+  /* EXPORTER
+   ***************** */
+  raytracer::IExporter* exporter = new raytracer::PNGExporter;
+  exporter->exportImage(outputFileName, settings.width, settings.height, buffer);
+  delete importer;
+  delete exporter;
+  std::cout << std::endl << "end of PROGRAM" << std::endl;
 
   exit(EXIT_SUCCESS);
 }

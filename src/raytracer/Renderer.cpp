@@ -15,7 +15,7 @@ using namespace std;
 namespace raytracer {
 
 Renderer::Renderer(Settings* settings)
-  : m_scene() {
+  : m_scene(settings) {
   m_settings = settings;
   m_tracer = new SimpleTracer(&m_scene, settings->backgroundColor);
   color_buffer = new uint8_t[m_settings->width * m_settings->height * 4];//(uint8_t *) calloc (sizeof (uint8_t), m_settings->width * m_settings->height * 4);

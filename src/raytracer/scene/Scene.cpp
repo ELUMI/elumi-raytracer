@@ -10,16 +10,19 @@
 
 namespace raytracer {
 
-Scene::Scene()
+Scene::Scene(Settings* settings)
   : m_camera(), m_lights(), m_materials() {
   m_acc_data_struct = new ArrayDataStruct();
+  m_settings = settings;
 }
 
 Scene::~Scene() {}
 
 void Scene::loadTriangles(vector<Triangle*> triangles, bool overwrite) {
   m_acc_data_struct->setData(triangles);
-  m_vertex_array.setData(this, triangles);
+  if(m_settings->use_opengl){
+    m_vertex_array.setData(this, triangles);
+  }
 }
 
 void Scene::loadCamera(Camera camera) {
@@ -40,6 +43,11 @@ void Scene::loadMaterials(Material* materials, int length) {
 
 void Scene::loadMaterials(std::vector<raytracer::Material*> materials) {
   m_materials = materials;
+}
+//Adds a texture and returns its index
+int Scene::addTexture(Texture* texture) {
+  m_textures.push_back(texture);
+  return m_textures.size()-1;
 }
 
 const std::vector<ILight*>& Scene::getLightVector() {

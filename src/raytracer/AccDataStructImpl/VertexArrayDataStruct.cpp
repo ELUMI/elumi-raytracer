@@ -22,21 +22,21 @@ namespace raytracer {
 VertexArrayDataStruct::VertexArrayDataStruct() {
   // TODO Auto-generated constructor stub
 
+  inited = false;
 }
 
 VertexArrayDataStruct::~VertexArrayDataStruct() {
-  // TODO Auto-generated destructor stub
-
-  glDeleteBuffers(1, &positionBuffer);
-  glDeleteBuffers(1, &colorBuffer);
-  glDeleteBuffers(1, &texcoordBuffer);
-  //glDeleteBuffers(1, &indexBuffer);
-  glDeleteVertexArrays(1, &vertexArrayObject);
-  //glDeleteTextures(1, &m_texture);
+  if(inited) {
+    glDeleteBuffers(1, &positionBuffer);
+    glDeleteBuffers(1, &colorBuffer);
+    glDeleteBuffers(1, &texcoordBuffer);
+    //glDeleteBuffers(1, &indexBuffer);
+    glDeleteVertexArrays(1, &vertexArrayObject);
+    //glDeleteTextures(1, &m_texture);
+  }
 }
 
 void VertexArrayDataStruct::setData(Scene* scene, std::vector<Triangle*> triangles) {
-
   for (unsigned int i = 0; i < triangles.size(); ++i) {
     //int base = m_vertices.size();
 
@@ -97,6 +97,7 @@ void VertexArrayDataStruct::setData(Scene* scene, std::vector<Triangle*> triangl
   //	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
   //	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+  inited=true;
 }
 void VertexArrayDataStruct::draw() {
   //glActiveTexture(GL_TEXTURE0);

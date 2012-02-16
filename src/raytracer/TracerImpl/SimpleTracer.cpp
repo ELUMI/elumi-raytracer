@@ -18,11 +18,10 @@ namespace raytracer {
 
 //ITracer::~ITracer() {}
 
-SimpleTracer::SimpleTracer(Scene* scene, vec4 background_color) : first_pass(100,100) { //TODO: get from settings!!!
+SimpleTracer::SimpleTracer(Scene* scene, vec4 background_color) { //TODO: get from settings!!!
   SimpleTracer::scene = scene;
   SimpleTracer::background_color = background_color;
   abort = false;
-
  }
 
 SimpleTracer::~SimpleTracer() {
@@ -38,7 +37,7 @@ unsigned int SimpleTracer::getPixelsLeft(){
 }
 
 void SimpleTracer::first_bounce(int length, uint8_t* buffer) {
-  first_pass.render(scene, scene->getCamera().getViewMatrix());
+  //first_pass.render(scene, scene->getCamera().getViewMatrix());
 }
 
 void SimpleTracer::trace(Ray* rays, int length, uint8_t* buffer) {

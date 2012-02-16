@@ -42,6 +42,7 @@ private:
   GLuint indexBuffer;
   GLuint vertexArrayObject;
   GLuint m_texture;
+  bool inited;
 
 };
 }
