@@ -40,11 +40,21 @@ void Renderer::loadLights(ILight* lights, int length, bool overwrite) {
   m_scene.loadLights(lights,length,overwrite);
 }
 
+Scene& Renderer::getScene() {
+  return m_scene;
+}
+
+ITracer* Renderer::getTracer() {
+  return m_tracer;
+}
+
 uint8_t* Renderer::getFloatArray() {
 	return color_buffer;
 }
 
 void Renderer::asyncRender() {
+  m_tracer->first_bounce(m_settings->width*m_settings->height,color_buffer); //must be done in master thread
+
   if(renderthread){
     stopRendering();
   }
@@ -70,17 +80,22 @@ void Renderer::render() {
 
   Camera camera = m_scene.getCamera();
   mat4 view = camera.getViewMatrix();
-  view = inverse(view);
+
+  float w = m_settings->width,
+        h = m_settings->height;
+  mat4 viewport(w/2,  0.0f, 0.0f, w/2,
+                0.0f, h/2,  0.0f, h/2,
+                0.0f, 0.0f, 0.5f, 0.5f,
+                0.0f, 0.0f, 0.0f, 1.0f);
+
+  mat4 trans = inverse(view) * transpose(inverse(viewport));
 
   //We step over all "pixels" from the cameras viewpoint
-  for(int h = 0; h < m_settings->height; h++) {
-    for(int w = 0; w < m_settings->width; w++) {
-      vec4 dir = vec4(2.0f*float(w)/(m_settings->width -1)-1.0f,
-                      2.0f*float(h)/(m_settings->height-1)-1.0f, 1.0f, 1.0f);
-      dir = view*dir;
+  for(int y = 0; y < m_settings->height; y++) {
+    for(int x = 0; x < m_settings->width; x++) {
+      vec4 dir = trans * vec4(x,y,1,1);
 
-      rays[w+h*m_settings->width] = Ray(camera.getPosition(),vec3(dir));
-
+      rays[x+y*m_settings->width] = Ray(camera.getPosition(), vec3(normalize(dir)));
     }
   }
 

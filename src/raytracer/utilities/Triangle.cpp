@@ -15,7 +15,7 @@ Triangle::Triangle()
 :vertices(),normals(),textures(){
 
 }
-Triangle::Triangle(vector<vec3*> vertices,vector<vec3*> normals,vector<vec3*> texture,Material* material)
+Triangle::Triangle(vector<vec3*> vertices, vector<vec3*> normals, vector<vec3*> texture, unsigned int material)
 :vertices(),normals(),textures(){
 	Triangle::set(vertices,normals,texture,material);
 }
@@ -24,10 +24,10 @@ Triangle::~Triangle() {
 	Triangle::vertices.clear();
 	Triangle::normals.clear();
 	Triangle::textures.clear();
-	delete(Triangle::material);
+	//delete(Triangle::material); //TODO: Add delete in scene
 }
 
-void Triangle::set(vector<vec3*> vertices,vector<vec3*> normals,vector<vec3*> textures,Material* material){
+void Triangle::set(vector<vec3*> vertices, vector<vec3*> normals, vector<vec3*> textures, unsigned int material){
 	Triangle::vertices = vertices;
 	Triangle::normals = normals;
 	Triangle::textures = textures;
@@ -37,6 +37,6 @@ void Triangle::set(vector<vec3*> vertices,vector<vec3*> normals,vector<vec3*> te
 const vector<vec3*>& Triangle::getVertices() {return Triangle::vertices;}
 const vector<vec3*>& Triangle::getNormals() {return Triangle::normals;}
 const vector<vec3*>& Triangle::getTextures() {return Triangle::textures;}
-Material* Triangle::getMaterial() {return Triangle::material;}
+unsigned int Triangle::getMaterial() {return Triangle::material;}
 
 }

@@ -24,15 +24,17 @@ public:
 class IAccDataStruct {
 public:
   struct IntersectionData {
-    IntersectionData(Triangle* triangle, vec3 interPoint, vec3 normal) {
-      IntersectionData::triangle = triangle;
+    IntersectionData(unsigned int material, vec3 interPoint, vec3 normal) {
+      IntersectionData::material = material;
       IntersectionData::interPoint = interPoint;
       IntersectionData::normal = normal;
     };
 
-    Triangle* triangle;
+    //Triangle* triangle;
+    unsigned int material;
     vec3 interPoint;
     vec3 normal;
+    const unsigned static int NOT_FOUND = -1;
   };
 
 

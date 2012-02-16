@@ -20,13 +20,14 @@ using namespace glm;
 
 namespace raytracer {
 
-class VertexArrayDataStruct: public raytracer::IAccDataStruct {
+class Scene;
+
+class VertexArrayDataStruct {
 public:
   VertexArrayDataStruct();
   virtual ~VertexArrayDataStruct();
 
-  IntersectionData findClosestIntersection(Ray ray);
-  void setData(std::vector<Triangle*> triangles);
+  void setData(Scene* scene, std::vector<Triangle*> triangles);
   GLuint getVertexArrayObject();
   void draw();
 

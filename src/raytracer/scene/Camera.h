@@ -33,7 +33,7 @@ public:
 
 	void rotate(vec2 rotation);
   void translate(vec3 rotation);
-  mat4 getViewMatrix();
+  mat4 getViewMatrix() const;
 
 private:
 	glm::vec3 m_position;

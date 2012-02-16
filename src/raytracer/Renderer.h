@@ -29,20 +29,23 @@ public:
   Renderer(Settings* settings);
   virtual ~Renderer();
   
+  Scene& getScene();
+  ITracer* getTracer();
+
   void loadTriangles(vector<Triangle*> triangles, bool overwrite=false);
   void loadCamera(Camera& camera);
   void loadLights(ILight* lights, int length, bool overwrite=false);
   void loadSettings(Settings& settings);
 
   uint8_t* getFloatArray();
-  void render();  // synchronic
-  void asyncRender();  // asynchronic
-  
+  void render();       // synchronous
+  void asyncRender();  // asynchronous
+  void stopRendering();// synchronous
+
   /*
    * @return The number of pixels left to render
    */
   unsigned int renderComplete();
-  void stopRendering();
   
 private:
   Scene m_scene;

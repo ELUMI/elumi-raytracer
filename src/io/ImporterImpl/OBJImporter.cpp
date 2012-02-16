@@ -75,7 +75,7 @@ void OBJImporter::loadFile(char* filename){
 			_normals.push_back(new vec3(_norm->e[0],_norm->e[1],_norm->e[2]));
 			//_textures.push_back(new vec3(_text->e[0],_text->e[1],_text->e[2]));
 		}
-		Material* _material = OBJImporter::materials[face->material_index];
+		unsigned int _material = face->material_index;
 		OBJImporter::triangles.push_back(new Triangle(_vertices,_normals,_textures,_material));
 
 		// More than one triangle for each face?

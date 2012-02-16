@@ -18,11 +18,12 @@ namespace raytracer {
 
 //ITracer::~ITracer() {}
 
-SimpleTracer::SimpleTracer(Scene* scene, vec4 background_color) {
+SimpleTracer::SimpleTracer(Scene* scene, vec4 background_color) : first_pass(100,100) { //TODO: get from settings!!!
   SimpleTracer::scene = scene;
   SimpleTracer::background_color = background_color;
   abort = false;
-}
+
+ }
 
 SimpleTracer::~SimpleTracer() {
   stopTracing();
@@ -34,6 +35,10 @@ void SimpleTracer::stopTracing() {
 
 unsigned int SimpleTracer::getPixelsLeft(){
   return pixelsLeft;
+}
+
+void SimpleTracer::first_bounce(int length, uint8_t* buffer) {
+  first_pass.render(scene, scene->getCamera().getViewMatrix());
 }
 
 void SimpleTracer::trace(Ray* rays, int length, uint8_t* buffer) {
@@ -63,10 +68,11 @@ vec4 SimpleTracer::traceHelper(Ray* ray, int levels) {
   vec3 color_black = vec3(0.0f,0.0f,0.0f);
 
   IAccDataStruct::IntersectionData intersection_data = scene->getAccDataStruct()->findClosestIntersection(*ray);
-  if (intersection_data.triangle == NULL) {
+  if (intersection_data.material == IAccDataStruct::IntersectionData::NOT_FOUND) {
     return background_color;
 
   } else {
+    Material* material = scene->getMaterialVector()[intersection_data.material];
 
     vec3 color;
     //Light
@@ -74,7 +80,7 @@ vec4 SimpleTracer::traceHelper(Ray* ray, int levels) {
     Ray lightRay = Ray::generateRay(intersection_data.interPoint,light->getPosition());
     IAccDataStruct::IntersectionData intersection_data_light = scene->getAccDataStruct()->findClosestIntersection(lightRay);
 
-    if (intersection_data_light.triangle == intersection_data.triangle ||
+    if (//intersection_data_light.triangle == intersection_data.triangle ||
         length(light->getPosition()-intersection_data.interPoint) >
     length(light->getPosition()-intersection_data_light.interPoint)) {
       color = color_black;
@@ -99,7 +105,7 @@ vec4 SimpleTracer::traceHelper(Ray* ray, int levels) {
 
       vec3 white = vec3(1,1,1);
 
-      color  = falloff * (1.0f * spec * white + diff * intersection_data.triangle->getMaterial()->getDiffuse());
+      color  = falloff * (1.0f * spec * white + diff * material->getDiffuse());
       //color = falloff * diff * intersection_data.triangle->getMaterial()->getColor();
       // diff * intersection_data.triangle->getMaterial()->getColor()
 
@@ -107,7 +113,7 @@ vec4 SimpleTracer::traceHelper(Ray* ray, int levels) {
       //cout << dot(lightRay.getDirection(), intersection_data.normal) << endl;
 
     }
-    return vec4(color, intersection_data.triangle->getMaterial()->getTransparency());
+    return vec4(color, material->getTransparency());
   }
 }
 

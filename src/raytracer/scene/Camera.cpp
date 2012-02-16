@@ -78,7 +78,7 @@ void Camera::translate(vec3 translation){
   m_position += mat3(m_direction, cross(m_direction, m_up_vector), m_up_vector) * translation;
 }
 
-mat4 Camera::getViewMatrix(){
+mat4 Camera::getViewMatrix() const {
   mat4 proj = perspective(float(m_fov*180.0f/M_PI), m_aspect_ratio, 0.1f, 100.f);
   mat4 view = glm::lookAt(m_position, m_position + m_direction, m_up_vector);
   return proj*view;

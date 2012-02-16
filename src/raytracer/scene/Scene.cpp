@@ -19,6 +19,7 @@ Scene::~Scene() {}
 
 void Scene::loadTriangles(vector<Triangle*> triangles, bool overwrite) {
   m_acc_data_struct->setData(triangles);
+  m_vertex_array.setData(this, triangles);
 }
 
 void Scene::loadCamera(Camera camera) {
@@ -37,6 +38,10 @@ void Scene::loadMaterials(Material* materials, int length) {
   }
 }
 
+void Scene::loadMaterials(std::vector<raytracer::Material*> materials) {
+  m_materials = materials;
+}
+
 const std::vector<ILight*>& Scene::getLightVector() {
   return m_lights;
 }
@@ -53,5 +58,8 @@ IAccDataStruct* Scene::getAccDataStruct() {
   return m_acc_data_struct;
 }
 
+void Scene::drawVertexArray(){
+  m_vertex_array.draw();
+}
 
 }

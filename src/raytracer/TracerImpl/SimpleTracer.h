@@ -11,6 +11,7 @@
 #include "../ITracer.h"
 #include "../IAccDataStruct.h"
 #include "../scene/Scene.h"
+#include "../utilities/DeferredProcesser.h"
 
 namespace raytracer {
 
@@ -20,6 +21,7 @@ public:
   virtual ~SimpleTracer();
 
   void trace(Ray* rays, int length, uint8_t* buffer);
+  void first_bounce(int length, uint8_t* buffer);
   void stopTracing();
   unsigned int getPixelsLeft();
 private:
@@ -29,6 +31,8 @@ private:
   uint8_t* buffer;
   bool abort;
   unsigned int pixelsLeft;
+
+  DeferredProcesser first_pass;
 };
 
 }

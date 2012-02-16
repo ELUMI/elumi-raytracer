@@ -13,6 +13,7 @@
 #include "../utilities/Triangle.h"
 #include "../utilities/Ray.h"
 #include "../utilities/glutil.h"
+#include "../scene/Scene.h"
 
 using namespace glm;
 
@@ -34,11 +35,7 @@ VertexArrayDataStruct::~VertexArrayDataStruct() {
   //glDeleteTextures(1, &m_texture);
 }
 
-IAccDataStruct::IntersectionData VertexArrayDataStruct::findClosestIntersection(
-    Ray ray) {
-  //return 0;
-}
-void VertexArrayDataStruct::setData(std::vector<Triangle*> triangles) {
+void VertexArrayDataStruct::setData(Scene* scene, std::vector<Triangle*> triangles) {
 
   for (unsigned int i = 0; i < triangles.size(); ++i) {
     //int base = m_vertices.size();
@@ -54,7 +51,10 @@ void VertexArrayDataStruct::setData(std::vector<Triangle*> triangles) {
     //m_indices.push_back(base+0);
     //m_indices.push_back(base+1);
     //m_indices.push_back(base+2);
-    vec3 c = triangles[i]->getMaterial()->getDiffuse();
+    std::vector<raytracer::Material*> materials = scene->getMaterialVector();
+    unsigned int mati = triangles[i]->getMaterial();
+    Material* material = materials[mati];
+    vec3 c = material->getDiffuse();
     m_colors.push_back(vec3(c.r, c.g, c.b));
     m_colors.push_back(vec3(c.r, c.g, c.b));
     m_colors.push_back(vec3(c.r, c.g, c.b));

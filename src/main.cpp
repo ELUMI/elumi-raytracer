@@ -5,7 +5,6 @@
 #include "raytracer/Renderer.h"
 #include "raytracer/scene/ILight.h"
 #include "raytracer/scene/LightImpl/OmniLight.h"
-#include "raytracer/AccDataStructImpl/VertexArrayDataStruct.h"
 #include "raytracer/utilities/glutil.h"
 
 #include <iostream>
@@ -55,8 +54,8 @@ int main(int argc, char* argv[]) {
     inputFileName = argv[1];
     outputFileName = argv[2];
 
-    settings.width = 640 / 4;
-    settings.height = 480 / 4;
+    settings.width = 100;
+    settings.height = 100;
     settings.backgroundColor[0] = 0;
     settings.backgroundColor[1] = 50.0f / 255.0f;
     settings.backgroundColor[2] = 50.0f / 255.0f;
@@ -77,9 +76,7 @@ int main(int argc, char* argv[]) {
     raytracer::IImporter* importer = new raytracer::OBJImporter();
     importer->loadFile(inputFileName);
     std::vector<raytracer::Triangle*> triangles = importer->getTriangleList();
-
-    VertexArrayDataStruct vertices;
-    vertices.setData(triangles);
+    std::vector<raytracer::Material*> materials = importer->getMaterialList();
     CHECK_GL_ERROR();
 
     /* RENDERER
@@ -93,8 +90,10 @@ int main(int argc, char* argv[]) {
 
     myRenderer = new Renderer(&settings);
     myRenderer->loadCamera(camera);
-    if (!triangles.empty())
+    if (!triangles.empty()) {
+      myRenderer->getScene().loadMaterials(materials); //load materials BEFORE triangles!
       myRenderer->loadTriangles(triangles);
+    }
 
     ILight* lights = new OmniLight(vec3(2, 3, 5));
 
@@ -143,7 +142,7 @@ int main(int argc, char* argv[]) {
         mat4 view = camera.getViewMatrix();
         glUniformMatrix4fv(loc, 1, GL_FALSE, value_ptr(view));
 
-        vertices.draw();
+        myRenderer->getScene().drawVertexArray();
         break;
       }
       case 2:
