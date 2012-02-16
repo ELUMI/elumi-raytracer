@@ -19,24 +19,7 @@ using namespace glm;
 
 namespace raytracer {
 
-VertexArrayDataStruct::VertexArrayDataStruct() {
-  // TODO Auto-generated constructor stub
-
-  inited = false;
-}
-
-VertexArrayDataStruct::~VertexArrayDataStruct() {
-  if(inited) {
-    glDeleteBuffers(1, &positionBuffer);
-    glDeleteBuffers(1, &colorBuffer);
-    glDeleteBuffers(1, &texcoordBuffer);
-    //glDeleteBuffers(1, &indexBuffer);
-    glDeleteVertexArrays(1, &vertexArrayObject);
-    //glDeleteTextures(1, &m_texture);
-  }
-}
-
-void VertexArrayDataStruct::setData(Scene* scene, std::vector<Triangle*> triangles) {
+VertexArrayDataStruct::VertexArrayDataStruct(Scene* scene, std::vector<Triangle*> triangles) {
   for (unsigned int i = 0; i < triangles.size(); ++i) {
     //int base = m_vertices.size();
 
@@ -85,20 +68,28 @@ void VertexArrayDataStruct::setData(Scene* scene, std::vector<Triangle*> triangl
   glVertexAttribPointer(1, 3, GL_FLOAT, false/*normalized*/, 0/*stride*/, 0/*offset*/);
   glBindBuffer(GL_ARRAY_BUFFER, texcoordBuffer);
   glVertexAttribPointer(2, 2, GL_FLOAT, false/*normalized*/, 0/*stride*/, 0/*offset*/);
-  //	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, indexBuffer );
+  //  glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, indexBuffer );
   glEnableVertexAttribArray(0);
   glEnableVertexAttribArray(1);
   glEnableVertexAttribArray(2);
   // Load texture
-  //	m_texture = ilutGLLoadImage("Crate.bmp");
-  //	glActiveTexture(GL_TEXTURE0);
-  //	glBindTexture(GL_TEXTURE_2D, m_texture);
-  //	glGenerateMipmap(GL_TEXTURE_2D);
-  //	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
-  //	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  inited=true;
+  //  m_texture = ilutGLLoadImage("Crate.bmp");
+  //  glActiveTexture(GL_TEXTURE0);
+  //  glBindTexture(GL_TEXTURE_2D, m_texture);
+  //  glGenerateMipmap(GL_TEXTURE_2D);
+  //  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
+  //  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
+
+VertexArrayDataStruct::~VertexArrayDataStruct() {
+  glDeleteBuffers(1, &positionBuffer);
+  glDeleteBuffers(1, &colorBuffer);
+  glDeleteBuffers(1, &texcoordBuffer);
+  //glDeleteBuffers(1, &indexBuffer);
+  glDeleteVertexArrays(1, &vertexArrayObject);
+  //glDeleteTextures(1, &m_texture);
+}
+
 void VertexArrayDataStruct::draw() {
   //glActiveTexture(GL_TEXTURE0);
   //glBindTexture(GL_TEXTURE_2D, m_texture);

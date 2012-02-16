@@ -76,12 +76,12 @@ vec4 SimpleTracer::traceHelper(Ray* ray, int levels) {
     vec3 color;
     //Light
     ILight* light = scene->getLightVector().front();
-    Ray lightRay = Ray::generateRay(intersection_data.interPoint,light->getPosition());
+    vec3 dir = normalize(intersection_data.interPoint - light->getPosition());
+    Ray lightRay = Ray(light->getPosition(), dir);
     IAccDataStruct::IntersectionData intersection_data_light = scene->getAccDataStruct()->findClosestIntersection(lightRay);
 
     if (//intersection_data_light.triangle == intersection_data.triangle ||
-        length(light->getPosition()-intersection_data.interPoint) >
-    length(light->getPosition()-intersection_data_light.interPoint)) {
+        dot(dir,(intersection_data.interPoint - intersection_data_light.interPoint)) > 0.001) {
       color = color_black;
 
     } else {

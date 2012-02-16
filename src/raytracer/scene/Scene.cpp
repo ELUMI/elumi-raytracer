@@ -21,7 +21,7 @@ Scene::~Scene() {}
 void Scene::loadTriangles(vector<Triangle*> triangles, bool overwrite) {
   m_acc_data_struct->setData(triangles);
   if(m_settings->use_opengl){
-    m_vertex_array.setData(this, triangles);
+    m_vertex_array = new VertexArrayDataStruct(this, triangles);
   }
 }
 
@@ -67,7 +67,7 @@ IAccDataStruct* Scene::getAccDataStruct() {
 }
 
 void Scene::drawVertexArray(){
-  m_vertex_array.draw();
+  m_vertex_array->draw();
 }
 
 }

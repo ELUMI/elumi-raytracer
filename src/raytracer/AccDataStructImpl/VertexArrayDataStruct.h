@@ -24,10 +24,9 @@ class Scene;
 
 class VertexArrayDataStruct {
 public:
-  VertexArrayDataStruct();
+  VertexArrayDataStruct(Scene* scene, std::vector<Triangle*> triangles);
   virtual ~VertexArrayDataStruct();
 
-  void setData(Scene* scene, std::vector<Triangle*> triangles);
   GLuint getVertexArrayObject();
   void draw();
 
