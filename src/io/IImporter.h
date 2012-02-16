@@ -13,6 +13,7 @@
 #include "../raytracer/utilities/Triangle.h"
 #include "../raytracer/scene/Camera.h"
 #include "../raytracer/scene/Material.h"
+#include "../raytracer/scene/Texture.h"
 #include "../raytracer/scene/ILight.h"
 
 namespace raytracer {
@@ -23,6 +24,7 @@ public:
 	virtual void loadFile(char* filename) = 0;
 	virtual std::vector<Triangle*>& getTriangleList() =0;
 	virtual std::vector<Material*>& getMaterialList() = 0;
+	virtual std::vector<Texture*>& getTextures() = 0;
 
 	virtual Camera* getCamera() = 0;
 

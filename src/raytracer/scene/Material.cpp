@@ -24,11 +24,12 @@ Material::Material() {
   Material::index_of_reflection = 1;
   Material::reflection = 0.0f;
   Material::alpha_texture_map = "\0";
+  Material::texture = -1;
 }
 
 Material::Material(std::string name,glm::vec3 ambient,glm::vec3 diffuse,glm::vec3 specular,
     glm::vec3 emissive,glm::vec3 transperency,float shininess,float sharpness,
-    float reflection ,float index_of_reflection,std::string alpha_texture_map){
+    float reflection ,float index_of_reflection,std::string alpha_texture_map, int texture){
 
   Material::name = name;
   Material::ambient = ambient;
@@ -41,6 +42,7 @@ Material::Material(std::string name,glm::vec3 ambient,glm::vec3 diffuse,glm::vec
   Material::index_of_reflection = index_of_reflection;
   Material::reflection = reflection;
   Material::alpha_texture_map = alpha_texture_map;
+  Material::texture=texture;
 }
 
 Material::~Material() {

@@ -13,6 +13,7 @@
 #include "../IAccDataStruct.h"
 //#include "../utilities/Triangle.h" // AccData inkluderar förmodligen denna
 #include "Material.h"
+#include "Texture.h"
 #include "Camera.h"
 #include "ILight.h"
 
@@ -27,6 +28,7 @@ public:
 	void loadCamera(Camera camera);
 	void loadLights(ILight* lights, int length, bool overwrite=false);
 	void loadMaterials(Material* materials, int length);
+	int addTexture(Texture* texture);
 
 	const Camera& getCamera();
 	IAccDataStruct* getAccDataStruct();
@@ -39,6 +41,7 @@ private:
 	IAccDataStruct* m_acc_data_struct;
 	std::vector<ILight*> m_lights;
 	std::vector<Material*> m_materials;
+	std::vector<Texture*> m_textures;
 };
 
 }

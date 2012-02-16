@@ -37,6 +37,12 @@ void Scene::loadMaterials(Material* materials, int length) {
   }
 }
 
+//Adds a texture and returns its index
+int Scene::addTexture(Texture* texture) {
+  m_textures.push_back(texture);
+  return m_textures.size()-1;
+}
+
 const std::vector<ILight*>& Scene::getLightVector() {
   return m_lights;
 }

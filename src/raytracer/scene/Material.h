@@ -36,7 +36,7 @@ public:
   Material();
   Material(std::string name,glm::vec3 ambient,glm::vec3 diffuse,glm::vec3 specular,
       glm::vec3 emissive,glm::vec3 transperancy,float shininess,float sharpness,
-      float reflection ,float index_of_reflection,std::string alpha_texture_map);
+      float reflection ,float index_of_reflection,std::string alpha_texture_map,int texture);
   virtual ~Material();
 
   glm::vec3 getColor();
@@ -75,6 +75,8 @@ private:
   std::string bump_texture_map;		// Filename of bump texture map
 
   IShader* shader;
+
+  int texture; //Texture index
 
 
 };

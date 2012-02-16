@@ -10,7 +10,7 @@
 #endif // ! __linux__
 
 #include <GL/glew.h>
-#include <GL/glut.h>
+//#include <GL/glut.h>
 
 #include <IL/il.h>
 #include <IL/ilut.h>

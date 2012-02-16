@@ -3,8 +3,6 @@
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 
-#include <IL/il.h>
-
 #include "io/ExporterImpl/PNGExporter.h"
 #include "io/ImporterImpl/OBJImporter.h"
 #include "raytracer/Renderer.h"
@@ -46,8 +44,6 @@ int main(int argc, char* argv[]) {
   int running = GL_TRUE;
 
   char* inputFileName, *outputFileName, *settingsFile;
-
-  ilInit();
 
   // Declare the supported options.
   po::options_description desc("Allowed options");
