@@ -22,6 +22,7 @@ SimpleTracer::SimpleTracer(Scene* scene, vec4 background_color) { //TODO: get fr
   SimpleTracer::scene = scene;
   SimpleTracer::background_color = background_color;
   abort = false;
+  first_pass = 0;
  }
 
 SimpleTracer::~SimpleTracer() {
@@ -37,7 +38,9 @@ unsigned int SimpleTracer::getPixelsLeft(){
 }
 
 void SimpleTracer::first_bounce(int length, uint8_t* buffer) {
-  //first_pass.render(scene, scene->getCamera().getViewMatrix());
+  if(first_pass){
+    first_pass->render(scene, scene->getCamera().getViewMatrix());
+  }
 }
 
 void SimpleTracer::trace(Ray* rays, int length, uint8_t* buffer) {
@@ -91,11 +94,12 @@ vec4 SimpleTracer::traceHelper(Ray* ray, int levels) {
       float falloff = light->getIntensity(length(light->getPosition()-intersection_data.interPoint));
 
       //Specular
-      Ray refl = ray->reflection(lightRay, intersection_data.normal, intersection_data.interPoint);
+      Ray invLightRay = Ray(intersection_data.interPoint, -lightRay.getDirection());
+      Ray refl = ray->reflection(invLightRay, intersection_data.normal, intersection_data.interPoint);
       vec3 v = normalize(ray->getPosition()-intersection_data.interPoint);
 
       float spec;
-      if(dot(intersection_data.normal,lightRay.getDirection()) < 0) {
+      if(dot(intersection_data.normal,-lightRay.getDirection()) < 0) {
         spec = 0.0f;
       } else {
         //spec = glm::max(0.0f,glm::pow( dot(refl.getDirection(),ray->getPosition()-intersection_data.interPoint),0.3f));
