@@ -38,6 +38,14 @@ Ray Ray::reflection(Ray ray, vec3 normal, vec3 intersection_point) {
   return Ray(intersection_point, refl);
 }
 
+Ray Ray::refraction(Ray ray, vec3 n, vec3 intersection_point, float index) {
+  vec3 i = ray.direction;
+  float cos = glm::dot(-n, i);
+  vec3 refr = index*i + (index*cos - sqrt( 1 - index*index * ( 1 -cos*cos) ) ) * n;
+
+  return Ray(intersection_point, refr);
+}
+
 const vec3& Ray::getPosition() {
   return position;
 }

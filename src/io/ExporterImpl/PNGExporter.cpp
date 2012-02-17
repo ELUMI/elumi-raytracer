@@ -20,7 +20,7 @@ PNGExporter::PNGExporter() {
 PNGExporter::~PNGExporter() {
 }
 
-int PNGExporter::exportImage(const char* filename, int width, int height, uint8_t* buffer) {
+int PNGExporter::exportImage(const char* filename, int width, int height, float* buffer) {
   FILE * fp;
   png_structp png_ptr = NULL;
   png_infop info_ptr = NULL;
@@ -75,13 +75,13 @@ int PNGExporter::exportImage(const char* filename, int width, int height, uint8_
   row_pointers = (png_byte **) png_malloc (png_ptr, height * sizeof (png_byte *));
   for (y = 0; y < height; ++y) {
     png_byte *row =
-      (png_byte *) png_malloc (png_ptr, sizeof (uint8_t) * width * pixel_size);
+      (png_byte *) png_malloc (png_ptr, sizeof (unsigned char) * width * pixel_size);
     row_pointers[y] = row;
     for (x = 0; x < width; ++x) {
-      *row++ = buffer[(y*width+x)*pixel_size];
-      *row++ = buffer[(y*width+x)*pixel_size+1];
-      *row++ = buffer[(y*width+x)*pixel_size+2];
-      *row++ = buffer[(y*width+x)*pixel_size+3];
+      *row++ = 255*buffer[(y*width+x)*pixel_size];
+      *row++ = 255*buffer[(y*width+x)*pixel_size+1];
+      *row++ = 255*buffer[(y*width+x)*pixel_size+2];
+      *row++ = 255*buffer[(y*width+x)*pixel_size+3];
     }
   }
 

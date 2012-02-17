@@ -22,7 +22,7 @@ using namespace std;
 using namespace raytracer;
 
 raytracer::Settings settings;
-uint8_t* buffer;
+float* buffer;
 
 GLuint shader_program;
 raytracer::Camera camera;
@@ -87,10 +87,10 @@ int main(int argc, char* argv[]) {
 
   settings.width = 100;
   settings.height = 100;
-  settings.backgroundColor[0] = 0;
-  settings.backgroundColor[1] = 50.0f / 255.0f;
-  settings.backgroundColor[2] = 50.0f / 255.0f;
-  settings.backgroundColor[3] = 0;
+  settings.background_color[0] = 0;
+  settings.background_color[1] = 50.0f / 255.0f;
+  settings.background_color[2] = 50.0f / 255.0f;
+  settings.background_color[3] = 0;
 
   if (settings.use_opengl) {
     //Open an OpenGl window
@@ -121,6 +121,16 @@ int main(int argc, char* argv[]) {
   camera.setDirection(normalize(vec3(-1.0f, -0.5f, -1.0f)));
   camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
 
+  ILight* lights = new OmniLight(vec3(2, 3, 5));
+  lights->setIntensity(1200);
+  lights->setColor(vec3(1,1,1));
+  lights->setDistanceFalloff(LINEAR);
+
+  ILight* light2 = new OmniLight(vec3(-2, 2, 2));
+  light2->setIntensity(8000);
+  light2->setColor(vec3(1,1,1));
+  light2->setDistanceFalloff(QUADRATIC);
+
   myRenderer = new Renderer(&settings);
   myRenderer->loadCamera(camera);
   if (!triangles.empty()) {
@@ -128,27 +138,23 @@ int main(int argc, char* argv[]) {
     myRenderer->loadTriangles(triangles);
   }
 
-  ILight* lights = new OmniLight(vec3(2, 3, 5));
-
-  lights->setIntensity(40);
-  lights->setDistanceFalloff(QUADRATIC);
-
   myRenderer->loadLights(lights, 1, false);
+  myRenderer->loadLights(light2, 1, false);
 
-  buffer = myRenderer->getFloatArray();
-  for (int i = 0; i < settings.width * settings.height; i += 3) {
-    buffer[i * 4 + 0] = 0;
-    buffer[i * 4 + 1] = 50;
-    buffer[i * 4 + 2] = 50;
-    buffer[i * 4 + 3] = 255;
+  buffer = myRenderer->getColorBuffer();
+  for (int i = 0; i < settings.width * settings.height-3; i += 3) {
+    buffer[i * 4 + 0] = 1;
+    buffer[i * 4 + 1] = 0;
+    buffer[i * 4 + 2] = 1;
+    buffer[i * 4 + 3] = 1;
     buffer[i * 4 + 4] = 0;
     buffer[i * 4 + 5] = 0;
     buffer[i * 4 + 6] = 0;
-    buffer[i * 4 + 7] = 255;
+    buffer[i * 4 + 7] = 1;
     buffer[i * 4 + 8] = 0;
     buffer[i * 4 + 9] = 0;
     buffer[i * 4 + 10] = 0;
-    buffer[i * 4 + 11] = 255;
+    buffer[i * 4 + 11] = 1;
   }
 
   if (!settings.use_opengl) {
@@ -160,6 +166,7 @@ int main(int argc, char* argv[]) {
     win_height = settings.height;
     /* WINDOW
      ***************** */
+
     glfwEnable(GLFW_AUTO_POLL_EVENTS);
     glfwSetWindowSizeCallback(windowSize); // TODO: In settings
 
@@ -167,11 +174,12 @@ int main(int argc, char* argv[]) {
       //OpenGl rendering goes here...d
       glViewport(0, 0, win_width, win_height);
 
-      glClearColor(settings.backgroundColor.x, settings.backgroundColor.y,
-          settings.backgroundColor.z, settings.backgroundColor.a);
+      glClearColor(settings.background_color.x, settings.background_color.y,
+          settings.background_color.z, settings.background_color.a);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       glEnable(GL_DEPTH_TEST);
       glDisable(GL_CULL_FACE);
+
 
       switch (renderMode) {
       case 1: {
@@ -188,7 +196,7 @@ int main(int argc, char* argv[]) {
         glRasterPos2f(-1,-1);
         glPixelZoom((float) win_width / settings.width, (float) win_height / settings.height);
         glDrawPixels(settings.width, settings.height, GL_RGBA,
-            GL_UNSIGNED_INT_8_8_8_8_REV, buffer);
+            GL_FLOAT, buffer);
         break;
       }
 
@@ -208,13 +216,15 @@ int main(int argc, char* argv[]) {
     //Close window and terminate GLFW
     glfwTerminate();
   }
-  delete myRenderer;
   /* EXPORTER
    ***************** */
-  raytracer::IExporter* exporter = new raytracer::PNGExporter;
-  exporter->exportImage(outputFileName, settings.width, settings.height, buffer);
+  if (myRenderer->renderComplete() == 0) {
+    raytracer::IExporter* exporter = new raytracer::PNGExporter;
+    exporter->exportImage(outputFileName, settings.width, settings.height, buffer);
+    delete exporter;
+  }
   delete importer;
-  delete exporter;
+  delete myRenderer;
   std::cout << std::endl << "end of PROGRAM" << std::endl;
 
   exit(EXIT_SUCCESS);
@@ -330,6 +340,18 @@ void timedCallback() {
   if (glfwGetKey('T')) {
     myRenderer->stopRendering();
   }
+  if (glfwGetKey('F')) {
+    myRenderer->stopRendering();
+    settings.use_first_bounce = true;
+    myRenderer->asyncRender();
+    renderMode = 2;
+  }
+  if (glfwGetKey('G')) {
+    myRenderer->stopRendering();
+    settings.use_first_bounce = false;
+    myRenderer->asyncRender();
+    renderMode = 2;
+  }
 
-  cout << myRenderer->renderComplete() << "\n";
+  //cout << myRenderer->renderComplete() << "\n";
 }

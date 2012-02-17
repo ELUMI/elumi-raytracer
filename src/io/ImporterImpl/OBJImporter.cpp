@@ -54,7 +54,8 @@ void OBJImporter::loadFile(char* filename){
 		float _shininess = material->shiny;
 		float _sharpness = material->glossy;
 		float _reflection = material->reflect;
-		float _index_of_reflection = material->refract_index;
+		float _index_of_refraction = material->refract_index;
+		float _refraction = material->refract;
 		std::string _texture_map = material->texture_filename;
 
 		ILuint image;
@@ -87,7 +88,7 @@ void OBJImporter::loadFile(char* filename){
     }
 
 		OBJImporter::materials.push_back(new Material(_name,_ambient,_diffuse,_specular,_emissive,
-				_transparency,_shininess,_sharpness,_reflection,_index_of_reflection,_texture_map,texture));
+				_transparency,_shininess,_sharpness,_reflection,_index_of_refraction,NULL /*POINTER TO A TEXTURE*/));
 	}
 
 	// Start creating the triangles

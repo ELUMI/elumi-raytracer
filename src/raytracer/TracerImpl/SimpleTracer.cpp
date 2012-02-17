@@ -8,8 +8,6 @@
 #include <iostream>
 
 #include "SimpleTracer.h"
-#include <stdint.h>
-
 #include <glm/glm.hpp>
 
 using namespace glm;
@@ -18,82 +16,55 @@ namespace raytracer {
 
 //ITracer::~ITracer() {}
 
-SimpleTracer::SimpleTracer(Scene* scene, vec4 background_color) { //TODO: get from settings!!!
-  SimpleTracer::scene = scene;
-  SimpleTracer::background_color = background_color;
-  abort = false;
-  first_pass = new DeferredProcesser(100,100); //TODO: use settings, and check useopengl
-  first_intersections = new IAccDataStruct::IntersectionData[100*100];
+SimpleTracer::SimpleTracer(Scene* scene, Settings* settings) : BaseTracer(scene, settings) {
 }
 
 SimpleTracer::~SimpleTracer() {
-  stopTracing();
 }
 
-void SimpleTracer::stopTracing() {
-  abort = true;
-}
 
-unsigned int SimpleTracer::getPixelsLeft(){
-  return pixelsLeft;
-}
-
-void SimpleTracer::first_bounce() {
-  if(first_pass){
-    mat4 vp2m = scene->getCamera().getViewportToModelMatrix(100,100);
-    mat4 view_matrix = scene->getCamera().getViewMatrix();
-    first_pass->render(scene, view_matrix);
-
-    vec3* normals = new vec3[100*100];
-    vec3* texcoords = new vec3[100*100];
-    float* depths = new float[100*100];
-
-    first_pass->readNormals(100,100, normals);
-    first_pass->readTexCoords(100,100, texcoords);
-    first_pass->readDepths(100,100, depths);
-
-    for(int y=0; y<100; y++){
-      for(int x=0; x<100; x++){
-        int i = y*100+x;
-        vec4 pos = vp2m * vec4(x,y,depths[i],1);
-
-        //see comment in deffered.frag
-        unsigned int material = int(256.0f * texcoords[i].z);
-        if(material == 0){
-          material = IAccDataStruct::IntersectionData::NOT_FOUND;
-        } else {
-          --material;
-        }
-        assert(material == IAccDataStruct::IntersectionData::NOT_FOUND || material < scene->getMaterialVector().size());
-
-        first_intersections[i] = IAccDataStruct::IntersectionData(
-            material, vec3(normalize(pos)), normals[i]);
-      }
-    }
-
-    delete [] normals;
-    delete [] texcoords;
-    delete [] depths;
-  }
-}
-
-void SimpleTracer::trace(Ray* rays, int length, uint8_t* buffer) {
+void SimpleTracer::traceImage(float* color_buffer) {
+  buffer = color_buffer;
+  pixelsLeft = settings->width*settings->height;
   abort = false;
-  SimpleTracer::buffer = buffer;
-  pixelsLeft = length;
+  createRays();
+}
 
-  if(first_intersections) {
+void SimpleTracer::createRays()  {
+
+  int rays_length = settings->width*settings->height;
+
+  //Initiate ray array
+  Ray* rays = new Ray[rays_length];
+
+  Camera camera = scene->getCamera();
+  mat4 view = camera.getViewMatrix();
+  view = inverse(view);
+
+  //We step over all "pixels" from the cameras viewpoint
+  for(int h = 0; h < settings->height; h++) {
+    for(int w = 0; w < settings->width; w++) {
+      vec4 dir = vec4(2.0f*float(w)/(settings->width -1)-1.0f,
+          2.0f*float(h)/(settings->height-1)-1.0f, 1.0f, 1.0f);
+      dir = view*dir;
+
+      rays[w+h*settings->width] = Ray(camera.getPosition(),vec3(dir));
+
+    }
+  }
+
+  if(settings->use_first_bounce) {
     #pragma omp parallel for
-    for (size_t i=0; i<length; ++i) {
+    for (size_t i=0; i<rays_length; ++i) {
       //#pragma omp task
       #pragma omp flush (abort)
       if(!abort)
       {
         vec4 c = traceHelper(&rays[i], first_intersections[i]);
-        buffer[i*4] = 255*glm::min(1.0f, c.r);
-        buffer[i*4 +1] = 255*glm::min(1.0f, c.g);
-        buffer[i*4 +2] = 255*glm::min(1.0f, c.b);
-        buffer[i*4 +3] = 255*glm::min(1.0f, c.a);
+        buffer[i*4] = glm::min(1.0f, c.r);
+        buffer[i*4 +1] = glm::min(1.0f, c.g);
+        buffer[i*4 +2] = glm::min(1.0f, c.b);
+        buffer[i*4 +3] = glm::min(1.0f, c.a);
 
         #pragma omp atomic
         --pixelsLeft;
@@ -101,7 +72,7 @@ void SimpleTracer::trace(Ray* rays, int length, uint8_t* buffer) {
     }
   } else {
     #pragma omp parallel for
-    for (size_t i=0; i<length; ++i) {
+    for (size_t i=0; i<rays_length; ++i) {
       //#pragma omp task
       #pragma omp flush (abort)
       if(!abort)
@@ -109,24 +80,26 @@ void SimpleTracer::trace(Ray* rays, int length, uint8_t* buffer) {
         IAccDataStruct::IntersectionData intersection_data =
             scene->getAccDataStruct()->findClosestIntersection(rays[i]);
         vec4 c = traceHelper(&rays[i], intersection_data);
-        buffer[i*4] = 255*glm::min(1.0f, c.r);
-        buffer[i*4 +1] = 255*glm::min(1.0f, c.g);
-        buffer[i*4 +2] = 255*glm::min(1.0f, c.b);
-        buffer[i*4 +3] = 255*glm::min(1.0f, c.a);
+        buffer[i*4] = glm::min(1.0f, c.r);
+        buffer[i*4 +1] = glm::min(1.0f, c.g);
+        buffer[i*4 +2] = glm::min(1.0f, c.b);
+        buffer[i*4 +3] = glm::min(1.0f, c.a);
 
         #pragma omp atomic
         --pixelsLeft;
       }
     }
   }
+
+  //Free memory
+  delete [] rays;
 }
 
-vec4 SimpleTracer::traceHelper(Ray* ray, IAccDataStruct::IntersectionData intersection_data, int levels) {
+vec4 SimpleTracer::traceHelper(Ray* ray, IAccDataStruct::IntersectionData intersection_data) {
   vec3 color_black = vec3(0.0f,0.0f,0.0f);
 
   if (intersection_data.material == IAccDataStruct::IntersectionData::NOT_FOUND) {
-    return background_color;
-
+    return settings->background_color;
   } else {
     Material* material = scene->getMaterialVector()[intersection_data.material];
 
@@ -137,8 +110,7 @@ vec4 SimpleTracer::traceHelper(Ray* ray, IAccDataStruct::IntersectionData inters
     Ray lightRay = Ray(light->getPosition(), dir);
     IAccDataStruct::IntersectionData intersection_data_light = scene->getAccDataStruct()->findClosestIntersection(lightRay);
 
-    if (//intersection_data_light.triangle == intersection_data.triangle ||
-        dot(dir,(intersection_data.interPoint - intersection_data_light.interPoint)) > 0.001) {
+    if (dot(dir,(intersection_data.interPoint - intersection_data_light.interPoint)) > 0.001) {
       color = color_black;
 
     } else {

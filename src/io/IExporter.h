@@ -8,15 +8,12 @@
 #ifndef IEXPORTER_H_
 #define IEXPORTER_H_
 
-#include <stdint.h>
-
-
 namespace raytracer {
 
 class IExporter {
 public:
   virtual ~IExporter() = 0;
-	virtual int exportImage(const char* filename, int width, int height, uint8_t* buffer)= 0;
+	virtual int exportImage(const char* filename, int width, int height, float* buffer)= 0;
 
 };
 

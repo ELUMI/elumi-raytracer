@@ -58,7 +58,7 @@ const std::vector<Material*>& Scene::getMaterialVector() {
   return m_materials;
 }
 
-const Camera& Scene::getCamera() {
+Camera& Scene::getCamera() {
   return m_camera;
 }
 

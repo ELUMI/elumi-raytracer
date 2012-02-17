@@ -7,6 +7,7 @@
 
 #include "Renderer.h"
 #include "TracerImpl/SimpleTracer.h"
+#include "TracerImpl/StandardTracer.h"
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
 
@@ -17,13 +18,12 @@ namespace raytracer {
 Renderer::Renderer(Settings* settings)
   : m_scene(settings) {
   m_settings = settings;
-  m_tracer = new SimpleTracer(&m_scene, settings->backgroundColor);
-  color_buffer = new uint8_t[m_settings->width * m_settings->height * 4];//(uint8_t *) calloc (sizeof (uint8_t), m_settings->width * m_settings->height * 4);
+  m_tracer = new StandardTracer(&m_scene, settings);
+  color_buffer = new float[m_settings->width * m_settings->height * 4];
   renderthread = 0;
 }
 
 Renderer::~Renderer() {
-  stopRendering();
   delete m_tracer;
   delete [] color_buffer;
 }
@@ -48,7 +48,7 @@ ITracer* Renderer::getTracer() {
   return m_tracer;
 }
 
-uint8_t* Renderer::getFloatArray() {
+float* Renderer::getColorBuffer() {
 	return color_buffer;
 }
 
@@ -73,27 +73,9 @@ void Renderer::stopRendering() {
 
 
 void Renderer::render() {
-  int rays_length = m_settings->width*m_settings->height;
+  m_tracer->traceImage(color_buffer);
 
-  //Initiate ray array
-  Ray* rays = new Ray[rays_length];
-
-  Camera camera = m_scene.getCamera();
-  mat4 trans = camera.getViewportToModelMatrix(m_settings->width, m_settings->height);
-
-  //We step over all "pixels" from the cameras viewpoint
-  for(int y = 0; y < m_settings->height; y++) {
-    for(int x = 0; x < m_settings->width; x++) {
-      vec4 dir = trans * vec4(x,y,1,1);
-
-      rays[x+y*m_settings->width] = Ray(camera.getPosition(), vec3(normalize(dir)));
-    }
-  }
-
-  m_tracer->trace(rays,m_settings->width*m_settings->height,color_buffer);
-
-  //Free memory
-  delete [] rays;
+  // POST FXS!
 }
 
 unsigned int Renderer::renderComplete() {
