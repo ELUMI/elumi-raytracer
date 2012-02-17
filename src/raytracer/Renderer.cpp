@@ -53,7 +53,7 @@ uint8_t* Renderer::getFloatArray() {
 }
 
 void Renderer::asyncRender() {
-  m_tracer->first_bounce(m_settings->width*m_settings->height,color_buffer); //must be done in master thread
+  m_tracer->first_bounce(); //must be done in master thread
 
   if(renderthread){
     stopRendering();
@@ -79,16 +79,7 @@ void Renderer::render() {
   Ray* rays = new Ray[rays_length];
 
   Camera camera = m_scene.getCamera();
-  mat4 view = camera.getViewMatrix();
-
-  float w = m_settings->width,
-        h = m_settings->height;
-  mat4 viewport(w/2,  0.0f, 0.0f, w/2,
-                0.0f, h/2,  0.0f, h/2,
-                0.0f, 0.0f, 0.5f, 0.5f,
-                0.0f, 0.0f, 0.0f, 1.0f);
-
-  mat4 trans = inverse(view) * transpose(inverse(viewport));
+  mat4 trans = camera.getViewportToModelMatrix(m_settings->width, m_settings->height);
 
   //We step over all "pixels" from the cameras viewpoint
   for(int y = 0; y < m_settings->height; y++) {

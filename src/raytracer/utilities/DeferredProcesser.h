@@ -19,11 +19,14 @@ public:
   virtual ~DeferredProcesser();
 
   void render(Scene* scene, mat4 viewMatrix);
+  void readNormals(unsigned int width, unsigned int height, vec3* buffer);
+  void readTexCoords(unsigned int width, unsigned int height, vec3* buffer);
+  void readDepths(unsigned int width, unsigned int height, float* buffer);
 
 private:
   GLuint shader_program;
-  GLuint color_tex;
-  GLuint normal_tex;
+  GLuint texcoord_rbo;
+  GLuint normal_rbo;
   GLuint depth_rbo;
   GLuint fbo;
 

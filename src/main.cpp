@@ -24,7 +24,7 @@ using namespace raytracer;
 raytracer::Settings settings;
 uint8_t* buffer;
 
-GLuint shaderProgram;
+GLuint shader_program;
 raytracer::Camera camera;
 vec2 mousePrev;
 double prevTime;
@@ -38,8 +38,9 @@ void mouseMove(int x, int y);
 void windowSize(int width, int height);
 void initGL();
 
-int main(int argc, char* argv[]) {
+unsigned int win_width, win_height;
 
+int main(int argc, char* argv[]) {
   int running = GL_TRUE;
 
   char* inputFileName, *outputFileName, *settingsFile;
@@ -155,6 +156,8 @@ int main(int argc, char* argv[]) {
   } else {
     myRenderer->asyncRender();
 
+    win_width = settings.width;
+    win_height = settings.height;
     /* WINDOW
      ***************** */
     glfwEnable(GLFW_AUTO_POLL_EVENTS);
@@ -162,6 +165,8 @@ int main(int argc, char* argv[]) {
 
     while (running) {
       //OpenGl rendering goes here...d
+      glViewport(0, 0, win_width, win_height);
+
       glClearColor(settings.backgroundColor.x, settings.backgroundColor.y,
           settings.backgroundColor.z, settings.backgroundColor.a);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -170,8 +175,8 @@ int main(int argc, char* argv[]) {
 
       switch (renderMode) {
       case 1: {
-        glUseProgram(shaderProgram);
-        int loc = glGetUniformLocation(shaderProgram,
+        glUseProgram(shader_program);
+        int loc = glGetUniformLocation(shader_program,
             "modelViewProjectionMatrix");
         mat4 view = camera.getViewMatrix();
         glUniformMatrix4fv(loc, 1, GL_FALSE, value_ptr(view));
@@ -180,6 +185,8 @@ int main(int argc, char* argv[]) {
         break;
       }
       case 2:
+        glRasterPos2f(-1,-1);
+        glPixelZoom((float) win_width / settings.width, (float) win_height / settings.height);
         glDrawPixels(settings.width, settings.height, GL_RGBA,
             GL_UNSIGNED_INT_8_8_8_8_REV, buffer);
         break;
@@ -227,31 +234,32 @@ void initGL() {
   //************************************
   // The loadShaderProgram and linkShaderProgam functions are defined in glutil.cpp and
   // do exactly what we did in lab1 but are hidden for convenience
-  shaderProgram = loadShaderProgram("simple.vert", "simple.frag");
-  glBindAttribLocation(shaderProgram, 0, "position");
-  glBindAttribLocation(shaderProgram, 1, "color");
-  glBindAttribLocation(shaderProgram, 2, "texCoordIn");
-  glBindFragDataLocation(shaderProgram, 0, "fragmentColor");
-  linkShaderProgram(shaderProgram);
+  shader_program = loadShaderProgram("simple.vert", "simple.frag");
+  glBindAttribLocation(shader_program, 0, "position");
+  glBindAttribLocation(shader_program, 1, "color");
+  glBindAttribLocation(shader_program, 2, "normal");
+  glBindAttribLocation(shader_program, 3, "texCoordIn");
+  glBindAttribLocation(shader_program, 4, "material");
+
+  glBindFragDataLocation(shader_program, 0, "fragmentColor");
+  linkShaderProgram(shader_program);
 
   //************************************
   //        Set uniforms
   //************************************
 
-  glUseProgram(shaderProgram);
+  glUseProgram(shader_program);
   CHECK_GL_ERROR();
 
   // Get the location in the shader for uniform tex0
-  int texLoc = glGetUniformLocation(shaderProgram, "colortexture");
+  int texLoc = glGetUniformLocation(shader_program, "colortexture");
   // Set colortexture to 0, to associate it with texture unit 0
   glUniform1i(texLoc, 0);
 }
 
 void windowSize(int width, int height) {
-  float _width = (float) width / settings.width;
-  float _height = (float) height / settings.height;
-  glPixelZoom(_width, _height);
-  glViewport(0, 0, width, height);
+  win_width=width;
+  win_height=height;
 }
 
 void mouseMove(int x, int y) {

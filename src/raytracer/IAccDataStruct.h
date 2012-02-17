@@ -24,6 +24,7 @@ public:
 class IAccDataStruct {
 public:
   struct IntersectionData {
+    IntersectionData() {}
     IntersectionData(unsigned int material, vec3 interPoint, vec3 normal) {
       IntersectionData::material = material;
       IntersectionData::interPoint = interPoint;

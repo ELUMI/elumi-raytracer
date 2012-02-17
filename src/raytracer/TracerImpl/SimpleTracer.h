@@ -21,11 +21,11 @@ public:
   virtual ~SimpleTracer();
 
   void trace(Ray* rays, int length, uint8_t* buffer);
-  void first_bounce(int length, uint8_t* buffer);
+  void first_bounce();
   void stopTracing();
   unsigned int getPixelsLeft();
 private:
-  vec4 traceHelper(Ray* ray, int levels=3);
+  vec4 traceHelper(Ray* ray, IAccDataStruct::IntersectionData intersection_data, int levels=3);
   Scene* scene;
   vec4 background_color;
   uint8_t* buffer;
@@ -33,6 +33,7 @@ private:
   unsigned int pixelsLeft;
 
   DeferredProcesser* first_pass;
+  IAccDataStruct::IntersectionData* first_intersections;
 };
 
 }
