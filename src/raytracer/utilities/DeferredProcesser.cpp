@@ -89,7 +89,7 @@ DeferredProcesser::~DeferredProcesser() {
   glDeleteRenderbuffersEXT(1,&texcoord_rbo);
 }
 
-void DeferredProcesser::render(Scene* scene, mat4 viewMatrix){
+void DeferredProcesser::render(Scene* scene, mat4 viewMatrix, int width, int height){
   // set rendering destination to FBO
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
 
@@ -98,7 +98,7 @@ void DeferredProcesser::render(Scene* scene, mat4 viewMatrix){
 
   void glDrawBuffers( GLsizei n, const GLenum *bufs );
 
-  glViewport(0, 0, 100, 100);
+  glViewport(0, 0, width, height);
   glPixelZoom(1,1);
   glRasterPos2f(-1,1);
   // clear buffers

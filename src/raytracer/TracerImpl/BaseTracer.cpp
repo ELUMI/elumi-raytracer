@@ -27,27 +27,32 @@ void BaseTracer::first_bounce() {
   if(!settings->use_first_bounce){
     return;
   }
-  first_pass = new DeferredProcesser(100,100); //TODO: use settings, and check useopengl
-  first_intersections = new IAccDataStruct::IntersectionData[100*100];
 
-  mat4 vp2m = scene->getCamera().getViewportToModelMatrix(100,100);
+  int width = settings->width;
+  int height= settings->width;
+  int size= width*height;
+
+  first_pass = new DeferredProcesser(settings->width,settings->height); //TODO: use settings, and check useopengl
+  first_intersections = new IAccDataStruct::IntersectionData[size];
+
+  mat4 vp2m = scene->getCamera().getViewportToModelMatrix(width, height);
   mat4 view_matrix = scene->getCamera().getViewMatrix();
-  first_pass->render(scene, view_matrix);
+  first_pass->render(scene, view_matrix, width, height);
 
-  vec3* normals = new vec3[100*100];
-  vec3* texcoords = new vec3[100*100];
-  float* depths = new float[100*100];
+  vec3* normals = new vec3[size];
+  vec3* texcoords = new vec3[size];
+  float* depths = new float[size];
 
-  first_pass->readNormals(100,100, normals);
-  first_pass->readTexCoords(100,100, texcoords);
-  first_pass->readDepths(100,100, depths);
+  first_pass->readNormals(width, height, normals);
+  first_pass->readTexCoords(width, height, texcoords);
+  first_pass->readDepths(width, height, depths);
 
-  for(int y=0; y<100; y++){
-    for(int x=0; x<100; x++){
-      int i = y*100+x;
+  for(int y=0; y<height; y++){
+    for(int x=0; x<width; x++){
+      int i = y*width+x;
       vec4 pos = vp2m * vec4(x,y,depths[i],1);
 
-      //see comment in deffered.frag
+      //see comment in deferred.frag
       unsigned int material = int(256.0f * texcoords[i].z);
       if(material == 0){
         material = IAccDataStruct::IntersectionData::NOT_FOUND;
