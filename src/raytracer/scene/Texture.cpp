@@ -26,6 +26,18 @@ Texture::~Texture() {
 	// TODO Auto-generated destructor stub
 }
 
+unsigned int Texture::getHeight() {
+  return height;
+}
+
+unsigned int Texture::getWidth() {
+  return width;
+}
+
+vec3 Texture::getColorAt(int x, int y) {
+  return vec3(data[width*y*3+x*3],data[width*y*3+x*3+1],data[width*y*3+x*3+2]);
+}
+
 }
 
 

@@ -44,11 +44,17 @@ int main(int argc, char* argv[]) {
 
   char* inputFileName, *outputFileName, *settingsFile;
 
+  settings.width = 200;
+  settings.height = 200;
+
   // Declare the supported options.
   po::options_description desc("Allowed options");
-  desc.add_options()("help", "produce help message")("input-file",
-      po::value<string>(), "Input file")("output-file", po::value<string>(),
-      "Output file")("no_opengl", "Do not use OpenGL");
+  desc.add_options()("help", "produce help message")
+      ("input-file", po::value<string>(), "Input file")
+      ("output-file", po::value<string>(),"Output file")
+      ("no_opengl", "Do not use OpenGL")
+      ("width",po::value<int>(),"Width")
+      ("height",po::value<int>(),"Height");
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -63,6 +69,19 @@ int main(int argc, char* argv[]) {
   } else {
   }
 
+  if (vm.count("height")) {
+    settings.height = vm["height"].as<int>();
+  } else {
+  }
+
+  if (vm.count("width")) {
+    settings.width = vm["width"].as<int>();
+  } else {
+  }
+
+  if (vm.count("input-file")) {
+  } else {
+  }
   if (vm.count("no_opengl")) {
     cout << "Not using OpenGL" << endl;
     settings.use_opengl = false;
@@ -84,8 +103,6 @@ int main(int argc, char* argv[]) {
   inputFileName = argv[1];
   outputFileName = argv[2];
 
-  settings.width = 100;
-  settings.height = 100;
   settings.backgroundColor[0] = 0;
   settings.backgroundColor[1] = 50.0f / 255.0f;
   settings.backgroundColor[2] = 50.0f / 255.0f;
@@ -112,6 +129,7 @@ int main(int argc, char* argv[]) {
   importer->loadFile(inputFileName);
   std::vector<raytracer::Triangle*> triangles = importer->getTriangleList();
   std::vector<raytracer::Material*> materials = importer->getMaterialList();
+  std::vector<raytracer::Texture*> textures = importer->getTextures();
   CHECK_GL_ERROR();
 
   /* RENDERER
@@ -124,6 +142,7 @@ int main(int argc, char* argv[]) {
   myRenderer->loadCamera(camera);
   if (!triangles.empty()) {
     myRenderer->getScene().loadMaterials(materials); //load materials BEFORE triangles!
+    myRenderer->getScene().loadTextures(textures); //load materials BEFORE triangles!
     myRenderer->loadTriangles(triangles);
   }
 

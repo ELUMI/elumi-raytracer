@@ -50,6 +50,7 @@ public:
   float getShininess() const;
   glm::vec3 getSpecular() const;
   float getTransparency() const;
+  int getTexture();
 
   IShader *getShader() const;
 

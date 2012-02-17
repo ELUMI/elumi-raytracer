@@ -71,7 +71,7 @@ ArrayDataStruct::findClosestIntersection(Ray ray) {
   }
 
   if(closest_t == numeric_limits<float>::infinity( )) {
-    return IntersectionData(IntersectionData::NOT_FOUND, vec3(), vec3());
+    return IntersectionData(IntersectionData::NOT_FOUND, IntersectionData::NOT_FOUND,NULL,vec3(), vec3());
   }
 
   vec3 v1v0 = *(closest_tri->getVertices()[1]) - *(closest_tri->getVertices()[0]);
@@ -89,7 +89,7 @@ ArrayDataStruct::findClosestIntersection(Ray ray) {
                       a1 * *(closest_tri->getNormals()[1]) +
                       a2 * *(closest_tri->getNormals()[2]);
 
-  return IntersectionData(closest_tri->getMaterial(), closest_pos, inter_normal);
+  return IntersectionData(closest_tri->getMaterial(), closest_tri->getTexture(),closest_tri,closest_pos, inter_normal);
 }
 
 void ArrayDataStruct::setData(std::vector<Triangle*> new_triangles) {

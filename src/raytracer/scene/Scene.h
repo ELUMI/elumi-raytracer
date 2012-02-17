@@ -31,13 +31,15 @@ public:
 	void loadLights(ILight* lights, int length, bool overwrite=false);
 	void loadMaterials(Material* materials, int length);
 	void loadMaterials(std::vector<raytracer::Material*> materials);
-	int addTexture(Texture* texture);
+	void loadTextures(std::vector<raytracer::Texture*> textures);
 
 	const Camera& getCamera();
 	IAccDataStruct* getAccDataStruct();
 
 	const std::vector<ILight*>& getLightVector();
 	const std::vector<Material*>& getMaterialVector();
+
+	Texture* getTextureAt(int index);
 
 	void drawVertexArray();
 

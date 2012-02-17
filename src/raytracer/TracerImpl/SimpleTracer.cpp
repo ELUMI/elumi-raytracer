@@ -73,6 +73,38 @@ vec4 SimpleTracer::traceHelper(Ray* ray, int levels) {
   } else {
     Material* material = scene->getMaterialVector()[intersection_data.material];
 
+    Triangle* triangle = intersection_data.triangle;
+
+    vec3 texture_color = vec3(0,0,0);
+
+    if(material->getTexture() != -1) {
+
+      Texture* texture = scene->getTextureAt(material->getTexture());
+
+      vec3 p = intersection_data.interPoint;
+
+      float x = p.x;
+      float y = p.y;
+
+      if(x > y) {
+        x = p.y;
+        y = p.x;
+      }
+      if(y > p.z) {
+        y = p.z;
+      }
+
+      vec2 texCoords = vec2(x,y);
+
+      texCoords.x = (int)(texCoords.x*(texture->getWidth()/2))%texture->getWidth();
+      texCoords.y = (int)(texCoords.y*(texture->getHeight()/2))%texture->getHeight();
+
+      int x_coord = (int)texCoords.x;
+      int y_coord = (int)texCoords.y;
+
+      texture_color = texture->getColorAt(x_coord,y_coord)/255.0f;
+    }
+
     vec3 color;
     //Light
     ILight* light = scene->getLightVector().front();
@@ -104,7 +136,10 @@ vec4 SimpleTracer::traceHelper(Ray* ray, int levels) {
 
       vec3 white = vec3(1,1,1);
 
-      color  = falloff * (1.0f * spec * white + diff * material->getDiffuse());
+      color  = falloff * (1.0f * spec * white + diff * texture_color);
+
+      //color  = (texture_color);
+
       //color = falloff * diff * intersection_data.triangle->getMaterial()->getColor();
       // diff * intersection_data.triangle->getMaterial()->getColor()
 

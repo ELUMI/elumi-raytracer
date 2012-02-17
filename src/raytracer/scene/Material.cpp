@@ -49,6 +49,10 @@ Material::~Material() {
 
 }
 
+int Material::getTexture() {
+  return texture;
+}
+
 glm::vec3 Material::getAmbient() const {
   return ambient;
 }
