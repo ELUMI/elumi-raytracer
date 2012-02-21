@@ -12,12 +12,9 @@
 #include "ITracer.h"
 #include "scene/Scene.h"
 #include "utilities/Triangle.h"
-#include "utilities/Ray.h"
-
-#include <stdint.h>
 
 #include <iostream>
-
+#include <boost/thread.hpp>
 #include "glm/glm.hpp"
 
 using namespace glm;
@@ -29,26 +26,32 @@ public:
   Renderer(Settings* settings);
   virtual ~Renderer();
   
+  Scene& getScene();
+  ITracer* getTracer();
+
   void loadTriangles(vector<Triangle*> triangles, bool overwrite=false);
   void loadCamera(Camera& camera);
   void loadLights(ILight* lights, int length, bool overwrite=false);
   void loadSettings(Settings& settings);
 
-  uint8_t* getFloatArray();
-  void render();  // asynchronic
+  float* getColorBuffer();
+  void render();       // synchronic
+  void asyncRender();  // asynchronic
+  void stopRendering();// synchronic
   
   /*
    * @return The number of pixels left to render
    */
-  int renderComplete();
+  unsigned int renderComplete();
   
 private:
   Scene m_scene;
   Settings* m_settings;
   ITracer* m_tracer;
 
-  // SOME KIND OF RAY-ARRAY MEMBER?
-  uint8_t* color_buffer;
+  float* color_buffer;
+
+  boost::thread* renderthread;
 };
 
 }

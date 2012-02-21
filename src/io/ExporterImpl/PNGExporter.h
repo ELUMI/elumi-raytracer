@@ -17,7 +17,7 @@ public:
 	PNGExporter();
 	virtual ~PNGExporter();
 
-	int exportImage(const char* filename, int width, int height, uint8_t* buffer);
+	int exportImage(const char* filename, int width, int height, float* buffer);
 };
 
 }

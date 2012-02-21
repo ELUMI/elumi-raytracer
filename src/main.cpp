@@ -1,11 +1,13 @@
 #include <GL/glew.h>
 
+#include <boost/program_options.hpp>
+namespace po = boost::program_options;
+
 #include "io/ExporterImpl/PNGExporter.h"
 #include "io/ImporterImpl/OBJImporter.h"
 #include "raytracer/Renderer.h"
 #include "raytracer/scene/ILight.h"
 #include "raytracer/scene/LightImpl/OmniLight.h"
-#include "raytracer/AccDataStructImpl/VertexArrayDataStruct.h"
 #include "raytracer/utilities/glutil.h"
 
 #include <iostream>
@@ -14,20 +16,20 @@
 #include <string>
 #include <omp.h>
 #include <glm/gtc/type_ptr.hpp> //value_ptr
-
 #define GL_UNSIGNED_INT_8_8_8_8_REV 0x8367
 
 using namespace std;
 using namespace raytracer;
 
 raytracer::Settings settings;
-uint8_t* buffer;
+float* buffer;
 
-GLuint shaderProgram;
+GLuint shader_program;
 raytracer::Camera camera;
 vec2 mousePrev;
 double prevTime;
 int renderMode = 2;
+raytracer::Renderer* myRenderer;
 
 void timedCallback();
 void mouse(int button, int action);
@@ -36,9 +38,39 @@ void mouseMove(int x, int y);
 void windowSize(int width, int height);
 void initGL();
 
-int main(int argc, char* argv[]) {
+unsigned int win_width, win_height;
 
+int main(int argc, char* argv[]) {
   int running = GL_TRUE;
+
+  char* inputFileName, *outputFileName, *settingsFile;
+
+  // Declare the supported options.
+  po::options_description desc("Allowed options");
+  desc.add_options()("help", "produce help message")("input-file",
+      po::value<string>(), "Input file")("output-file", po::value<string>(),
+      "Output file")("no_opengl", "Do not use OpenGL");
+
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::notify(vm);
+
+  if (vm.count("help")) {
+    cout << desc << "\n";
+    return 1;
+  }
+
+  if (vm.count("input-file")) {
+  } else {
+  }
+
+  if (vm.count("no_opengl")) {
+    cout << "Not using OpenGL" << endl;
+    settings.use_opengl = false;
+  } else {
+    cout << "Using OpenGL.\n";
+  }
+  /** END TEST**/
 
   //Initialize GLFW
   if (!glfwInit()) {
@@ -48,20 +80,19 @@ int main(int argc, char* argv[]) {
   if (argc < 3) { // Check the value of argc. If not enough parameters have been passed, inform user and exit.
     std::cout << "Usage is <flags> <infile> <outfile>\n"; // Inform the user of how to use the program
     exit(0);
-  }
-  // if we got enough parameters...
-  else {
-    char* inputFileName, *outputFileName, *settingsFile;
-    inputFileName = argv[1];
-    outputFileName = argv[2];
+  } // else if we got enough parameters...
 
-    settings.width = 50;
-    settings.height = 50;
-    settings.backgroundColor[0] = 0;
-    settings.backgroundColor[1] = 50.0f / 255.0f;
-    settings.backgroundColor[2] = 50.0f / 255.0f;
-    settings.backgroundColor[3] = 1;
+  inputFileName = argv[1];
+  outputFileName = argv[2];
 
+  settings.width = 150;
+  settings.height = 150;
+  settings.background_color[0] = 0;
+  settings.background_color[1] = 50.0f / 255.0f;
+  settings.background_color[2] = 50.0f / 255.0f;
+  settings.background_color[3] = 0;
+
+  if (settings.use_opengl) {
     //Open an OpenGl window
     if (!glfwOpenWindow(settings.width, settings.height, 0, 0, 0, 0, 0, 0,
         GLFW_WINDOW)) {
@@ -71,122 +102,130 @@ int main(int argc, char* argv[]) {
     initGL();
     CHECK_GL_ERROR();
 
-    /* IMPORTER
-     ***************** */
-
-    raytracer::IImporter* importer = new raytracer::OBJImporter();
-    importer->loadFile(inputFileName);
-    std::vector<raytracer::Triangle*> triangles = importer->getTriangleList();
-
-    VertexArrayDataStruct vertices;
-    vertices.setData(triangles);
-    CHECK_GL_ERROR();
-
-    /* RENDERER
-     ***************** */
-    camera.setPosition(vec3(0.2f, 1.0f, 5.0f));
-    camera.setDirection(vec3(0.0f, 0.0f, -1.0f));
-    camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
-
     glfwSetMouseButtonCallback(mouse);
     glfwSetMousePosCallback(mouseMove);
+  }
 
-    raytracer::Renderer myRenderer(&settings);
-    myRenderer.loadCamera(camera);
-    if (!triangles.empty())
-      myRenderer.loadTriangles(triangles);
+  /* IMPORTER
+   ***************** */
 
-    ILight* lights = new OmniLight(vec3(0, 0, 5));
+  raytracer::IImporter* importer = new raytracer::OBJImporter();
+  importer->loadFile(inputFileName);
+  std::vector<raytracer::Triangle*> triangles = importer->getTriangleList();
+  std::vector<raytracer::Material*> materials = importer->getMaterialList();
+  CHECK_GL_ERROR();
 
-    lights->setIntensity(40);
-    lights->setDistanceFalloff(QUADRATIC);
+  /* RENDERER
+   ***************** */
+  camera.setPosition(vec3(3.512f, 2.5f, 3.5f));
+  camera.setDirection(normalize(vec3(-1.0f, -0.5f, -1.0f)));
+  camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
 
-    myRenderer.loadLights(lights, 1, false);
+  ILight* lights = new OmniLight(vec3(2, 3, 5));
+  lights->setIntensity(1200);
+  lights->setColor(vec3(1,1,1));
+  lights->setDistanceFalloff(LINEAR);
 
-    buffer = myRenderer.getFloatArray();
-    for (int i = 0; i < settings.width * settings.height; i += 3) {
-      buffer[i * 4 + 0] = 0;
-      buffer[i * 4 + 1] = 50;
-      buffer[i * 4 + 2] = 50;
-      buffer[i * 4 + 3] = 255;
-      buffer[i * 4 + 4] = 0;
-      buffer[i * 4 + 5] = 0;
-      buffer[i * 4 + 6] = 0;
-      buffer[i * 4 + 7] = 255;
-      buffer[i * 4 + 8] = 0;
-      buffer[i * 4 + 9] = 0;
-      buffer[i * 4 + 10] = 0;
-      buffer[i * 4 + 11] = 255;
-    }
+  ILight* light2 = new OmniLight(vec3(-2, 2, 2));
+  light2->setIntensity(8000);
+  light2->setColor(vec3(1,1,1));
+  light2->setDistanceFalloff(QUADRATIC);
 
-    //omp_set_nested(1);
-    //omp_set_dynamic(1);
-    #pragma omp parallel num_threads(omp_get_num_procs()+1)
-    {
-      if (omp_get_thread_num() != 0)
-      {
-        //omp_set_num_threads(omp_get_num_procs());
-        myRenderer.render();
-      } else {
-        /* WINDOW
-         ***************** */
+  myRenderer = new Renderer(&settings);
+  myRenderer->loadCamera(camera);
+  if (!triangles.empty()) {
+    myRenderer->getScene().loadMaterials(materials); //load materials BEFORE triangles!
+    myRenderer->loadTriangles(triangles);
+  }
 
-        glfwEnable(GLFW_AUTO_POLL_EVENTS);
-        glfwSetWindowSizeCallback(windowSize); // TODO: In settings
+  myRenderer->loadLights(lights, 1, false);
+  myRenderer->loadLights(light2, 1, false);
 
-        while (running) {
-          //OpenGl rendering goes here...d
-          glClearColor(settings.backgroundColor.x, settings.backgroundColor.y,
-              settings.backgroundColor.z, settings.backgroundColor.a);
-          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-          glEnable(GL_DEPTH_TEST);
-          glDisable(GL_CULL_FACE);
+  buffer = myRenderer->getColorBuffer();
+  for (int i = 0; i < settings.width * settings.height-3; i += 3) {
+    buffer[i * 4 + 0] = 1;
+    buffer[i * 4 + 1] = 0;
+    buffer[i * 4 + 2] = 1;
+    buffer[i * 4 + 3] = 1;
+    buffer[i * 4 + 4] = 0;
+    buffer[i * 4 + 5] = 0;
+    buffer[i * 4 + 6] = 0;
+    buffer[i * 4 + 7] = 1;
+    buffer[i * 4 + 8] = 0;
+    buffer[i * 4 + 9] = 0;
+    buffer[i * 4 + 10] = 0;
+    buffer[i * 4 + 11] = 1;
+  }
 
-          switch (renderMode) {
-          case 1: {
-            glUseProgram(shaderProgram);
-            int loc = glGetUniformLocation(shaderProgram,
-                "modelViewProjectionMatrix");
-            mat4 view = camera.getViewMatrix();
-            glUniformMatrix4fv(loc, 1, GL_FALSE, value_ptr(view));
+  if (!settings.use_opengl) {
+    myRenderer->render();
+  } else {
+    myRenderer->asyncRender();
 
-            vertices.draw();
-            break;
-          }
-          case 2:
-            glDrawPixels(settings.width, settings.height, GL_RGBA,
-                GL_UNSIGNED_INT_8_8_8_8_REV, buffer);
-            break;
-          }
+    win_width = settings.width;
+    win_height = settings.height;
+    /* WINDOW
+     ***************** */
 
-          glUseProgram(0);
-          CHECK_GL_ERROR();
+    glfwEnable(GLFW_AUTO_POLL_EVENTS);
+    glfwSetWindowSizeCallback(windowSize); // TODO: In settings
 
-          //Swap front and back rendering buffers
-          glfwSwapBuffers();
+    while (running) {
+      //OpenGl rendering goes here...d
+      glViewport(0, 0, win_width, win_height);
 
-          timedCallback();
-          glfwSleep(0.01);
+      glClearColor(settings.background_color.x, settings.background_color.y,
+          settings.background_color.z, settings.background_color.a);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      glEnable(GL_DEPTH_TEST);
+      glDisable(GL_CULL_FACE);
 
-          //Check if ESC key was pressed or window was closed
-          running = !glfwGetKey(GLFW_KEY_ESC)
-              && glfwGetWindowParam(GLFW_OPENED);
-        }
+
+      switch (renderMode) {
+      case 1: {
+        glUseProgram(shader_program);
+        int loc = glGetUniformLocation(shader_program,
+            "modelViewProjectionMatrix");
+        mat4 view = camera.getViewMatrix();
+        glUniformMatrix4fv(loc, 1, GL_FALSE, value_ptr(view));
+
+        myRenderer->getScene().drawVertexArray();
+        break;
       }
+      case 2:
+        glRasterPos2f(-1,-1);
+        glPixelZoom((float) win_width / settings.width, (float) win_height / settings.height);
+        glDrawPixels(settings.width, settings.height, GL_RGBA,
+            GL_FLOAT, buffer);
+        break;
+      }
+
+      glUseProgram(0);
+      CHECK_GL_ERROR();
+
+      //Swap front and back rendering buffers
+      glfwSwapBuffers();
+
+      timedCallback();
+      glfwSleep(0.01);
+
+      //Check if ESC key was pressed or window was closed
+      running = !glfwGetKey(GLFW_KEY_ESC) && glfwGetWindowParam(GLFW_OPENED);
     }
 
     //Close window and terminate GLFW
     glfwTerminate();
-
-    /* EXPORTER
-     ***************** */
-    raytracer::IExporter* exporter = new raytracer::PNGExporter;
-    exporter->exportImage(outputFileName, settings.width, settings.height,
-        buffer);
-    delete importer;
-    delete exporter;
-    std::cout << std::endl << "end of PROGRAM" << std::endl;
   }
+  /* EXPORTER
+   ***************** */
+  if (myRenderer->renderComplete() == 0) {
+    raytracer::IExporter* exporter = new raytracer::PNGExporter;
+    exporter->exportImage(outputFileName, settings.width, settings.height, buffer);
+    delete exporter;
+  }
+  delete importer;
+  delete myRenderer;
+  std::cout << std::endl << "end of PROGRAM" << std::endl;
 
   exit(EXIT_SUCCESS);
 }
@@ -205,31 +244,32 @@ void initGL() {
   //************************************
   // The loadShaderProgram and linkShaderProgam functions are defined in glutil.cpp and
   // do exactly what we did in lab1 but are hidden for convenience
-  shaderProgram = loadShaderProgram("simple.vert", "simple.frag");
-  glBindAttribLocation(shaderProgram, 0, "position");
-  glBindAttribLocation(shaderProgram, 1, "color");
-  glBindAttribLocation(shaderProgram, 2, "texCoordIn");
-  glBindFragDataLocation(shaderProgram, 0, "fragmentColor");
-  linkShaderProgram(shaderProgram);
+  shader_program = loadShaderProgram("simple.vert", "simple.frag");
+  glBindAttribLocation(shader_program, 0, "position");
+  glBindAttribLocation(shader_program, 1, "color");
+  glBindAttribLocation(shader_program, 2, "normal");
+  glBindAttribLocation(shader_program, 3, "texCoordIn");
+  glBindAttribLocation(shader_program, 4, "material");
+
+  glBindFragDataLocation(shader_program, 0, "fragmentColor");
+  linkShaderProgram(shader_program);
 
   //************************************
   //        Set uniforms
   //************************************
 
-  glUseProgram(shaderProgram);
+  glUseProgram(shader_program);
   CHECK_GL_ERROR();
 
   // Get the location in the shader for uniform tex0
-  int texLoc = glGetUniformLocation(shaderProgram, "colortexture");
+  int texLoc = glGetUniformLocation(shader_program, "colortexture");
   // Set colortexture to 0, to associate it with texture unit 0
   glUniform1i(texLoc, 0);
 }
 
 void windowSize(int width, int height) {
-  float _width = (float) width / settings.width;
-  float _height = (float) height / settings.height;
-  glPixelZoom(_width, _height);
-  glViewport(0, 0, width, height);
+  win_width=width;
+  win_height=height;
 }
 
 void mouseMove(int x, int y) {
@@ -292,4 +332,28 @@ void timedCallback() {
   if (glfwGetKey('6')) {
     renderMode = 6;
   }
+  if (glfwGetKey('R')) {
+    myRenderer->loadCamera(camera);
+    myRenderer->asyncRender();
+    renderMode = 2;
+  }
+  if (glfwGetKey('T')) {
+    myRenderer->stopRendering();
+  }
+  if (glfwGetKey('F')) {
+    myRenderer->loadCamera(camera);
+    myRenderer->stopRendering();
+    settings.use_first_bounce = true;
+    myRenderer->asyncRender();
+    renderMode = 2;
+  }
+  if (glfwGetKey('G')) {
+    myRenderer->loadCamera(camera);
+    myRenderer->stopRendering();
+    settings.use_first_bounce = false;
+    myRenderer->asyncRender();
+    renderMode = 2;
+  }
+
+  //cout << myRenderer->renderComplete() << "\n";
 }

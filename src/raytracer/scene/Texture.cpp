@@ -16,6 +16,12 @@ Texture::Texture() {
 
 }
 
+Texture::Texture(unsigned int width, unsigned int height, unsigned char* data) {
+  Texture::width = width;
+  Texture::height = height;
+  Texture::data = data;
+}
+
 Texture::~Texture() {
 	// TODO Auto-generated destructor stub
 }

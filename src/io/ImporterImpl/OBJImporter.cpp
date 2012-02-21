@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include "OBJImporterImpl/obj_loader.h"
 
+#include <IL/il.h>
+
 #include "OBJImporter.h"
 #include "../IImporter.h"
 #include "../../raytracer/utilities/Triangle.h"
@@ -29,6 +31,8 @@ OBJImporter::~OBJImporter(){
 
 void OBJImporter::loadFile(char* filename){
 
+  ilInit();
+
 	obj_loader *obj_data = new obj_loader();
 	try{
 		obj_data->load(filename);
@@ -50,12 +54,41 @@ void OBJImporter::loadFile(char* filename){
 		float _shininess = material->shiny;
 		float _sharpness = material->glossy;
 		float _reflection = material->reflect;
-		float _index_of_reflection = material->refract_index;
+		float _index_of_refraction = material->refract_index;
+		float _refraction = material->refract;
 		std::string _texture_map = material->texture_filename;
 
+		ILuint image;
+		int texture = -1;
+
+		image = ilGenImage();
+
+		ilBindImage(image);
+
+    if(_texture_map != "") {
+      ilLoadImage(_texture_map.c_str());
+
+      ilGetError();
+
+      ILenum error;
+      error = ilGetError();
+
+      if(error == IL_NO_ERROR) {
+        ILuint w,h;
+
+        w = ilGetInteger(IL_IMAGE_WIDTH);
+        h = ilGetInteger(IL_IMAGE_HEIGHT);
+
+        textures.push_back(new Texture(w,h,ilGetData()));
+        texture = textures.size()-1;
+
+      } else {
+        //Image not loaded (?)
+      }
+    }
 
 		OBJImporter::materials.push_back(new Material(_name,_ambient,_diffuse,_specular,_emissive,
-				_transparency,_shininess,_sharpness,_reflection,_index_of_reflection,_texture_map));
+				_transparency,_shininess,_sharpness,_reflection,_index_of_refraction,NULL /*POINTER TO A TEXTURE*/));
 	}
 
 	// Start creating the triangles
@@ -75,7 +108,7 @@ void OBJImporter::loadFile(char* filename){
 			_normals.push_back(new vec3(_norm->e[0],_norm->e[1],_norm->e[2]));
 			//_textures.push_back(new vec3(_text->e[0],_text->e[1],_text->e[2]));
 		}
-		Material* _material = OBJImporter::materials[face->material_index];
+		unsigned int _material = face->material_index;
 		OBJImporter::triangles.push_back(new Triangle(_vertices,_normals,_textures,_material));
 
 		// More than one triangle for each face?
@@ -108,6 +141,10 @@ std::vector<Triangle*>& OBJImporter::getTriangleList(){
 std::vector<Material*>& OBJImporter::getMaterialList(){
 	return materials;
 }
+std::vector<Texture*>& OBJImporter::getTextures() {
+  return textures;
+}
+
 Camera* OBJImporter::getCamera(){
 	if(camera!=NULL){
 		return camera;

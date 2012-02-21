@@ -8,8 +8,6 @@
 #ifndef SETTINGS_H_
 #define SETTINGS_H_
 
-#define DEFAULT_PIXEL_BITS 4 // RGBA
-
 #include <glm/glm.hpp>
 #include <stdint.h>
 
@@ -22,14 +20,16 @@ struct Settings {
   Settings() {
     width = 640;
     height = 480;
-
-    backgroundColor = vec4(0,0,0,1);
+    use_opengl = true;
+    background_color = vec4(0,0,0,1);
+    use_first_bounce = false;
   }
 
   int width;
   int height;
-  vec4 backgroundColor;
-
+  bool use_opengl;
+  bool use_first_bounce;
+  vec4 background_color;
 };
 
 }

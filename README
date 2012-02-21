@@ -1,3 +1,45 @@
 Raytracer project for the Bachelor Thesis
 
 test
+
+Build instructions (BETA, not tested)
+
+eclipse
+* import / projects from git
+* new / convert to cpp
+
+* properties
+ * settings
+  * GCC C++ compiler
+   * Includes
+     * glm
+     * glfw
+     * glew
+     * devil
+   * Miscellaneous
+    * -fopenmp
+  * GCC C++ Linker
+   * Libraries
+    * -l (libraries)
+     * png
+     * IL (devil)
+     * boost_program_options
+     * boost_thread
+     * gomp (openmp)
+     * GLEW
+     * GL
+     * GLU
+     * glfw
+    * -L (search path)
+     * glfw
+     * glew
+     * devil
+ * Run/Debug settings
+  * Edit
+   * Arguments
+    * sword2.obj test.png
+   * Enviroment
+    * LD_LIBRARY_PATH (separate with ;)
+     * glfw
+     * glew
+     * devil

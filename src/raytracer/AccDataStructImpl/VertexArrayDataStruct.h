@@ -20,27 +20,25 @@ using namespace glm;
 
 namespace raytracer {
 
-class VertexArrayDataStruct: public raytracer::IAccDataStruct {
+class Scene;
+
+class VertexArrayDataStruct {
 public:
-  VertexArrayDataStruct();
+  VertexArrayDataStruct(Scene* scene, std::vector<Triangle*> triangles);
   virtual ~VertexArrayDataStruct();
 
-  IntersectionData findClosestIntersection(Ray ray);
-  void setData(std::vector<Triangle*> triangles);
   GLuint getVertexArrayObject();
   void draw();
 
 private:
-  vector<vec3> m_vertices;
-  vector<vec3> m_colors;
-  vector<vec2> m_texcoords;
-  vector<int> m_indices;
   GLuint positionBuffer;
   GLuint colorBuffer;
   GLuint texcoordBuffer;
-  GLuint indexBuffer;
+  GLuint normalBuffer;
+  GLuint materialBuffer;
   GLuint vertexArrayObject;
   GLuint m_texture;
+  size_t size;
 
 };
 }

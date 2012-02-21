@@ -21,14 +21,14 @@ Material::Material() {
   Material::transparency = 1.0f;
   Material::shininess = 0;
   Material::sharpness = 98; //glossy
-  Material::index_of_reflection = 1;
+  Material::index_of_refraction = 1;
   Material::reflection = 0.0f;
-  Material::alpha_texture_map = "\0";
+  Material::texture = NULL;
 }
 
 Material::Material(std::string name,glm::vec3 ambient,glm::vec3 diffuse,glm::vec3 specular,
     glm::vec3 emissive,glm::vec3 transperency,float shininess,float sharpness,
-    float reflection ,float index_of_reflection,std::string alpha_texture_map){
+    float reflection ,float index_of_refraction, Texture* texture){
 
   Material::name = name;
   Material::ambient = ambient;
@@ -38,9 +38,10 @@ Material::Material(std::string name,glm::vec3 ambient,glm::vec3 diffuse,glm::vec
   Material::transparency = (transperency.x + transperency.y + transperency.z) / 3.0f;
   Material::shininess = shininess;
   Material::sharpness = sharpness;
-  Material::index_of_reflection = index_of_reflection;
+  Material::index_of_refraction = index_of_refraction;
   Material::reflection = reflection;
-  Material::alpha_texture_map = alpha_texture_map;
+  //Material::alpha_texture_map = alpha_texture_map;
+  Material::texture = texture;
 }
 
 Material::~Material() {
@@ -59,21 +60,14 @@ glm::vec3 Material::getEmissive() const {
   return emissive;
 }
 
-int Material::getIllumination_model() const {
-  return illumination_model;
-}
-
-float Material::getIndex_of_reflection() const {
-  return index_of_reflection;
+float Material::getIndexOfRefraction() const {
+  return index_of_refraction;
 }
 
 float Material::getReflection() const {
   return reflection;
 }
 
-IShader *Material::getShader() const {
-  return shader;
-}
 
 float Material::getSharpness() const {
   return sharpness;

@@ -7,16 +7,20 @@
 
 #include "Renderer.h"
 #include "TracerImpl/SimpleTracer.h"
+#include "TracerImpl/StandardTracer.h"
+#include <boost/thread.hpp>
+#include <boost/bind.hpp>
 
 using namespace std;
 
 namespace raytracer {
 
 Renderer::Renderer(Settings* settings)
-  : m_scene() {
+  : m_scene(settings) {
   m_settings = settings;
-  m_tracer = new SimpleTracer(&m_scene, settings->backgroundColor);
-  color_buffer = new uint8_t[m_settings->width * m_settings->height * 4];//(uint8_t *) calloc (sizeof (uint8_t), m_settings->width * m_settings->height * 4);
+  m_tracer = new StandardTracer(&m_scene, settings);
+  color_buffer = new float[m_settings->width * m_settings->height * 4];
+  renderthread = 0;
 }
 
 Renderer::~Renderer() {
@@ -36,41 +40,46 @@ void Renderer::loadLights(ILight* lights, int length, bool overwrite) {
   m_scene.loadLights(lights,length,overwrite);
 }
 
-uint8_t* Renderer::getFloatArray() {
+Scene& Renderer::getScene() {
+  return m_scene;
+}
+
+ITracer* Renderer::getTracer() {
+  return m_tracer;
+}
+
+float* Renderer::getColorBuffer() {
 	return color_buffer;
 }
 
-void Renderer::render() {
-  int rays_length = m_settings->width*m_settings->height;
+void Renderer::asyncRender() {
+  m_tracer->first_bounce(); //must be done in master thread
 
-  //Initiate ray array
-  Ray* rays = new Ray[rays_length];
-
-  Camera camera = m_scene.getCamera();
-  mat4 view = camera.getViewMatrix();
-  view = inverse(view);
-
-  //We step over all "pixels" from the cameras viewpoint
-  for(int h = 0; h < m_settings->height; h++) {
-    for(int w = 0; w < m_settings->width; w++) {
-      vec4 dir = normalize(vec4(2*float(w)/m_settings->width-1, 2*float(h)/m_settings->height-1, 1, 1));
-      dir = view*dir;
-
-      rays[w+h*m_settings->width] = Ray(camera.getPosition(),vec3(dir));
-
-    }
+  if(renderthread){
+    stopRendering();
   }
-
-  m_tracer->trace(rays,m_settings->width*m_settings->height,color_buffer);
-
-  //Free memory
-  delete [] rays;
-
+  renderthread = new boost::thread( boost::bind(&Renderer::render, this ));
 }
 
-int Renderer::renderComplete() {
+void Renderer::stopRendering() {
+  if(renderthread) {
+    if(m_tracer)
+      m_tracer->stopTracing();
+    renderthread->join();
+    delete renderthread;
+    renderthread = 0;
+  }
+}
 
-	return -1;
+
+void Renderer::render() {
+  m_tracer->traceImage(color_buffer);
+
+  // POST FXS!
+}
+
+unsigned int Renderer::renderComplete() {
+	return m_tracer->getPixelsLeft();
 }
 
 }
