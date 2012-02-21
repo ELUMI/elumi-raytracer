@@ -15,6 +15,8 @@ BaseTracer::BaseTracer(Scene* scene, Settings* settings) : lights(&(scene->getLi
 
   datastruct = scene->getAccDataStruct();
 
+  first_pass = 0;
+
   abort = false;
 }
 
@@ -32,6 +34,10 @@ void BaseTracer::first_bounce() {
   int height= settings->width;
   int size= width*height;
 
+  if(first_pass) {
+    delete first_pass; //there may be a unneccesary delete here, which may be very slow
+    delete first_intersections;
+  }
   first_pass = new DeferredProcesser(settings->width,settings->height); //TODO: use settings, and check useopengl
   first_intersections = new IAccDataStruct::IntersectionData[size];
 
@@ -62,7 +68,8 @@ void BaseTracer::first_bounce() {
       assert(material == IAccDataStruct::IntersectionData::NOT_FOUND || material < scene->getMaterialVector().size());
 
       first_intersections[i] = IAccDataStruct::IntersectionData(
-          material, vec3(normalize(pos)), normals[i]);
+          material, vec3(normalize(pos)),
+          normals[i], vec2(texcoords[i].x, texcoords[i].y));
     }
   }
 
