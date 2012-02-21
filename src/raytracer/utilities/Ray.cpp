@@ -32,9 +32,9 @@ Ray Ray::generateRay(vec3 start_position, vec3 end_position) {
 }
 
 Ray Ray::reflection(Ray ray, vec3 normal, vec3 intersection_point) {
-  vec3 r = ray.getDirection();
+  vec3 l = ray.getDirection();
 
-  vec3 refl = -r + 2.0f * glm::normalize(normal) * ( glm::dot(r,  normal) );
+  vec3 refl = glm::normalize( -l + 2.0f * normal * ( glm::dot(l,  normal)) );
   return Ray(intersection_point, refl);
 }
 

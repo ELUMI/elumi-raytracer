@@ -54,33 +54,40 @@ vec4 StandardTracer::shade(Ray incoming_ray,
   Material* material = scene->getMaterialVector()[idata.material];
 
   // For each light source in the scene
-  for(int i=0; i<lights->size(); ++i) {
+  for(unsigned int i=0; i<lights->size(); ++i) {
     ILight* light  = lights->at(i);
-    Ray light_ray = Ray::generateRay( idata.interPoint, light->getPosition() ) ;
+    Ray light_ray = Ray::generateRay(light->getPosition(), idata.interPoint);
     IAccDataStruct::IntersectionData light_idata = datastruct->findClosestIntersection(light_ray);
 
-    float distance_to_light = length(light->getPosition()-idata.interPoint);
+    float distance_to_light = length(idata.interPoint - light->getPosition()); // 1
+    float distance_between_light_and_first_hit = length(light_idata.interPoint - light->getPosition()); // 2
 
-    // If light reaches triangle:
-    if (//light_idata.triangle != idata.triangle &&
-        distance_to_light < length(light->getPosition()-light_idata.interPoint)) {
+    if (light_idata.material != IAccDataStruct::IntersectionData::NOT_FOUND
+        && (distance_between_light_and_first_hit + 0.0001f) < distance_to_light) {
+    // IN SHADOW!
+      //diffuse = vec3(1,0,0);
+    } else {
 
       // Falloff intensity
       float intensity = light->getIntensity(distance_to_light);
 
+      Ray inv_light_ray = Ray(idata.interPoint, -light_ray.getDirection());
+
       // Diffuse lighting
       diffuse += intensity
-                 * clamp(glm::dot(light_ray.getDirection(), idata.normal))
+                 * clamp(glm::dot(inv_light_ray.getDirection(), idata.normal))
                  * material->getDiffuse()
                  * light->getColor();
 
-      // Diffuse lighting
-      vec3 h = normalize(light_ray.getDirection() + incoming_ray.getDirection());
+      // Specular lighting
+      vec3 h = normalize(inv_light_ray.getDirection() + incoming_ray.getDirection());
       specular += intensity
                   * glm::pow( clamp( glm::dot(idata.normal, h) ), material->getShininess() )
                   * material->getSpecular()
                   * light->getColor();
     }
+//    else
+//      diffuse = vec3(1,0,0);
 
     // For each light, add ambient component
     ambient += light->getColor();
@@ -104,7 +111,7 @@ vec4 StandardTracer::shade(Ray incoming_ray,
 
   // Summarize all color components
   color += (ambient + diffuse + specular);
-  return vec4( color, material->getTransparency()) + refl_color + refr_color;
+  return vec4( color, material->getTransparency()) ;//+ refl_color + refr_color;
 }
 
 
