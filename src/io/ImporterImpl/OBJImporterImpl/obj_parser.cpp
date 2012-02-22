@@ -169,7 +169,12 @@ obj_vector* obj_parse_vector()
 	obj_vector *v = (obj_vector*)malloc(sizeof(obj_vector));
 	v->e[0] = atof( strtok(NULL, WHITESPACE));
 	v->e[1] = atof( strtok(NULL, WHITESPACE));
-	v->e[2] = atof( strtok(NULL, WHITESPACE));
+	try{
+	  v->e[2] = atof( strtok(NULL, WHITESPACE));
+	}
+	catch(int e){
+	  v->e[2] = 0.0f;
+	}
 	return v;
 }
 

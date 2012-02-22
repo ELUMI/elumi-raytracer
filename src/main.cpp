@@ -44,8 +44,8 @@ int main(int argc, char* argv[]) {
 
   char* inputFileName, *outputFileName, *settingsFile;
 
-  settings.width = 200;
-  settings.height = 200;
+  settings.width = 180;
+  settings.height = 180;
 
   // Declare the supported options.
   po::options_description desc("Allowed options");
