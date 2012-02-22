@@ -12,8 +12,6 @@
 namespace raytracer {
 
 Texture::Texture() {
-	// TODO Auto-generated constructor stub
-
 }
 
 Texture::Texture(unsigned int width, unsigned int height, unsigned char* data) {
@@ -23,7 +21,6 @@ Texture::Texture(unsigned int width, unsigned int height, unsigned char* data) {
 }
 
 Texture::~Texture() {
-	// TODO Auto-generated destructor stub
 }
 
 }

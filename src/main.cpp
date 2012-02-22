@@ -93,8 +93,11 @@ int main(int argc, char* argv[]) {
   settings.background_color[3] = 0;
 
   if (settings.use_opengl) {
+    win_width = settings.width*4;
+    win_height = settings.height*4;
+
     //Open an OpenGl window
-    if (!glfwOpenWindow(settings.width, settings.height, 0, 0, 0, 0, 0, 0,
+    if (!glfwOpenWindow(win_width, win_height, 0, 0, 0, 0, 0, 0,
         GLFW_WINDOW)) {
       glfwTerminate();
       exit(EXIT_FAILURE);
@@ -113,7 +116,6 @@ int main(int argc, char* argv[]) {
   importer->loadFile(inputFileName);
   std::vector<raytracer::Triangle*> triangles = importer->getTriangleList();
   std::vector<raytracer::Material*> materials = importer->getMaterialList();
-  CHECK_GL_ERROR();
 
   /* RENDERER
    ***************** */
@@ -121,12 +123,12 @@ int main(int argc, char* argv[]) {
   camera.setDirection(normalize(vec3(-1.0f, -0.5f, -1.0f)));
   camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
 
-  ILight* lights = new OmniLight(vec3(2, 3, 5));
+  OmniLight* lights = new OmniLight(vec3(2, 3, 5));
   lights->setIntensity(1200);
   lights->setColor(vec3(1,1,1));
   lights->setDistanceFalloff(LINEAR);
 
-  ILight* light2 = new OmniLight(vec3(-2, 2, 2));
+  OmniLight* light2 = new OmniLight(vec3(-2, 2, 2));
   light2->setIntensity(8000);
   light2->setColor(vec3(1,1,1));
   light2->setDistanceFalloff(QUADRATIC);
@@ -139,7 +141,7 @@ int main(int argc, char* argv[]) {
   }
 
   myRenderer->loadLights(lights, 1, false);
-  myRenderer->loadLights(light2, 1, false);
+  //myRenderer->loadLights(light2, 1, false);
 
   buffer = myRenderer->getColorBuffer();
   for (int i = 0; i < settings.width * settings.height-3; i += 3) {
@@ -162,8 +164,6 @@ int main(int argc, char* argv[]) {
   } else {
     myRenderer->asyncRender();
 
-    win_width = settings.width;
-    win_height = settings.height;
     /* WINDOW
      ***************** */
 
@@ -184,12 +184,14 @@ int main(int argc, char* argv[]) {
       switch (renderMode) {
       case 1: {
         glUseProgram(shader_program);
-        int loc = glGetUniformLocation(shader_program,
-            "modelViewProjectionMatrix");
+        int loc = glGetUniformLocation(shader_program, "modelViewProjectionMatrix");
         mat4 view = camera.getViewMatrix();
-        glUniformMatrix4fv(loc, 1, GL_FALSE, value_ptr(view));
 
-        myRenderer->getScene().drawVertexArray();
+        myRenderer->getScene().getDrawable()->drawWithView(view, loc);
+
+        lights->drawWithView(view, loc);
+        light2->drawWithView(view, loc);
+
         break;
       }
       case 2:
