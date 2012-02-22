@@ -1,8 +1,39 @@
 Raytracer project for the Bachelor Thesis
 
-test
+Some cool introduction text.
 
-Build instructions (BETA, not tested)
+############################################################
+
+                         Usage
+
+raytracer [options]
+
+Allowed options:
+  -h [ --help ]              produce help message
+  --no_opengl                Do not use OpenGL
+  -i [ --input-file ] arg    Input file
+  -o [ --output-file ] arg   Output file
+  -s [ --settings-file ] arg Settings file
+  
+
+############################################################
+
+                     Settings-file
+Each row in the settings file specifies the value for one
+option. Option name is separated by a colon:
+
+    option_name : value
+
+Available options are:
+
+width:int
+height:int
+use_opengl:bool
+use_first_bounce:bool
+
+############################################################
+
+          Build instructions (BETA, not tested)
 
 eclipse
 * import / projects from git

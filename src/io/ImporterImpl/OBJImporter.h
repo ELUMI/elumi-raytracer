@@ -11,7 +11,6 @@
 #include <stdexcept>
 
 #include "../IImporter.h"
-#include "OBJImporterImpl/obj_loader.h"
 
 namespace raytracer {
 
