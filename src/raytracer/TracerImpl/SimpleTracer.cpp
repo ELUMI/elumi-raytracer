@@ -77,24 +77,50 @@ vec4 SimpleTracer::traceHelper(Ray* ray, int levels) {
 
     vec3 texture_color = vec3(0,0,0);
 
+    vec3 bump_normal = vec3(0,0,0);
+
     if(material->getTexture() != -1) {
 
       Texture* texture = scene->getTextureAt(material->getTexture());
 
       vec3 p = intersection_data.interPoint;
+      vec2 texCoords = vec2(0,0);
 
-      float x = p.x;
-      float y = p.y;
+      float x;
+      float y;
 
-      if(x > y) {
-        x = p.y;
-        y = p.x;
+      //Planar mapping
+      if(triangle->getTextures().size() ==  0) {
+        x = p.x;
+        y = p.y;
+
+        if(x > y) {
+          x = p.y;
+          y = p.x;
+        }
+        if(y > p.z) {
+          y = p.z;
+        }
+
+        texCoords.x = x;
+        texCoords.y = y;
+
+      } else { //We have texture coordinates
+
+        vector<vec3*> vertices = triangle->getVertices();
+        vector<vec3*> coords = triangle->getTextures();
+        vec3 alfa;
+
+        alfa.x = length(*vertices[0] - p);
+        alfa.y = length(*vertices[1] - p);
+        alfa.z = length(*vertices[2] - p);
+
+        alfa = normalize(alfa);
+
+        texCoords.x = alfa.x * coords[0]->x + alfa.y * coords[1]->x + alfa.z * coords[2]->x;
+        texCoords.y = alfa.x * coords[0]->y + alfa.y * coords[1]->y + alfa.z * coords[2]->y;
+
       }
-      if(y > p.z) {
-        y = p.z;
-      }
-
-      vec2 texCoords = vec2(x,y);
 
       texCoords.x = (int)(texCoords.x*(texture->getWidth()/2))%texture->getWidth();
       texCoords.y = (int)(texCoords.y*(texture->getHeight()/2))%texture->getHeight();
@@ -103,6 +129,7 @@ vec4 SimpleTracer::traceHelper(Ray* ray, int levels) {
       int y_coord = (int)texCoords.y;
 
       texture_color = texture->getColorAt(x_coord,y_coord)/255.0f;
+
     }
 
     vec3 color;
@@ -118,8 +145,10 @@ vec4 SimpleTracer::traceHelper(Ray* ray, int levels) {
 
     } else {
 
+      vec3 normal = glm::normalize(intersection_data.normal);
+
       //Diffuse
-      float diff = abs(dot(lightRay.getDirection(), intersection_data.normal));
+      float diff = abs(dot(lightRay.getDirection(), normal));
       float falloff = light->getIntensity(length(light->getPosition()-intersection_data.interPoint));
 
       //Specular
@@ -137,6 +166,8 @@ vec4 SimpleTracer::traceHelper(Ray* ray, int levels) {
       vec3 white = vec3(1,1,1);
 
       color  = falloff * (1.0f * spec * white + diff * texture_color);
+
+      //color  = falloff * (diff * texture_color);
 
       //color  = (texture_color);
 
