@@ -29,14 +29,14 @@ vec4 StandardTracer::trace(Ray ray, IAccDataStruct::IntersectionData idata) {
 }
 
 vec4 StandardTracer::tracePrim(Ray ray,
-                           const unsigned int depth) {
+    const unsigned int depth) {
   IAccDataStruct::IntersectionData idata = datastruct->findClosestIntersection(ray);
   return shade(ray, idata, depth);
 }
 
 vec4 StandardTracer::shade(Ray incoming_ray,
-                           IAccDataStruct::IntersectionData idata,
-                           const unsigned int depth) {
+    IAccDataStruct::IntersectionData idata,
+    const unsigned int depth) {
   if (idata.material == IAccDataStruct::IntersectionData::NOT_FOUND) {
     // No intersection
     return settings->background_color;
@@ -64,7 +64,7 @@ vec4 StandardTracer::shade(Ray incoming_ray,
 
     if (light_idata.material != IAccDataStruct::IntersectionData::NOT_FOUND
         && (distance_between_light_and_first_hit + 0.0001f) < distance_to_light) {
-    // IN SHADOW!
+      // IN SHADOW!
       //diffuse = vec3(1,0,0);
     } else {
 
@@ -75,19 +75,19 @@ vec4 StandardTracer::shade(Ray incoming_ray,
 
       // Diffuse lighting
       diffuse += intensity
-                 * clamp(glm::dot(inv_light_ray.getDirection(), idata.normal))
-                 * material->getDiffuse()
-                 * light->getColor();
+          * clamp(glm::dot(inv_light_ray.getDirection(), idata.normal))
+      * material->getDiffuse()
+      * light->getColor();
 
       // Specular lighting
       vec3 h = normalize(inv_light_ray.getDirection() + incoming_ray.getDirection());
       specular += intensity
-                  * glm::pow( clamp( glm::dot(idata.normal, h) ), material->getShininess() )
-                  * material->getSpecular()
-                  * light->getColor();
+          * glm::pow( clamp( glm::dot(idata.normal, h) ), material->getShininess() )
+      * material->getSpecular()
+      * light->getColor();
     }
-//    else
-//      diffuse = vec3(1,0,0);
+    //    else
+    //      diffuse = vec3(1,0,0);
 
     // For each light, add ambient component
     ambient += light->getColor();
@@ -97,21 +97,26 @@ vec4 StandardTracer::shade(Ray incoming_ray,
   ambient *= material->getAmbient();
 
   if (depth < max_recursion_depth) {
+
+    // REFLECTION RAY
     if(material->getReflection() > 0.0f) {
       Ray refl_ray = Ray::reflection(incoming_ray, idata.normal, idata.interPoint);
       refl_color = tracePrim(refl_ray, depth+1) * material->getReflection();
     }
 
-    if(material->getTransparency() != 1.0f) {
-      Ray refr_ray = Ray::refraction(incoming_ray, idata.normal, idata.interPoint,
-                             material->getIndexOfRefraction());
-      refr_color = tracePrim(refr_ray, depth+1) * material->getReflection();
-    }
+    // REFRACTION RAY
+//    if(material->getTransparency() > 0.0f) {
+//      Ray refr_ray = Ray::refraction(incoming_ray, idata.normal, idata.interPoint,
+//          material->getIndexOfRefraction());
+//      vec3 newpos = refr_ray.getPosition() + refr_ray.getDirection()*0.01f;
+//      refr_ray = Ray::generateRay(newpos, refr_ray.getDirection());
+//      refr_color = tracePrim(refr_ray, depth+1) * material->getTransparency();
+//    }
   }
 
   // Summarize all color components
   color += (ambient + diffuse + specular);
-  return vec4( color, material->getTransparency()) ;//+ refl_color + refr_color;
+  return vec4( color, material->getTransparency()) + refl_color + refr_color;
 }
 
 

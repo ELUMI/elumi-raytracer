@@ -117,19 +117,19 @@ int main(int argc, char* argv[]) {
 
   /* RENDERER
    ***************** */
-  camera.setPosition(vec3(3.512f, 2.5f, 3.5f));
-  camera.setDirection(normalize(vec3(-1.0f, -0.5f, -1.0f)));
+  camera.setPosition(vec3(-0.5f, 1.51f, 6.5f));
+  camera.setDirection(normalize(vec3(0.2f, -0.5f, -1.0f)));
   camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
 
-  ILight* lights = new OmniLight(vec3(2, 5, 3));
-  lights->setIntensity(100);
+  ILight* lights = new OmniLight(vec3(-4, 5, 0));
+  lights->setIntensity(10);
   lights->setColor(vec3(1,1,1));
   lights->setDistanceFalloff(QUADRATIC);
 
-  ILight* light2 = new OmniLight(vec3(-2, 2, 2));
-  light2->setIntensity(8000);
-  light2->setColor(vec3(1,1,1));
-  light2->setDistanceFalloff(QUADRATIC);
+  ILight* light2 = new OmniLight(vec3(3, 2, -3));
+    light2->setIntensity(10);
+    light2->setColor(vec3(1,1,1));
+    light2->setDistanceFalloff(QUADRATIC);
 
   myRenderer = new Renderer(&settings);
   myRenderer->loadCamera(camera);
@@ -139,7 +139,7 @@ int main(int argc, char* argv[]) {
   }
 
   myRenderer->loadLights(lights, 1, false);
-  //myRenderer->loadLights(light2, 1, false);
+  myRenderer->loadLights(light2, 1, false);
 
   buffer = myRenderer->getColorBuffer();
   for (int i = 0; i < settings.width * settings.height-3; i += 3) {
