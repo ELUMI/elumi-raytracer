@@ -356,6 +356,21 @@ void timedCallback() {
     myRenderer->asyncRender();
     renderMode = 2;
   }
+  if (glfwGetKey(GLFW_KEY_KP_ADD)) {
+    myRenderer->loadCamera(camera);
+    myRenderer->stopRendering();
+    settings.test += speed/10;
+    myRenderer->asyncRender();
+    renderMode = 2;
+  }
+  if (glfwGetKey(GLFW_KEY_KP_SUBTRACT)) {
+    myRenderer->loadCamera(camera);
+    myRenderer->stopRendering();
+    settings.test -= speed/10;
+    myRenderer->asyncRender();
+    renderMode = 2;
+  }
 
+  cout << settings.test << "\n";
   //cout << myRenderer->renderComplete() << "\n";
 }

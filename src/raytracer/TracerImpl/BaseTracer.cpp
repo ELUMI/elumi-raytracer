@@ -153,7 +153,7 @@ int BaseTracer::spawnRays() {
   for(int y = 0; y < height; y++) {
     for(int x = 0; x < width; x++) {
       vec4 apoint = vec4(0,0,0,1);
-      vec4 aray = vec4(x,y,1,1);
+      vec4 aray = vec4(x,y,settings->test,1);
       apoint = trans * apoint;
       //aray = transpose(inverse(trans)) * aray;
       aray = trans * aray;
