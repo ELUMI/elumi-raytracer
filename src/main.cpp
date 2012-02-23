@@ -122,12 +122,12 @@ int main(int argc, char* argv[]) {
   camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
 
   ILight* lights = new OmniLight(vec3(-4, 5, 0));
-  lights->setIntensity(10);
+  lights->setIntensity(1);
   lights->setColor(vec3(1,1,1));
   lights->setDistanceFalloff(QUADRATIC);
 
   ILight* light2 = new OmniLight(vec3(3, 2, -3));
-    light2->setIntensity(10);
+    light2->setIntensity(1);
     light2->setColor(vec3(1,1,1));
     light2->setDistanceFalloff(QUADRATIC);
 

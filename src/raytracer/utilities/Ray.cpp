@@ -40,8 +40,9 @@ Ray Ray::reflection(Ray ray, vec3 normal, vec3 intersection_point) {
 
 Ray Ray::refraction(Ray ray, vec3 n, vec3 intersection_point, float index) {
   vec3 i = ray.direction;
-  float cos = glm::dot(-n, i);
-  vec3 refr = glm::normalize(index*i + (index*cos - sqrt( 1 - index*index * ( 1 -cos*cos) ) ) * n);
+//  float cos = glm::dot(-n, i);
+ // vec3 refr = glm::normalize(index*i + (index*cos - sqrt( 1 - index*index * ( 1 -cos*cos) ) ) * n);
+  vec3 refr = glm::refract(i,n,index);
 
   return Ray(intersection_point, refr);
 }

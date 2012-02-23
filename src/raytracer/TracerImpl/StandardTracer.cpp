@@ -105,13 +105,13 @@ vec4 StandardTracer::shade(Ray incoming_ray,
     }
 
     // REFRACTION RAY
-//    if(material->getTransparency() > 0.0f) {
-//      Ray refr_ray = Ray::refraction(incoming_ray, idata.normal, idata.interPoint,
-//          material->getIndexOfRefraction());
-//      vec3 newpos = refr_ray.getPosition() + refr_ray.getDirection()*0.01f;
-//      refr_ray = Ray::generateRay(newpos, refr_ray.getDirection());
-//      refr_color = tracePrim(refr_ray, depth+1) * material->getTransparency();
-//    }
+    if(material->getTransparency() > 0.0f) {
+      Ray refr_ray = Ray::refraction(incoming_ray, idata.normal, idata.interPoint,
+          material->getIndexOfRefraction());
+      vec3 newpos = refr_ray.getPosition() + refr_ray.getDirection()*0.01f;
+      refr_ray = Ray::generateRay(newpos, refr_ray.getDirection());
+      refr_color = tracePrim(refr_ray, depth+1) * material->getTransparency();
+    }
   }
 
   // Summarize all color components
