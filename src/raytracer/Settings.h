@@ -23,6 +23,7 @@ struct Settings {
     use_opengl = true;
     background_color = vec4(0,0,0,1);
     use_first_bounce = false;
+    test=1;
   }
 
   int width;
@@ -30,6 +31,7 @@ struct Settings {
   bool use_opengl;
   bool use_first_bounce;
   vec4 background_color;
+  float test;
 };
 
 }
