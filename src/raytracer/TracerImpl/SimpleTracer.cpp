@@ -142,7 +142,7 @@ vec4 SimpleTracer::traceHelper(Ray* ray, IAccDataStruct::IntersectionData inters
       //cout << dot(lightRay.getDirection(), intersection_data.normal) << endl;
 
     }
-    return vec4(color, material->getTransparency());
+    return vec4(color, material->getOpacity());
   }
 }
 

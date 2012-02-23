@@ -124,13 +124,13 @@ int main(int argc, char* argv[]) {
   camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
 
 
-  OmniLight* lights = new OmniLight(vec3(-4, 5, 0));
-  lights->setIntensity(1);
+  OmniLight* lights = new OmniLight(vec3(-4, 2, 1));
+  lights->setIntensity(15);
   lights->setColor(vec3(1,1,1));
   lights->setDistanceFalloff(QUADRATIC);
 
-  OmniLight* light2 = new OmniLight(vec3(3, 2, -3));
-    light2->setIntensity(1);
+  OmniLight* light2 = new OmniLight(vec3(3, 2, -1.5f));
+    light2->setIntensity(10);
     light2->setColor(vec3(1,1,1));
     light2->setDistanceFalloff(QUADRATIC);
 
@@ -143,7 +143,7 @@ int main(int argc, char* argv[]) {
   }
 
   myRenderer->loadLights(lights, 1, false);
-  //myRenderer->loadLights(light2, 1, false);
+  myRenderer->loadLights(light2, 1, false);
 
   buffer = myRenderer->getColorBuffer();
   for (int i = 0; i < settings.width * settings.height-3; i += 3) {
@@ -373,6 +373,6 @@ void timedCallback() {
     renderMode = 2;
   }
 
-  cout << settings.test << "\n";
+  //cout << settings.test << "\n";
   //cout << myRenderer->renderComplete() << "\n";
 }

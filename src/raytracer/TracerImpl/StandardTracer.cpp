@@ -50,7 +50,7 @@ vec4 StandardTracer::shade(Ray incoming_ray,
   vec3 diffuse    = vec3(0,0,0);
   vec3 specular   = vec3(0,0,0);
   vec4 refl_color = vec4(0,0,0,0);
-  vec4 refr_color = vec4(0,0,0,0);
+  vec3 refr_color = vec4(0,0,0);
   Material* material = scene->getMaterialVector()[idata.material];
 
   // For each light source in the scene
@@ -99,24 +99,25 @@ vec4 StandardTracer::shade(Ray incoming_ray,
   if (depth < max_recursion_depth) {
 
     // REFLECTION RAY
-    if(material->getReflection() > 0.0f) {
-      Ray refl_ray = Ray::reflection(incoming_ray, idata.normal, idata.interPoint);
-      refl_color = tracePrim(refl_ray, depth+1) * material->getReflection();
-    }
+//    if(material->getReflection() > 0.0f) {
+//      cout << material->getReflection();
+//      Ray refl_ray = Ray::reflection(incoming_ray, idata.normal, idata.interPoint);
+//      refl_color = tracePrim(refl_ray, depth+1) * material->getReflection() ;//* vec4((vec3(1,1,1)-material->getDiffuse()),1);
+//    }
 
     // REFRACTION RAY
-    if(material->getTransparency() > 0.0f) {
+    if(material->getOpacity() < 1.0f) {
       Ray refr_ray = Ray::refraction(incoming_ray, idata.normal, idata.interPoint,
           material->getIndexOfRefraction());
       vec3 newpos = refr_ray.getPosition() + refr_ray.getDirection()*0.01f;
       refr_ray = Ray::generateRay(newpos, refr_ray.getDirection());
-      refr_color = tracePrim(refr_ray, depth+1) * material->getTransparency();
+      refr_color = tracePrim(refr_ray, depth+1) material->getOpacity();
     }
   }
 
   // Summarize all color components
   color += (ambient + diffuse + specular);
-  return vec4( color, material->getTransparency()) + refl_color + refr_color;
+  return vec4( color, material->getOpacity()) + refl_color + refr_color;
 }
 
 
