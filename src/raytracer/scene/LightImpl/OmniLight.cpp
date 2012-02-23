@@ -10,7 +10,6 @@
 namespace raytracer {
 
 OmniLight::OmniLight() {
-  // TODO Auto-generated constructor stub
   m_falloff_type = NONE;
   m_position = vec3(0,0,0);
   m_intensity = 1.0f;
@@ -18,14 +17,12 @@ OmniLight::OmniLight() {
 }
 
 OmniLight::OmniLight(vec3 position) {
-  // TODO Auto-generated constructor stub
   OmniLight::m_position = position;
   m_intensity = 1.0f;
   m_falloff_type = NONE;
 }
 
 OmniLight::~OmniLight() {
-  // TODO Auto-generated destructor stub
 }
 
 vec3 OmniLight::getPosition() {
@@ -61,6 +58,15 @@ void OmniLight::setDistanceFalloff(FalloffType falloff_type) {
 
 void OmniLight::setColor(vec3 color) {
   this->color = color;
+}
+
+void OmniLight::draw() {
+  GLUquadricObj *quadobj;
+  quadobj = gluNewQuadric();
+  //glColor3f(1.0f,1.0f,1.0f); //colors does not work
+  //glMaterialfv(GL_FRONT,GL_DIFFUSE,farraygrey);
+  gluSphere(quadobj, 0.5, 10,10);
+  gluDeleteQuadric(quadobj);
 }
 
 }

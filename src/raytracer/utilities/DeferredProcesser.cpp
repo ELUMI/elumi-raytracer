@@ -108,10 +108,8 @@ void DeferredProcesser::render(Scene* scene, mat4 viewMatrix, int width, int hei
   glDisable(GL_CULL_FACE);
 
   glUseProgram(shader_program);
-  int loc = glGetUniformLocation(shader_program, "modelViewProjectionMatrix");
-  glUniformMatrix4fv(loc, 1, GL_FALSE, value_ptr(viewMatrix));
 
-  scene->drawVertexArray();
+  scene->getDrawable()->drawWithView(viewMatrix, glGetUniformLocation(shader_program, "modelViewProjectionMatrix"));
   glUseProgram(0);
   CHECK_GL_ERROR();
 

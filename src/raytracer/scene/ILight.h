@@ -9,6 +9,9 @@
 #define ILIGHT_H_
 
 #include <glm/glm.hpp>
+#include <GL/glfw.h>
+
+#include "../IDraw.h"
 
 using namespace glm;
 
@@ -26,6 +29,7 @@ public:
   virtual void setIntensity(float intensity) = 0;
   virtual void setColor(vec3 color) = 0;
   virtual void setDistanceFalloff(FalloffType falloff_type) = 0;
+
 };
 
 }

@@ -18,7 +18,7 @@ namespace raytracer {
 Renderer::Renderer(Settings* settings)
   : m_scene(settings) {
   m_settings = settings;
-  m_tracer = new StandardTracer(&m_scene, settings);
+  m_tracer = new BaseTracer(&m_scene, settings);
   color_buffer = new float[m_settings->width * m_settings->height * 4];
   renderthread = 0;
 }

@@ -15,6 +15,8 @@ BaseTracer::BaseTracer(Scene* scene, Settings* settings) : lights(&(scene->getLi
 
   datastruct = scene->getAccDataStruct();
 
+  first_pass = 0;
+
   abort = false;
 }
 
@@ -32,6 +34,10 @@ void BaseTracer::first_bounce() {
   int height= settings->width;
   int size= width*height;
 
+  if(first_pass) {
+    delete first_pass; //there may be a unneccesary delete here, which may be very slow
+    delete first_intersections;
+  }
   first_pass = new DeferredProcesser(settings->width,settings->height); //TODO: use settings, and check useopengl
   first_intersections = new IAccDataStruct::IntersectionData[size];
 
@@ -62,7 +68,8 @@ void BaseTracer::first_bounce() {
       assert(material == IAccDataStruct::IntersectionData::NOT_FOUND || material < scene->getMaterialVector().size());
 
       first_intersections[i] = IAccDataStruct::IntersectionData(
-          material, vec3(normalize(pos)), normals[i]);
+          material, vec3(normalize(pos)),
+          normals[i], vec2(texcoords[i].x, texcoords[i].y));
     }
   }
 
@@ -138,7 +145,6 @@ int BaseTracer::spawnRays() {
   // Initiate ray array
   rays = new Ray[number_of_rays];
 
-
   Camera camera = scene->getCamera();
   vec3 camera_position = camera.getPosition();
   mat4 trans = camera.getViewportToModelMatrix(width, height);
@@ -146,8 +152,14 @@ int BaseTracer::spawnRays() {
   //We step over all "pixels" from the cameras viewpoint
   for(int y = 0; y < height; y++) {
     for(int x = 0; x < width; x++) {
-      vec4 dir = trans * vec4(x,y,1,1);
-      rays[y*width+x] = Ray(camera_position,vec3(normalize(dir)));
+      vec4 apoint = vec4(0,0,0,1);
+      vec4 aray = vec4(x,y,1,1);
+      apoint = trans * apoint;
+      //aray = transpose(inverse(trans)) * aray;
+      aray = trans * aray;
+      vec3 p = vec3(apoint); ///apoint.w;
+      vec3 r = normalize(vec3(aray));
+      rays[y*width+x] = Ray(camera_position,r);
     }
   }
 

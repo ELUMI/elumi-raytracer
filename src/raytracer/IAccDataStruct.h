@@ -25,16 +25,18 @@ class IAccDataStruct {
 public:
   struct IntersectionData {
     IntersectionData() {}
-    IntersectionData(unsigned int material, vec3 interPoint, vec3 normal) {
+    IntersectionData(unsigned int material, vec3 interPoint, vec3 normal, vec2 texcoord) {
       IntersectionData::material = material;
       IntersectionData::interPoint = interPoint;
       IntersectionData::normal = normal;
+      IntersectionData::texcoord = texcoord;
     };
 
     //Triangle* triangle;
     unsigned int material;
     vec3 interPoint;
     vec3 normal;
+    vec2 texcoord;
     const unsigned static int NOT_FOUND = -1;
   };
 

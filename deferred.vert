@@ -7,8 +7,8 @@ in vec3		normal;
 in float	material;
 
 out float	fmaterial;
-out	vec3	fnormal;
-out	vec2	ftexcoord;	// outgoing interpolated texcoord to fragshader
+smooth out	vec3	fnormal;
+smooth out	vec2	ftexcoord;	// outgoing interpolated texcoord to fragshader
 
 uniform mat4 modelViewProjectionMatrix; 
 

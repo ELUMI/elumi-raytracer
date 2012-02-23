@@ -6,7 +6,7 @@ precision highp float;
 uniform sampler2D colortexture;
 
 in vec4 outColor;
-in vec2 texCoord;
+smooth in vec2 texCoord;
 
 out vec4 fragmentColor;
 

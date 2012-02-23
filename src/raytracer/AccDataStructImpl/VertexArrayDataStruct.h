@@ -10,11 +10,13 @@
 
 #include <vector>
 #include <glm/glm.hpp>
-#include <GL/gl.h>
+#include <GL/glfw.h>
 
 #include "../IAccDataStruct.h"
 
 #include "../utilities/Ray.h"
+
+#include "../IDraw.h"
 
 using namespace glm;
 
@@ -22,7 +24,7 @@ namespace raytracer {
 
 class Scene;
 
-class VertexArrayDataStruct {
+class VertexArrayDataStruct : public IDraw {
 public:
   VertexArrayDataStruct(Scene* scene, std::vector<Triangle*> triangles);
   virtual ~VertexArrayDataStruct();

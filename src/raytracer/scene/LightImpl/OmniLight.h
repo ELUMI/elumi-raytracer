@@ -16,7 +16,7 @@ using namespace glm;
 
 namespace raytracer {
 
-class OmniLight : public ILight {
+class OmniLight : public ILight , public IDraw {
 public:
   OmniLight();
   OmniLight(vec3 position);
@@ -31,6 +31,7 @@ public:
   void setIntensity(float intesity);
   void setColor(vec3 color);
 
+  void draw();
 private:
   vec3 m_position;
   float m_intensity;
