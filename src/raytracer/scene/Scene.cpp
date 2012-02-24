@@ -60,7 +60,7 @@ Texture* Scene::getTextureAt(int index) {
   return m_textures.at(index);
 }
 
-const Camera& Scene::getCamera() {
+Camera& Scene::getCamera() {
   return m_camera;
 }
 

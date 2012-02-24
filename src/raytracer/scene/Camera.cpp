@@ -84,4 +84,14 @@ mat4 Camera::getViewMatrix() const {
   return proj*view;
 }
 
+mat4 Camera::getViewportToModelMatrix(float w, float h) const {
+  mat4 viewport(w/2,  0.0f, 0.0f, w/2,
+                0.0f, h/2,  0.0f, h/2,
+                0.0f, 0.0f, 0.5f, 0.5f,
+                0.0f, 0.0f, 0.0f, 1.0f);
+
+  return inverse(getViewMatrix()) * transpose(inverse(viewport));
+}
+
+
 }

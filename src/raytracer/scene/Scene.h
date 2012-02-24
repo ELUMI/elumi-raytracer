@@ -33,7 +33,7 @@ public:
 	void loadMaterials(std::vector<raytracer::Material*> materials);
 	void loadTextures(std::vector<raytracer::Texture*> textures);
 
-	const Camera& getCamera();
+	Camera& getCamera();
 	IAccDataStruct* getAccDataStruct();
 
 	const std::vector<ILight*>& getLightVector();

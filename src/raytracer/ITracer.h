@@ -8,20 +8,16 @@
 #ifndef ITRACER_H_
 #define ITRACER_H_
 
-#include "scene/Scene.h"
-#include "utilities/Ray.h"
-
 namespace raytracer {
 
 class ITracer {
 public:
 	virtual ~ITracer() {};
-	virtual void trace(Ray* rays, int length, unsigned char* buffer) = 0;
-  virtual void first_bounce(int length, uint8_t* buffer) = 0;
+	virtual void first_bounce() = 0;
+	virtual void traceImage(float* color_buffer) = 0;
 	virtual void stopTracing() = 0;
   virtual unsigned int getPixelsLeft() = 0;
-private:
-	vec4 traceHelper(Ray* ray);
+
 };
 
 }

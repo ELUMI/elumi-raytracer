@@ -17,11 +17,12 @@ namespace raytracer {
 class Ray {
 public:
   Ray();
-	Ray(vec3 position, vec3 direction);
-	virtual ~Ray();
+  Ray(vec3 position, vec3 direction);
+  virtual ~Ray();
 
-	static Ray generateRay(vec3 start_position, vec3 end_position);
-	static Ray reflection(Ray ray, vec3 normal, vec3 intersection_point);
+  static Ray generateRay(vec3 start_position, vec3 end_position);
+  static Ray reflection(Ray ray, vec3 normal, vec3 intersection_point);
+  static Ray refraction(Ray ray, vec3 normal, vec3 intersection_point, float refr_index);
 
   const vec3& getPosition();
   const vec3& getDirection();

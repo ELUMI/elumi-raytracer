@@ -59,13 +59,15 @@ void OBJImporter::loadFile(char* filename){
 		float _reflection = material->reflect;
 		float _index_of_reflection = material->refract_index;
 		std::string _texture_map = material->texture_filename;
+		std::string _bump_map = material->bump_filename;
 
 		ILuint image;
-		int texture = -1;
+		int texture = -1, bump_map = -1;
 
 		image = ilGenImage();
 		ilBindImage(image);
 
+		//Texture
     if(_texture_map != "") {
 
       const char* bla = _texture_map.c_str();
@@ -73,7 +75,7 @@ void OBJImporter::loadFile(char* filename){
       cout << bla << endl;
 
       //ilLoadImage(_texture_map.c_str());
-      ilLoadImage("earth.jpg");
+      ilLoadImage("brickwall.jpg");
 
       ilGetError();
 
@@ -96,8 +98,41 @@ void OBJImporter::loadFile(char* filename){
       }
     }
 
+    //Bump map
+    if(_bump_map != "") {
+
+      const char* bla = _bump_map.c_str();
+
+      cout << bla << endl;
+
+      //ilLoadImage(_texture_map.c_str());
+      image = ilGenImage();
+      ilBindImage(image);
+      ilLoadImage("brickwall_normal.jpg");
+
+      ilGetError();
+
+      ILenum error;
+      error = ilGetError();
+
+      if(error == IL_NO_ERROR) {
+        cout << "Image loaded" << endl;
+        ILuint w,h;
+
+        w = ilGetInteger(IL_IMAGE_WIDTH);
+        h = ilGetInteger(IL_IMAGE_HEIGHT);
+
+        textures.push_back(new Texture(w,h,ilGetData()));
+        bump_map = textures.size()-1;
+
+      } else {
+        //Image not loaded (?)
+        cout << "Image not loaded" << endl;
+      }
+    }
+
 		OBJImporter::materials.push_back(new Material(_name,_ambient,_diffuse,_specular,_emissive,
-				_transparency,_shininess,_sharpness,_reflection,_index_of_reflection,_texture_map,texture));
+				_transparency,_shininess,_sharpness,_reflection,_index_of_reflection,texture,bump_map));
 	}
 
 	// Start creating the triangles
@@ -114,14 +149,15 @@ void OBJImporter::loadFile(char* filename){
 
 			obj_vector* _text = NULL;
 
-			if(face->texture_index != NULL)
+			if(face->texture_index[j] != -1)
 			  _text = obj_data->textureList[ face->texture_index[j] ];
 
 			_vertices.push_back(new vec3(_vec->e[0],_vec->e[1],_vec->e[2]));
 			_normals.push_back(new vec3(_norm->e[0],_norm->e[1],_norm->e[2]));
 
-			if(_text != NULL)
+			if(face->texture_index[j] != -1)
 			  _texCoords.push_back(new vec3(_text->e[0],_text->e[1],_text->e[2]));
+			//else _texCoords.push_back(new vec3(0,0,0));
 		}
 		unsigned int _material = face->material_index;
 		OBJImporter::triangles.push_back(new Triangle(_vertices,_normals,_texCoords,_material));
@@ -138,16 +174,17 @@ void OBJImporter::loadFile(char* filename){
 
 						obj_vector* _text;
 
-						if(face->texture_index != NULL)
+						if(face->texture_index[j] != -1)
 						  _text = obj_data->textureList[ face->texture_index[j] ];
 
 						_vertices.push_back(new vec3(_vec->e[0],_vec->e[1],_vec->e[2]));
 						_normals.push_back(new vec3(_norm->e[0],_norm->e[1],_norm->e[2]));
-						if(_text != NULL)
+						if(face->texture_index[j] != -1)
 						  _textures.push_back(new vec3(_text->e[0],_text->e[1],_text->e[2]));
+						//else _texCoords.push_back(new vec3(0,0,0));
 				}
 			}
-			OBJImporter::triangles.push_back(new Triangle(_vertices,_normals,_textures,_material));
+			OBJImporter::triangles.push_back(new Triangle(_vertices,_normals,_texCoords,_material));
 		}
 
 	}

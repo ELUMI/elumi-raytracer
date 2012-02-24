@@ -10,7 +10,7 @@
 
 #include <vector>
 #include <glm/glm.hpp>
-#include <GL/gl.h>
+#include <GL/glfw.h>
 
 #include "../IAccDataStruct.h"
 
@@ -31,17 +31,14 @@ public:
   void draw();
 
 private:
-  vector<vec3> m_vertices;
-  vector<vec3> m_colors;
-  vector<vec2> m_texcoords;
-  vector<int> m_indices;
   GLuint positionBuffer;
   GLuint colorBuffer;
   GLuint texcoordBuffer;
-  GLuint indexBuffer;
+  GLuint normalBuffer;
+  GLuint materialBuffer;
   GLuint vertexArrayObject;
   GLuint m_texture;
-  bool inited;
+  size_t size;
 
 };
 }

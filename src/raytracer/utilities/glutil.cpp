@@ -10,6 +10,8 @@
 #endif // ! __linux__
 
 #include <GL/glew.h>
+#include <stdio.h>
+#include <GL/glu.h>
 //#include <GL/glut.h>
 
 //#include <IL/il.h>
@@ -128,7 +130,7 @@ bool checkGLError(const char *file, int line)
   {
     wasError = true;
     const GLubyte* sError = gluErrorString(glErr);
-    
+
     if (!sError)
     {
       sError = reinterpret_cast<const GLubyte *>(" (no message available)");

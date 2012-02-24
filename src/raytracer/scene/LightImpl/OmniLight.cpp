@@ -14,6 +14,7 @@ OmniLight::OmniLight() {
   m_falloff_type = NONE;
   m_position = vec3(0,0,0);
   m_intensity = 1.0f;
+  color = vec3(1,1,1);
 }
 
 OmniLight::OmniLight(vec3 position) {
@@ -50,8 +51,16 @@ float OmniLight::getIntensity(float distance) {
   }
 }
 
+vec3 OmniLight::getColor() const {
+  return color;
+}
+
 void OmniLight::setDistanceFalloff(FalloffType falloff_type) {
   m_falloff_type = falloff_type;
+}
+
+void OmniLight::setColor(vec3 color) {
+  this->color = color;
 }
 
 }
