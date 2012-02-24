@@ -61,7 +61,7 @@ ArrayDataStruct::findClosestIntersection(Ray ray) {
 
     if(u >= 0 && v >= 0 && u + v <= 1
         ) {  // Intersection!
-      if(t < closest_t) {
+      if(t > 0 && t < closest_t) {
         closest_tri = cur_triangle;
         closest_pos = o + t * d;
         closest_dist = dist;

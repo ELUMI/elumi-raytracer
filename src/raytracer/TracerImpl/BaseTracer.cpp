@@ -6,6 +6,7 @@
  */
 
 #include "BaseTracer.h"
+#include <glm/gtc/matrix_transform.hpp> //translate, rotate, scale, perspective
 
 namespace raytracer {
 
@@ -152,14 +153,11 @@ int BaseTracer::spawnRays() {
   //We step over all "pixels" from the cameras viewpoint
   for(int y = 0; y < height; y++) {
     for(int x = 0; x < width; x++) {
-      vec4 apoint = vec4(0,0,0,1);
-      vec4 aray = vec4(x,y,settings->test,1);
-      apoint = trans * apoint;
-      //aray = transpose(inverse(trans)) * aray;
+      vec4 aray = vec4(x,y,-1,1);
+      //vec3 r = unProject(vec3(aray), trans, mat4(), vec4(0, 0, width, height));
       aray = trans * aray;
-      vec3 p = vec3(apoint); ///apoint.w;
-      vec3 r = normalize(vec3(aray));
-      rays[y*width+x] = Ray(camera_position,r);
+      vec3 r = vec3(aray / aray.w);
+      rays[y*width+x] = Ray::generateRay(camera_position, r);
     }
   }
 
@@ -183,6 +181,7 @@ vec4 BaseTracer::trace(Ray ray, IAccDataStruct::IntersectionData idata) {
 }
 
 vec4 BaseTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata) {
+  return vec4(scene->getMaterialVector()[idata.material]->getDiffuse(),1);
   return vec4(idata.normal,1);
 }
 

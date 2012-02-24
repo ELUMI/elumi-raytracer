@@ -79,7 +79,7 @@ void Camera::translate(vec3 translation){
 }
 
 mat4 Camera::getViewMatrix() const {
-  mat4 proj = perspective(float(m_fov*180.0f/M_PI), m_aspect_ratio, 0.1f, 10000000.f);
+  mat4 proj = perspective(float(m_fov*180.0f/M_PI), m_aspect_ratio, 0.1f, 1024.f);
   mat4 view = glm::lookAt(m_position, m_position + m_direction, m_up_vector);
   return proj*view;
 }
@@ -90,8 +90,7 @@ mat4 Camera::getViewportToModelMatrix(float w, float h) const {
                 0.0f, 0.0f, 0.5f, 0.5f,
                 0.0f, 0.0f, 0.0f, 1.0f);
 
-  return inverse((viewport) * getViewMatrix());
+  return inverse(transpose(viewport) * getViewMatrix());
 }
-
 
 }

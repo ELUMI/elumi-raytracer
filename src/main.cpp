@@ -119,8 +119,9 @@ int main(int argc, char* argv[]) {
 
   /* RENDERER
    ***************** */
-  camera.setPosition(vec3(3.512f, 2.5f, 3.5f));
-  camera.setDirection(normalize(vec3(-1.0f, -0.5f, -1.0f)));
+  camera.set(vec3(), vec3(), vec3(), 0.7845f, settings.width/settings.height);
+  camera.setPosition(vec3(0,0,0));
+  camera.setDirection(normalize(vec3(0.0f, 0.0f, 1.0f)));
   camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
 
   OmniLight* lights = new OmniLight(vec3(2, 3, 5));
@@ -371,6 +372,6 @@ void timedCallback() {
     renderMode = 2;
   }
 
-  cout << settings.test << "\n";
+  //cout << settings.test << "\n";
   //cout << myRenderer->renderComplete() << "\n";
 }
