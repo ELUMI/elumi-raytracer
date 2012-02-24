@@ -85,8 +85,8 @@ int main(int argc, char* argv[]) {
   inputFileName = argv[1];
   outputFileName = argv[2];
 
-  settings.width = 150;
-  settings.height = 150;
+  settings.width = 100;
+  settings.height = 100;
   settings.background_color[0] = 0;
   settings.background_color[1] = 50.0f / 255.0f;
   settings.background_color[2] = 50.0f / 255.0f;
