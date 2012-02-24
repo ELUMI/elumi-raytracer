@@ -3,6 +3,8 @@
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 
+#include <boost/algorithm/string.hpp>
+
 #include "io/ExporterImpl/PNGExporter.h"
 #include "io/ImporterImpl/OBJImporter.h"
 #include "raytracer/Renderer.h"
@@ -11,9 +13,12 @@ namespace po = boost::program_options;
 #include "raytracer/utilities/glutil.h"
 
 #include <iostream>
+#include <fstream>
 #include <stdlib.h>
 #include <GL/glfw.h>
 #include <string>
+#include <sstream>
+#include <vector>
 #include <omp.h>
 #include <glm/gtc/type_ptr.hpp> //value_ptr
 #define GL_UNSIGNED_INT_8_8_8_8_REV 0x8367
@@ -43,13 +48,25 @@ unsigned int win_width, win_height;
 int main(int argc, char* argv[]) {
   int running = GL_TRUE;
 
-  char* inputFileName, *outputFileName, *settingsFile;
+  // Initial values.
+  settings.width = 150;
+  settings.height = 150;
+  settings.background_color[0] = 0;
+  settings.background_color[1] = 50.0f / 255.0f;
+  settings.background_color[2] = 50.0f / 255.0f;
+  settings.background_color[3] = 0;
+
+  char* inputFileName, *outputFileName;
 
   // Declare the supported options.
   po::options_description desc("Allowed options");
-  desc.add_options()("help", "produce help message")("input-file",
-      po::value<string>(), "Input file")("output-file", po::value<string>(),
-      "Output file")("no_opengl", "Do not use OpenGL");
+  desc.add_options()
+      ("help,h", "produce help message")
+      ("no_opengl", "Do not use OpenGL")
+      ("input-file,i", po::value<string>(), "Input file")
+      ("output-file,o", po::value<string>(), "Output file")
+      ("settings-file,s", po::value<string>(), "Settings file")
+  ;
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -60,8 +77,50 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
+  if (vm.count("settings-file")) {
+    string line;
+    ifstream settings_stream(vm["settings-file"].as<string>().c_str());
+    if (settings_stream.is_open()) {
+      while(settings_stream.good()) {
+
+        getline(settings_stream, line);
+        vector<string> strs;
+        boost::split(strs, line, boost::is_any_of(":")); // Line may show error in eclipse but it should compile anyhow.
+        string option = boost::trim_copy(strs[0]);
+        string value = boost::trim_copy(strs[1]);
+
+        cout << "Using setting: " << option << "\t\twith value: " << value << endl;
+        stringstream ssvalue(value);
+        if(option == "width") {
+          ssvalue >> settings.width;
+        } else if(option == "height") {
+          ssvalue >> settings.height;
+        } else if(option == "use_opengl") {
+          ssvalue >> settings.use_opengl;
+        } else if(option == "background_color") {
+          //TODO Handle backgroudn color
+        } else if(option == "use_first_bounce") {
+          ssvalue >> settings.use_first_bounce;
+        } else {
+          cout << "Unknown option: " << option << endl;
+        }
+
+      }
+    }
+  }
+
   if (vm.count("input-file")) {
+    inputFileName = const_cast<char*>(vm["input-file"].as<string>().c_str());
   } else {
+    cout << "No input file! Use raytracer --help to see command options.";
+    return 1;
+  }
+
+  if (vm.count("output-file")) {
+      outputFileName = const_cast<char*>(vm["output-file"].as<string>().c_str());
+  } else {
+    cout << "Saving file to default destination (out.png)." << endl;
+    outputFileName = "out.png";
   }
 
   if (vm.count("no_opengl")) {
@@ -70,27 +129,12 @@ int main(int argc, char* argv[]) {
   } else {
     cout << "Using OpenGL.\n";
   }
-  /** END TEST**/
 
   //Initialize GLFW
   if (!glfwInit()) {
     exit(EXIT_FAILURE);
   }
 
-  if (argc < 3) { // Check the value of argc. If not enough parameters have been passed, inform user and exit.
-    std::cout << "Usage is <flags> <infile> <outfile>\n"; // Inform the user of how to use the program
-    exit(0);
-  } // else if we got enough parameters...
-
-  inputFileName = argv[1];
-  outputFileName = argv[2];
-
-  settings.width = 100;
-  settings.height = 100;
-  settings.background_color[0] = 0;
-  settings.background_color[1] = 50.0f / 255.0f;
-  settings.background_color[2] = 50.0f / 255.0f;
-  settings.background_color[3] = 0;
 
   if (settings.use_opengl) {
     win_width = settings.width*4;
@@ -116,6 +160,7 @@ int main(int argc, char* argv[]) {
   importer->loadFile(inputFileName);
   std::vector<raytracer::Triangle*> triangles = importer->getTriangleList();
   std::vector<raytracer::Material*> materials = importer->getMaterialList();
+
 
   /* RENDERER
    ***************** */

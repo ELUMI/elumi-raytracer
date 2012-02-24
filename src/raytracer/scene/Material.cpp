@@ -21,7 +21,7 @@ Material::Material() {
   Material::opacity = 1.0f;
   Material::shininess = 0.0f;
   Material::sharpness = 98; //glossy
-  Material::index_of_refraction = 1;
+  Material::index_of_refraction = 1.0f;
   Material::reflection = 0.0f;
   Material::texture = NULL;
 }

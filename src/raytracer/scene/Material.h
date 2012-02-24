@@ -45,11 +45,11 @@ private:
   glm::vec3 specular;	//	Specular
   glm::vec3 emissive;	//	Emissive
 
-  float opacity;	//	Transparency (Tr)
-  float shininess;			//	Shininess
-  float index_of_refraction;// --||--
-  float reflection;
-  float sharpness;			// 	Sharpness
+  float opacity;	          // (d)
+  float shininess;			    // (Ns)
+  float index_of_refraction;// (Ni)
+  float reflection;         // (r)
+  float sharpness;			    // ???????????????????????????????????????????????
 
   Texture* texture;
 };

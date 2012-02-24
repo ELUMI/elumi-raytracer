@@ -1,0 +1,4 @@
+width:200
+height:200
+use_opengl:true
+use_first_bounce:false
