@@ -14,7 +14,7 @@ class IPostEffect {
 public:
   virtual ~IPostEffect() {};
 
-  virtual float* run(float* color_buffer) = 0;
+  virtual float* run(float* color_bufferm, int length) = 0;
 
 };
 
