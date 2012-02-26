@@ -67,17 +67,16 @@ float* ReinhardOperator::run(float* color_buffer, int length) {
                      -1.0217,    1.9777,    0.0439,
                       0.0753,   -0.2543,    1.1892);
 
-  float* res = new float[length];
+  //float* res = new float[length];
 
   for(int i = 0; i < length; i += 4) {
     vec3 v = XYZ2RGB * buffer[i/4];
-    res[i]    = v.x;
-    res[i+1]  = v.y;
-    res[i+2]  = v.z;
-    res[i+3]  = color_buffer[i+3];
+    color_buffer[i]    = v.x;
+    color_buffer[i+1]  = v.y;
+    color_buffer[i+2]  = v.z;
   }
 
-  return res;
+  return color_buffer;
 }
 
 float ReinhardOperator::getMaxValue(vec3* buf, int pixels) {
@@ -86,6 +85,8 @@ float ReinhardOperator::getMaxValue(vec3* buf, int pixels) {
     if(buf[i].x > max)
       max = buf[i].x;
   }
+  if(max == 0)    // Prevent division by zero.
+    max = 1e20;
 
   return max;
 }

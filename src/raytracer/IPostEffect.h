@@ -8,7 +8,12 @@
 #ifndef IPOSTEFFECT_H_
 #define IPOSTEFFECT_H_
 
+#include <string>
+#include <map>
+
 namespace raytracer {
+
+using namespace std;
 
 class IPostEffect {
 public:
@@ -16,6 +21,16 @@ public:
 
   virtual float* run(float* color_bufferm, int length) = 0;
 
+  static void registerEffect(string name, IPostEffect* effect) {
+    effects[name] = effect;
+  }
+
+  static IPostEffect* getEffect(string name) {
+    return effects[name];
+  }
+
+private:
+  static map<string, IPostEffect*> effects;
 };
 
 }
