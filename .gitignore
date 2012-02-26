@@ -23,3 +23,12 @@ Release/**/*
 
 # Xcode files
 *.xcodeproj
+
+
+# Scene fileformats
+*.blend
+*.obj
+*.mtl
+*.x3d
+*.3ds
+*.dae

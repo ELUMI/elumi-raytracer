@@ -9,7 +9,7 @@
 #define IPOSTEFFECT_H_
 
 #include <string>
-#include <map>
+#include <queue>
 
 namespace raytracer {
 
@@ -22,15 +22,21 @@ public:
   virtual float* run(float* color_bufferm, int length) = 0;
 
   static void registerEffect(string name, IPostEffect* effect) {
-    effects[name] = effect;
+    effects.push(effect);
   }
 
   static IPostEffect* getEffect(string name) {
-    return effects[name];
+    if(!effects.empty()) {
+      IPostEffect* effect = effects.front();
+      effects.pop();
+      return effect;
+    } else {
+      return NULL;
+    }
   }
 
 private:
-  static map<string, IPostEffect*> effects;
+  static queue<IPostEffect*> effects; // TODO Fix complete dynamic loading.
 };
 
 }
