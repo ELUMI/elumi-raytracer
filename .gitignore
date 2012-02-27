@@ -32,3 +32,4 @@ Release/**/*
 *.x3d
 *.3ds
 *.dae
+/my_settings
