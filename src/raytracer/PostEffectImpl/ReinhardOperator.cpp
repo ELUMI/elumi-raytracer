@@ -32,7 +32,7 @@ float* ReinhardOperator::run(float* color_buffer, int length) {
                       0.265068,  0.67023428, 0.06409157,
                       0.0241188, 0.1228178,  0.84442666);
 
-  RGB2XYZ = transpose(RGB2XYZ);
+  //RGB2XYZ = transpose(RGB2XYZ);
 
   int pixels = length / 4;
 
@@ -47,7 +47,8 @@ float* ReinhardOperator::run(float* color_buffer, int length) {
     buffer[i/4] = v;
   }
 
-  float scale_factor = 1.0f / logAverage(buffer, pixels);
+  float log_avg = logAverage(buffer, pixels);
+  float scale_factor = 1.0f / log_avg;
   for(int i = 0; i < pixels; i++) {       // Eq. 2
     buffer[i] *= scale_factor * key;
   }
@@ -69,7 +70,7 @@ float* ReinhardOperator::run(float* color_buffer, int length) {
                      -1.0217,    1.9777,    0.0439,
                       0.0753,   -0.2543,    1.1892);
 
-  XYZ2RGB = transpose(XYZ2RGB);
+  //XYZ2RGB = transpose(XYZ2RGB);
 
   //float* res = new float[length];
 
@@ -96,13 +97,13 @@ float ReinhardOperator::getMaxValue(vec3* buf, int pixels) {
 }
 
 float ReinhardOperator::logAverage(vec3* buf, int pixels) { // Eq. 1
-
-  float sum = 0;
+  double sum = 0;
   for(int i = 0; i < pixels; i++) {
-    sum += logf(0.00001 + buf[i].x);
+    //cout << "sum: " << sum << ", buf[i].x: " << buf[i].x << ", logf(): " << logf(0.00001 + buf[i].x) << endl;
+    sum += log(0.00001 + (double)buf[i].x);
   }
-
-  return sum / (float)pixels;
+  double res = sum / (double)pixels;  // OBS! Wrong in paper! division by pixels
+  return exp(res);                    // should be done before! exp-function
 }
 
 }
