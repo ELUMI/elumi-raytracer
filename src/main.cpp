@@ -124,19 +124,16 @@ int main(int argc, char* argv[]) {
   }
 
   if (vm.count("no_opengl")) {
-    cout << "Not using OpenGL" << endl;
     settings.use_opengl = false;
-  } else {
-    cout << "Using OpenGL.\n";
   }
-
-  //Initialize GLFW
-  if (!glfwInit()) {
-    exit(EXIT_FAILURE);
-  }
-
 
   if (settings.use_opengl) {
+    cout << "Using OpenGL.\n";
+    //Initialize GLFW
+    if (!glfwInit()) {
+      exit(EXIT_FAILURE);
+    }
+
     win_width = settings.width*4;
     win_height = settings.height*4;
 
@@ -151,6 +148,8 @@ int main(int argc, char* argv[]) {
 
     glfwSetMouseButtonCallback(mouse);
     glfwSetMousePosCallback(mouseMove);
+  } else {
+    cout << "Not using OpenGL" << endl;
   }
 
   /* IMPORTER
@@ -174,11 +173,20 @@ int main(int argc, char* argv[]) {
   lights->setColor(vec3(1,1,1));
   lights->setDistanceFalloff(QUADRATIC);
 
-  OmniLight* light2 = new OmniLight(vec3(3, 2, -1.5f));
-    light2->setIntensity(10);
+  OmniLight* light2 = new OmniLight(vec3(3, 2, -5));
+    light2->setIntensity(15);
     light2->setColor(vec3(1,1,1));
     light2->setDistanceFalloff(QUADRATIC);
 
+    OmniLight* light3 = new OmniLight(vec3(0, -5, 0));
+      light3->setIntensity(15);
+      light3->setColor(vec3(1,1,1));
+      light3->setDistanceFalloff(QUADRATIC);
+
+      OmniLight* light4 = new OmniLight(vec3(0, 5, 0));
+        light4->setIntensity(15);
+        light4->setColor(vec3(1,1,1));
+        light4->setDistanceFalloff(QUADRATIC);
 
   myRenderer = new Renderer(&settings);
   myRenderer->loadCamera(camera);
@@ -189,6 +197,9 @@ int main(int argc, char* argv[]) {
 
   myRenderer->loadLights(lights, 1, false);
   myRenderer->loadLights(light2, 1, false);
+  myRenderer->loadLights(light3, 1, false);
+  myRenderer->loadLights(light4, 1, false);
+
 
   buffer = myRenderer->getColorBuffer();
   for (int i = 0; i < settings.width * settings.height-3; i += 3) {
@@ -238,6 +249,8 @@ int main(int argc, char* argv[]) {
 
         lights->drawWithView(view, loc);
         light2->drawWithView(view, loc);
+        light3->drawWithView(view, loc);
+        light4->drawWithView(view, loc);
 
         break;
       }

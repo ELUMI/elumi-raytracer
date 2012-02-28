@@ -20,7 +20,7 @@ StandardTracer::~StandardTracer() {
 }
 
 void StandardTracer::traceImage(float* color_buffer) {
-  max_recursion_depth = 2;
+  max_recursion_depth = 3;
   BaseTracer::traceImage(color_buffer);
 }
 
@@ -63,8 +63,8 @@ vec4 StandardTracer::shade(Ray incoming_ray,
     float distance_to_light = length(idata.interPoint - light->getPosition()); // 1
     float distance_between_light_and_first_hit = length(light_idata.interPoint - light->getPosition()); // 2
 
-    if (light_idata.material != IAccDataStruct::IntersectionData::NOT_FOUND
-        && (distance_between_light_and_first_hit + 0.0001f) < distance_to_light) {
+    if (//light_idata.material != IAccDataStruct::IntersectionData::NOT_FOUND
+         (distance_between_light_and_first_hit + 0.0001f) < distance_to_light) {
       // IN SHADOW!
       //diffuse = vec3(1,0,0);
     } else {
@@ -96,21 +96,34 @@ vec4 StandardTracer::shade(Ray incoming_ray,
 
   if (depth < max_recursion_depth) {
 
+	// är -1 på väg in
+	// är 1 på väg ut
     float refraction_sign = glm::sign(glm::dot(idata.normal, incoming_ray.getDirection()));
+   
+    // TODO 
+    // reflective bounce innuti också, multiplicera normal med refr_sign
+
+
     // REFLECTION RAY
-    if(material->getReflection() > 0.0f && refraction_sign<0.0f) {
-      Ray refl_ray = Ray(idata.interPoint, glm::reflect(incoming_ray.getDirection(),idata.normal));
+    if(material->getReflection() > 0.0f /*&& refraction_sign<0.0f*/) {
+      vec3 refl_normal = -idata.normal*refraction_sign;
+      Ray refl_ray = Ray(idata.interPoint, glm::reflect(incoming_ray.getDirection(), refl_normal ));
           //Ray::reflection(incoming_ray, idata.normal, idata.interPoint);
-      refl_ray = Ray( refl_ray.getPosition() + idata.normal*0.01f , refl_ray.getDirection() );
+      refl_ray = Ray( refl_ray.getPosition() + refl_normal*0.001f , refl_ray.getDirection() );
       refl_color = tracePrim(refl_ray, depth+1) * material->getReflection() ;//* vec4((vec3(1,1,1)-material->getDiffuse()),1);
     }
 
     // REFRACTION RAY
     if(material->getOpacity() < 1.0f) {
-      Ray refr_ray = Ray::refraction(incoming_ray, idata.normal, idata.interPoint,
-          material->getIndexOfRefraction());
-      vec3 offset = idata.normal * refraction_sign * 0.01f;
-      refr_ray = Ray::generateRay(refr_ray.getPosition() + offset, refr_ray.getDirection());
+
+      float eta = material->getIndexOfRefraction();
+      if(refraction_sign > 0.0f)
+        eta = 1/eta;
+
+      vec3 refr_normal = -idata.normal*refraction_sign;
+      vec3 offset = glm::normalize(idata.normal) * refraction_sign * 0.001f;
+      vec3 refr_dir = glm::refract(incoming_ray.getDirection(), refr_normal, eta);
+      Ray refr_ray = Ray(idata.interPoint + offset, glm::normalize(refr_dir));
       refr_color = tracePrim(refr_ray, depth+1) * (1-material->getOpacity());
 
     }
@@ -118,7 +131,7 @@ vec4 StandardTracer::shade(Ray incoming_ray,
 
   // Summarize all color components
   color += (ambient + diffuse + specular) * (1-material->getReflection()) * material->getOpacity();
-  vec4 out_color = vec4(color, 1.0f/*material->getOpacity()*/) + refl_color + refr_color;
+  vec4 out_color = vec4(color, material->getOpacity()) + refl_color + refr_color;
 
   return out_color;
 }
