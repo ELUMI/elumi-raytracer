@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
 
   if (vm.count("no_opengl")) {
     cout << "Not using OpenGL" << endl;
-    settings.use_opengl = false;
+    settings.opengl_version = false;
   } else {
     cout << "Using OpenGL.\n";
   }
@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
   settings.background_color[2] = 50.0f / 255.0f;
   settings.background_color[3] = 0;
 
-  if (settings.use_opengl) {
+  if (settings.opengl_version) {
     win_width = settings.width*4;
     win_height = settings.height*4;
 
@@ -160,7 +160,7 @@ int main(int argc, char* argv[]) {
     buffer[i * 4 + 11] = 1;
   }
 
-  if (!settings.use_opengl) {
+  if (!settings.opengl_version) {
     myRenderer->render();
   } else {
     myRenderer->asyncRender();

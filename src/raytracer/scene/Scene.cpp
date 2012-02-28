@@ -20,7 +20,7 @@ Scene::~Scene() {}
 
 void Scene::loadTriangles(vector<Triangle*> triangles, bool overwrite) {
   m_acc_data_struct->setData(triangles);
-  if(m_settings->use_opengl){
+  if(m_settings->opengl_version){
     m_drawable = new VertexArrayDataStruct(this, triangles);
   }
 }
