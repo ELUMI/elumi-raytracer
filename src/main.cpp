@@ -120,8 +120,8 @@ int main(int argc, char* argv[]) {
   /* RENDERER
    ***************** */
   camera.set(vec3(), vec3(), vec3(), 0.7845f, settings.width/settings.height);
-  camera.setPosition(vec3(0,0,0));
-  camera.setDirection(normalize(vec3(0.0f, 0.0f, 1.0f)));
+  camera.setPosition(vec3(4,0,0));
+  camera.setDirection(normalize(vec3(-1.0f, 0.0f, 0.0f)));
   camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
 
   OmniLight* lights = new OmniLight(vec3(2, 3, 5));
@@ -360,18 +360,37 @@ void timedCallback() {
   if (glfwGetKey(GLFW_KEY_KP_ADD)) {
     myRenderer->loadCamera(camera);
     myRenderer->stopRendering();
-    settings.test += speed/10;
+    settings.test += speed/100;
     myRenderer->asyncRender();
     renderMode = 2;
+    cout << settings.test << "\n";
   }
   if (glfwGetKey(GLFW_KEY_KP_SUBTRACT)) {
     myRenderer->loadCamera(camera);
     myRenderer->stopRendering();
-    settings.test -= speed/10;
+    settings.test -= speed/100;
     myRenderer->asyncRender();
     renderMode = 2;
+    cout << settings.test << "\n";
+  }
+  if (glfwGetKey(GLFW_KEY_KP_MULTIPLY)) {
+    myRenderer->loadCamera(camera);
+    myRenderer->stopRendering();
+    settings.debug_mode += 1;
+    myRenderer->asyncRender();
+    renderMode = 2;
+    cout << settings.debug_mode << "\n";
+    glfwSleep(0.5);
+  }
+  if (glfwGetKey(GLFW_KEY_KP_DIVIDE)) {
+    myRenderer->loadCamera(camera);
+    myRenderer->stopRendering();
+    settings.debug_mode -= 1;
+    myRenderer->asyncRender();
+    renderMode = 2;
+    cout << settings.debug_mode << "\n";
+    glfwSleep(0.5);
   }
 
-  //cout << settings.test << "\n";
   //cout << myRenderer->renderComplete() << "\n";
 }

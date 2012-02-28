@@ -59,8 +59,7 @@ ArrayDataStruct::findClosestIntersection(Ray ray) {
 
     float dist = glm::distance(o, closest_pos);
 
-    if(u >= 0 && v >= 0 && u + v <= 1
-        ) {  // Intersection!
+    if(u >= 0 && v >= 0 && u + v <= 1) {  // Intersection!
       if(t > 0 && t < closest_t) {
         closest_tri = cur_triangle;
         closest_pos = o + t * d;
