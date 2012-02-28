@@ -33,3 +33,7 @@ Release/**/*
 *.3ds
 *.dae
 /my_settings
+/memorial.jpg
+/memorial.exr
+/memorial.hdr
+/memorial.png

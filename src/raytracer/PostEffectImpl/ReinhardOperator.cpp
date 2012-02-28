@@ -32,6 +32,8 @@ float* ReinhardOperator::run(float* color_buffer, int length) {
                       0.265068,  0.67023428, 0.06409157,
                       0.0241188, 0.1228178,  0.84442666);
 
+  RGB2XYZ = transpose(RGB2XYZ);
+
   int pixels = length / 4;
 
   // Convert to XYZ OBS! There is a difference between capital and no capital letters in this color space.
@@ -66,6 +68,8 @@ float* ReinhardOperator::run(float* color_buffer, int length) {
   mat3 XYZ2RGB = mat3(2.5651,   -1.1665,   -0.3986,
                      -1.0217,    1.9777,    0.0439,
                       0.0753,   -0.2543,    1.1892);
+
+  XYZ2RGB = transpose(XYZ2RGB);
 
   //float* res = new float[length];
 
