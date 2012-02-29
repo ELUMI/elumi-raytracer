@@ -27,13 +27,14 @@ public:
     IntersectionData() {}
     IntersectionData(unsigned int material, vec3 interPoint, vec3 normal, vec2 texcoord) {
       IntersectionData::material = material;
+      IntersectionData::texture = texture;
       IntersectionData::interPoint = interPoint;
       IntersectionData::normal = normal;
       IntersectionData::texcoord = texcoord;
     };
 
-    //Triangle* triangle;
-    unsigned int material;
+    vector<vec3*> uvcoords;
+    unsigned int material,texture;
     vec3 interPoint;
     vec3 normal;
     vec2 texcoord;

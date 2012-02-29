@@ -23,29 +23,38 @@ Material::Material() {
   Material::sharpness = 98; //glossy
   Material::index_of_refraction = 1.0f;
   Material::reflection = 0.0f;
-  Material::texture = NULL;
+  Material::texture = -1;
+  Material::bump_map = -1;
 }
 
 Material::Material(std::string name,glm::vec3 ambient,glm::vec3 diffuse,glm::vec3 specular,
-    glm::vec3 emissive,glm::vec3 opacity,float shininess,float sharpness,
-    float reflection ,float index_of_refraction, Texture* texture){
+    glm::vec3 emissive,glm::vec3 _opacity,float shininess,float sharpness,
+    float reflection ,float index_of_refraction, int texture, int bump_map){
 
   Material::name = name;
   Material::ambient = ambient;
   Material::diffuse = diffuse;
   Material::specular = specular;
   Material::emissive = emissive;
-  Material::opacity = (opacity.x + opacity.y + opacity.z) / 3.0f;
+  Material::opacity = (_opacity.x + _opacity.y + _opacity.z) / 3.0f;
   Material::shininess = shininess;
   Material::sharpness = sharpness;
   Material::index_of_refraction = index_of_refraction;
   Material::reflection = reflection;
   //Material::alpha_texture_map = alpha_texture_map;
   Material::texture = texture;
+  Material::bump_map = bump_map;
 }
 
 Material::~Material() {
 
+}
+
+int Material::getTexture() {
+  return texture;
+}
+int Material::getBumpMap() {
+  return bump_map;
 }
 
 glm::vec3 Material::getAmbient() const {

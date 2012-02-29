@@ -1,6 +1,7 @@
 // Obj_loader.cpp : Defines the entry point for the console application.
 //
 #include <stdio.h>
+#include <string.h>
 #include <iostream>
 #include <stdlib.h>
 #include "OBJImporterImpl/obj_loader.h"
@@ -17,24 +18,25 @@ using namespace std;
 namespace raytracer{
 
 OBJImporter::OBJImporter()
-:triangles(),materials(),point_lights(),quad_lights(),disc_lights(){
+:triangles(),materials(),textures(),point_lights(),quad_lights(),disc_lights(){
 
 }
 OBJImporter::~OBJImporter(){
 	triangles.clear();
 	materials.clear();
+	textures.clear();
 
 	point_lights.clear();
 	quad_lights.clear();
 	disc_lights.clear();
 };
 
-
 void OBJImporter::loadFile(char* filename){
 
   ilInit();
 
 	obj_loader *obj_data = new obj_loader();
+
 	try{
 		obj_data->load(filename);
 	}
@@ -58,23 +60,21 @@ void OBJImporter::loadFile(char* filename){
 		float _index_of_refraction = material->refract_index;
 		float _refraction = material->refract;
 		std::string _texture_map = material->texture_filename;
+		std::string _bump_map = material->bump_filename;
 
 		ILuint image;
-		int texture = -1;
+		int texture = -1, bump_map = -1;
 
 		image = ilGenImage();
-
 		ilBindImage(image);
 
+		//Texture
     if(_texture_map != "") {
-      ilLoadImage(_texture_map.c_str());
 
-      ilGetError();
+      ilLoadImage("face.jpg");
 
-      ILenum error;
-      error = ilGetError();
-
-      if(error == IL_NO_ERROR) {
+      if(ilGetError() == IL_NO_ERROR) {
+        cout << "Image loaded" << endl;
         ILuint w,h;
 
         w = ilGetInteger(IL_IMAGE_WIDTH);
@@ -85,11 +85,37 @@ void OBJImporter::loadFile(char* filename){
 
       } else {
         //Image not loaded (?)
+        cout << "Image not loaded" << endl;
+      }
+    }
+
+    //Bump map
+    if(_bump_map != "") {
+      image = ilGenImage();
+      ilBindImage(image);
+
+      ilLoadImage("face_norm.jpg");
+
+      if(ilGetError() == IL_NO_ERROR) {
+        cout << "Image loaded" << endl;
+        ILuint w,h;
+
+        w = ilGetInteger(IL_IMAGE_WIDTH);
+        h = ilGetInteger(IL_IMAGE_HEIGHT);
+
+        cout << ilGetInteger(IL_FORMAT_MODE) << endl;
+
+        textures.push_back(new Texture(w,h,ilGetData()));
+        bump_map = textures.size()-1;
+
+      } else {
+        //Image not loaded (?)
+        cout << "Image not loaded" << endl;
       }
     }
 
 		OBJImporter::materials.push_back(new Material(_name,_ambient,_diffuse,_specular,_emissive,
-				_transparency,_shininess,_sharpness,_reflection,_index_of_refraction,NULL /*POINTER TO A TEXTURE*/));
+				_transparency,_shininess,_sharpness,_reflection,_index_of_refraction,texture,bump_map));
 	}
 
 	// Start creating the triangles
@@ -99,19 +125,25 @@ void OBJImporter::loadFile(char* filename){
 
 		vector<vec3*> _vertices;
 		vector<vec3*> _normals;
-		vector<vec3*> _textures;
+		vector<vec3*> _texCoords;
 		for(int j=0;j<3;j++){
 			obj_vector* _vec  = obj_data->vertexList[ face->vertex_index[j] ];
 			obj_vector* _norm = obj_data->normalList[ face->normal_index[j] ];
-			obj_vector* _text = obj_data->textureList[ face->texture_index[j] ];
+
+			obj_vector* _text = NULL;
+
+			if(face->texture_index[j] != -1)
+			  _text = obj_data->textureList[ face->texture_index[j] ];
 
 			_vertices.push_back(new vec3(_vec->e[0],_vec->e[1],_vec->e[2]));
 			_normals.push_back(new vec3(_norm->e[0],_norm->e[1],_norm->e[2]));
-      _textures.push_back(new vec3()); //FIXME
-			//_textures.push_back(new vec3(_text->e[0],_text->e[1],_text->e[2]));
+
+			if(face->texture_index[j] != -1)
+			  _texCoords.push_back(new vec3(_text->e[0],_text->e[1],_text->e[2]));
+			else _texCoords.push_back(new vec3(0,0,0));
 		}
 		unsigned int _material = face->material_index;
-		OBJImporter::triangles.push_back(new Triangle(_vertices,_normals,_textures,_material));
+		OBJImporter::triangles.push_back(new Triangle(_vertices,_normals,_texCoords,_material));
 
 		// More than one triangle for each face?
 		for(int f=0;f<face->vertex_count%3;f++){
@@ -122,14 +154,20 @@ void OBJImporter::loadFile(char* filename){
 				if(j!=(f+1)){
 						obj_vector* _vec  = obj_data->vertexList[ face->vertex_index[j] ];
 						obj_vector* _norm = obj_data->normalList[ face->normal_index[j] ];
-						//obj_vector* _text = obj_data->textureList[ face->texture_index[j] ];
+
+						obj_vector* _text;
+
+						if(face->texture_index[j] != -1)
+						  _text = obj_data->textureList[ face->texture_index[j] ];
 
 						_vertices.push_back(new vec3(_vec->e[0],_vec->e[1],_vec->e[2]));
 						_normals.push_back(new vec3(_norm->e[0],_norm->e[1],_norm->e[2]));
-						//_textures4.push_back(new vec3(_text->e[0],_text->e[1],_text->e[2]));
+						if(face->texture_index[j] != -1)
+						  _textures.push_back(new vec3(_text->e[0],_text->e[1],_text->e[2]));
+						else _texCoords.push_back(new vec3(0,0,0));
 				}
 			}
-			OBJImporter::triangles.push_back(new Triangle(_vertices,_normals,_textures,_material));
+			OBJImporter::triangles.push_back(new Triangle(_vertices,_normals,_texCoords,_material));
 		}
 
 	}

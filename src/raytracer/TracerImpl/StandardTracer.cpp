@@ -54,6 +54,34 @@ vec4 StandardTracer::shade(Ray incoming_ray,
   vec4 refr_color = vec4(0,0,0,0);
   Material* material = scene->getMaterialVector()[idata.material];
 
+  vec3 texture_color = vec3(0,0,0);
+
+  vec3 bump_normal = vec3(0,0,0);
+  vec3 normal = idata.normal;
+  vec2 tex_coords = vec2(0,0);
+
+  if(material->getTexture() != -1) {
+
+    Texture* texture = scene->getTextureAt(material->getTexture());
+
+    //Planar mapping
+    if(idata.uvcoords.size() ==  0) {
+      tex_coords  = texture->getUVCoordinates(idata.interPoint,PLANAR);
+      texture_color = texture->getColorAt(tex_coords);
+    } else { //We have texture coordinates
+      texture_color = texture->getColorAt(idata.texcoord);
+      tex_coords = idata.texcoord;
+    }
+  }
+  //Bump mapping
+  if(material->getBumpMap() != -1) {
+    Texture* bumpmap = scene->getTextureAt(material->getBumpMap());
+    bump_normal = bumpmap->getColorAt(tex_coords);
+    bump_normal = normalize(faceforward(bump_normal,incoming_ray.getDirection(),normal));
+
+    normal = normalize(normal+bump_normal);
+  }
+
   // For each light source in the scene
   for(unsigned int i=0; i<lights->size(); ++i) {
     ILight* light  = lights->at(i);
@@ -72,16 +100,21 @@ vec4 StandardTracer::shade(Ray incoming_ray,
       // Falloff intensity
       float intensity = light->getIntensity(distance_to_light);
 
-      // Diffuse lighting
+      //Diffuse
       diffuse += intensity
-          * clamp(glm::dot(-light_ray.getDirection(), idata.normal))
-      * material->getDiffuse()
-      * light->getColor();
+          * clamp(glm::dot(-light_ray.getDirection(), normal))
+          * light->getColor();
 
-      // Specular lighting
+      if(material->getTexture() == -1) {
+        diffuse *= material->getDiffuse();
+      } else {
+        diffuse *= texture_color;
+      }
+
+      //Specular
       vec3 h = normalize(-incoming_ray.getDirection() - light_ray.getDirection());
       specular += intensity
-          * glm::pow( clamp( glm::dot(idata.normal, h) ), material->getShininess() )
+          * glm::pow( clamp( glm::dot(normal, h) ), material->getShininess() )
       * material->getSpecular()
       * light->getColor();
     }
@@ -98,7 +131,7 @@ vec4 StandardTracer::shade(Ray incoming_ray,
 
 	// är -1 på väg in
 	// är 1 på väg ut
-    float refraction_sign = glm::sign(glm::dot(idata.normal, incoming_ray.getDirection()));
+    float refraction_sign = glm::sign(glm::dot(normal, incoming_ray.getDirection()));
    
     // TODO 
     // reflective bounce innuti också, multiplicera normal med refr_sign
@@ -106,9 +139,8 @@ vec4 StandardTracer::shade(Ray incoming_ray,
 
     // REFLECTION RAY
     if(material->getReflection() > 0.0f /*&& refraction_sign<0.0f*/) {
-      vec3 refl_normal = -idata.normal*refraction_sign;
+      vec3 refl_normal = -normal*refraction_sign;
       Ray refl_ray = Ray(idata.interPoint, glm::reflect(incoming_ray.getDirection(), refl_normal ));
-          //Ray::reflection(incoming_ray, idata.normal, idata.interPoint);
       refl_ray = Ray( refl_ray.getPosition() + refl_normal*0.001f , refl_ray.getDirection() );
       refl_color = tracePrim(refl_ray, depth+1) * material->getReflection() ;//* vec4((vec3(1,1,1)-material->getDiffuse()),1);
     }
@@ -120,8 +152,8 @@ vec4 StandardTracer::shade(Ray incoming_ray,
       if(refraction_sign > 0.0f)
         eta = 1/eta;
 
-      vec3 refr_normal = -idata.normal*refraction_sign;
-      vec3 offset = glm::normalize(idata.normal) * refraction_sign * 0.001f;
+      vec3 refr_normal = -normal*refraction_sign;
+      vec3 offset = glm::normalize(normal) * refraction_sign * 0.001f;
       vec3 refr_dir = glm::refract(incoming_ray.getDirection(), refr_normal, eta);
       Ray refr_ray = Ray(idata.interPoint + offset, glm::normalize(refr_dir));
       refr_color = tracePrim(refr_ray, depth+1) * (1-material->getOpacity());

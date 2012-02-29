@@ -159,6 +159,7 @@ int main(int argc, char* argv[]) {
   importer->loadFile(inputFileName);
   std::vector<raytracer::Triangle*> triangles = importer->getTriangleList();
   std::vector<raytracer::Material*> materials = importer->getMaterialList();
+  std::vector<raytracer::Texture*> textures   = importer->getTextures();
 
 
   /* RENDERER
@@ -193,6 +194,7 @@ int main(int argc, char* argv[]) {
   if (!triangles.empty()) {
     myRenderer->getScene().loadMaterials(materials); //load materials BEFORE triangles!
     myRenderer->loadTriangles(triangles);
+    myRenderer->getScene().loadTextures(textures);
   }
 
   myRenderer->loadLights(lights, 1, false);
