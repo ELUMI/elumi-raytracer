@@ -24,6 +24,8 @@ struct Settings {
     draw_data_struct = true;
     background_color = vec4(0,0,0,1);
     use_first_bounce = false;
+    test = 0 ;
+    debug_mode=0;
   }
 
   int width;
@@ -32,6 +34,8 @@ struct Settings {
   bool draw_data_struct;
   bool use_first_bounce;
   vec4 background_color;
+  float test;
+  int debug_mode;
 };
 
 }

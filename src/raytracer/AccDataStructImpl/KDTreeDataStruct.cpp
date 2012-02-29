@@ -35,14 +35,14 @@ KDTreeDataStruct::~KDTreeDataStruct() {
   //delete(triangles);
 }
 IAccDataStruct::IntersectionData
-*KDTreeDataStruct::findClosestIntersectionR(KDNode* node,Ray* ray,float min,float max, int depth){
+KDTreeDataStruct::findClosestIntersectionR(KDNode* node,Ray* ray,float min,float max, int depth){
   if(node->isLeaf()){
-    Triangle* _triangles = node->getTriangles();
+    Triangle** _triangles = node->getTriangles();
     ArrayDataStruct* triangle_test =new ArrayDataStruct();
-    vector<Triangle>* _temp = new vector<Triangle>;
-    _temp->assign(node->getSize(),*node->getTriangles());
+    vector<Triangle*> _temp(node->getSize());
+    _temp.assign(node->getSize(),*_triangles);
     //triangle_test->setData(_temp,aabb);
-    IntersectionData* temp = triangle_test->findClosestIntersection(*ray);
+    IntersectionData temp = triangle_test->findClosestIntersection(*ray);
     delete triangle_test;
     return temp;
   }
@@ -70,8 +70,8 @@ IAccDataStruct::IntersectionData
   }
   else{
     if(split>0){
-      IntersectionData* temp =  findClosestIntersectionR(near,ray, min, split,depth+1);
-      return (temp->material!=IntersectionData::NOT_FOUND?temp:findClosestIntersectionR(near,ray, split, max,depth+1));
+      IntersectionData temp =  findClosestIntersectionR(near,ray, min, split,depth+1);
+      return (temp.material!=IntersectionData::NOT_FOUND?temp:findClosestIntersectionR(near,ray, split, max,depth+1));
     }
     else{
       return findClosestIntersectionR(near,ray,split, max,depth+1);//case G
@@ -80,14 +80,14 @@ IAccDataStruct::IntersectionData
 
 }
 
-IAccDataStruct::IntersectionData*
+IAccDataStruct::IntersectionData
 KDTreeDataStruct::findClosestIntersection(Ray ray) {
   float min,max;
   if(aabb->intersect(ray,min,max)){
     //run intersection;
       return findClosestIntersectionR(root,&ray,min,max,0);
   }
-  return (new IntersectionData(IntersectionData::NOT_FOUND, vec3(), vec3(), vec2()));
+  return (IntersectionData(IntersectionData::NOT_FOUND, vec3(), vec3(), vec2()));
 }
 
 void KDTreeDataStruct::build(){
@@ -100,7 +100,7 @@ void KDTreeDataStruct::build(){
   cout << endl;
 }
 
-void KDTreeDataStruct::quickSort(Triangle* triangles,int top,int bottom,int axis){
+void KDTreeDataStruct::quickSort(Triangle** triangles,int top,int bottom,int axis){
 
   int middle = 0;
   if(top<bottom){
@@ -109,22 +109,22 @@ void KDTreeDataStruct::quickSort(Triangle* triangles,int top,int bottom,int axis
     quickSort(triangles,middle+1,bottom,axis);
   }
 }
-int KDTreeDataStruct::qsPartition(Triangle* triangles,int top,int bottom,int axis){
-  float t=triangles[top].getMax(axis);
+int KDTreeDataStruct::qsPartition(Triangle** triangles,int top,int bottom,int axis){
+  float t=triangles[top]->getMax(axis);
   int i = top - 1;
   int j = bottom + 1;
-  Triangle temp;
+  Triangle* temp;
   do
   {
     do
     {
       j--;
-    }while (t > triangles[j].getMax(axis));
+    }while (t > triangles[j]->getMax(axis));
 
     do
     {
       i++;
-    } while (t <triangles[i].getMax(axis));
+    } while (t <triangles[i]->getMax(axis));
 
     if (i < j)
     {
@@ -140,7 +140,7 @@ int KDTreeDataStruct::qsPartition(Triangle* triangles,int top,int bottom,int axi
 /**
  * Recursive loop for creating the splitting planes
  */
-KDTreeDataStruct::KDNode* KDTreeDataStruct::constructTree(Triangle* triangles,int size,int depth){
+KDTreeDataStruct::KDNode* KDTreeDataStruct::constructTree(Triangle** triangles,int size,int depth){
   //TODO: recursive loop and create splitting planes etc.
   if(size<=0) // Can add depth max or anything other
     return NULL;
@@ -157,24 +157,24 @@ KDTreeDataStruct::KDNode* KDTreeDataStruct::constructTree(Triangle* triangles,in
 
 
     //Pick median triangle and just select one of the points with the axis
-    float median = triangles[(int)(size/2)].getMax(axis);
+    float median = triangles[(int)(size/2)]->getMax(axis);
     // find triangles that are on both sides
     size_t left_intersect=size/2+1;
     size_t left_extra=0;
     while(1){
-      if(left_intersect<size&&triangles[left_intersect].getMin(axis)<median){
+      if(left_intersect<size&&triangles[left_intersect]->getMin(axis)<median){
         left_extra++;
         left_intersect++;
       }
       else break;
 
     }
-    Triangle* left_vert = new Triangle[size/2+left_extra];
+    Triangle** left_vert = new Triangle*[size/2+left_extra];
     copy(triangles,triangles+size/2+left_extra,left_vert);
-    Triangle* right_vert= new Triangle[size/2+size%2];
+    Triangle** right_vert= new Triangle*[size/2+size%2];
 
     //memcpy(left_vert,triangles,sizeof(left_vert)); //memcpy(right_vert,triangles+size/2,sizeof(right_vert));
-    cout << left_vert[1].getMax(axis);
+    cout << left_vert[1]->getMax(axis);
     KDNode* node = new KDNode();
     node->setSplit(median);
     node->setTriangles(triangles);
@@ -192,8 +192,8 @@ KDTreeDataStruct::KDNode* KDTreeDataStruct::constructTree(Triangle* triangles,in
 void KDTreeDataStruct::setData(std::vector<Triangle*> triangles,AABB* aabb){
 //  delete(KDTreeDataStruct::triangles);
   //TODO:FIXME
-  KDTreeDataStruct::triangles = new Triangle[triangles.size()];
-  //copy(triangles->data(),triangles->data()+triangles->size(),KDTreeDataStruct::triangles);
+  KDTreeDataStruct::triangles = new Triangle*[triangles.size()];
+  copy(triangles.data(),triangles.data()+triangles.size(),KDTreeDataStruct::triangles);
   KDTreeDataStruct::triangle_count = triangles.size();
   KDTreeDataStruct::aabb=aabb;
 }

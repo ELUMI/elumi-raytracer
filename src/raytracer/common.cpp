@@ -1,9 +1,4 @@
-x	/*
- * common.cpp
- *
- *  Created on: Feb 23, 2012
- *      Author: DmZ
- */
+
 
 
 #include "common.hpp"

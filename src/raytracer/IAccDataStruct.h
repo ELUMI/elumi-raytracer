@@ -44,7 +44,7 @@ public:
 
 	virtual ~IAccDataStruct()= 0;
 	virtual IntersectionData findClosestIntersection(Ray ray)=0;
-	virtual void setData(std::vector<Triangle*> triangles) = 0;
+	virtual void setData(std::vector<Triangle*> triangles,AABB* aabb) = 0;
 
 };
 

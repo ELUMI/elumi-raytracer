@@ -256,6 +256,8 @@ int main(int argc, char* argv[]) {
         light3->drawWithView(view, loc);
         light4->drawWithView(view, loc);
 
+        if()
+
         break;
       }
       case 2:
