@@ -19,8 +19,8 @@ public:
   virtual ~DeferredProcesser();
 
   void render(Scene* scene, mat4 viewMatrix, int width, int height);
-  void readNormals(unsigned int width, unsigned int height, vec3* buffer);
-  void readTexCoords(unsigned int width, unsigned int height, vec3* buffer);
+  void readNormals(unsigned int width, unsigned int height, vec4* buffer);
+  void readTexCoords(unsigned int width, unsigned int height, vec2* buffer);
   void readDepths(unsigned int width, unsigned int height, float* buffer);
 
 private:

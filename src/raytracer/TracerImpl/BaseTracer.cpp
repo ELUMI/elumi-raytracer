@@ -6,6 +6,7 @@
  */
 
 #include "BaseTracer.h"
+#include <glm/gtc/matrix_transform.hpp> //translate, rotate, scale, perspective
 
 namespace raytracer {
 
@@ -45,8 +46,8 @@ void BaseTracer::first_bounce() {
   mat4 view_matrix = scene->getCamera().getViewMatrix();
   first_pass->render(scene, view_matrix, width, height);
 
-  vec3* normals = new vec3[size];
-  vec3* texcoords = new vec3[size];
+  vec4* normals = new vec4[size];
+  vec2* texcoords = new vec2[size];
   float* depths = new float[size];
 
   first_pass->readNormals(width, height, normals);
@@ -59,17 +60,12 @@ void BaseTracer::first_bounce() {
       vec4 pos = vp2m * vec4(x,y,depths[i],1);
 
       //see comment in deferred.frag
-      unsigned int material = int(256.0f * texcoords[i].z);
-      if(material == 0){
-        material = IAccDataStruct::IntersectionData::NOT_FOUND;
-      } else {
-        --material;
-      }
+      unsigned int material = ceil(normals[i].w-0.5); //alpha channel is noise, but this works!
       assert(material == IAccDataStruct::IntersectionData::NOT_FOUND || material < scene->getMaterialVector().size());
 
       first_intersections[i] = IAccDataStruct::IntersectionData(
-          material, vec3(normalize(pos)),
-          normals[i], vec2(texcoords[i].x, texcoords[i].y));
+          material, vec3(pos)/pos.w,
+          vec3(normals[i]), texcoords[i]);
     }
   }
 
@@ -147,19 +143,16 @@ int BaseTracer::spawnRays() {
 
   Camera camera = scene->getCamera();
   vec3 camera_position = camera.getPosition();
-  mat4 trans = camera.getViewportToModelMatrix(width, height);
+  mat4 trans = camera.getViewportToModelMatrix(width-1, height-1);
 
   //We step over all "pixels" from the cameras viewpoint
   for(int y = 0; y < height; y++) {
     for(int x = 0; x < width; x++) {
-      vec4 apoint = vec4(0,0,0,1);
-      vec4 aray = vec4(x,y,settings->test,1);
-      apoint = trans * apoint;
-      //aray = transpose(inverse(trans)) * aray;
+      vec4 aray = vec4(x,y,-1,1);
+      //vec3 r = unProject(vec3(aray), trans, mat4(), vec4(0, 0, width, height));
       aray = trans * aray;
-      vec3 p = vec3(apoint); ///apoint.w;
-      vec3 r = normalize(vec3(aray));
-      rays[y*width+x] = Ray(camera_position,r);
+      vec3 r = vec3(aray / aray.w);
+      rays[y*width+x] = Ray::generateRay(camera_position, r);
     }
   }
 
@@ -183,7 +176,46 @@ vec4 BaseTracer::trace(Ray ray, IAccDataStruct::IntersectionData idata) {
 }
 
 vec4 BaseTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata) {
-  return vec4(idata.normal,1);
+
+  switch(settings->debug_mode) {
+  case 1:
+    return vec4(idata.material/5.0f,idata.material/10.0f,0,1);
+  case 2:
+    return vec4(idata.normal,1);
+  case 3:
+    return vec4(scene->getMaterialVector()[idata.material]->getDiffuse(),1);
+  case 4:
+    return vec4(idata.normal,1);
+  case 5:
+    return vec4(idata.texcoord,0,1);
+  case 6: {
+    IAccDataStruct::IntersectionData idata2 = scene->getAccDataStruct()->findClosestIntersection(incoming_ray);
+    return vec4(normalize(idata.normal) - normalize(idata2.normal),1);
+  }
+  case 7: {
+    IAccDataStruct::IntersectionData idata2 = scene->getAccDataStruct()->findClosestIntersection(incoming_ray);
+    return vec4(abs(normalize(idata.normal) - normalize(idata2.normal))*100.0f,1);
+  }
+  case 8: {
+    IAccDataStruct::IntersectionData idata2 = scene->getAccDataStruct()->findClosestIntersection(incoming_ray);
+    return vec4(abs(idata.interPoint-idata2.interPoint)*10.0f,1);
+  }
+
+  }
+
+  ILight* light = scene->getLightVector().front();
+  vec3 dir = normalize(idata.interPoint - light->getPosition());
+  Ray lightRay = Ray(light->getPosition(), dir);
+  IAccDataStruct::IntersectionData idatal = scene->getAccDataStruct()->findClosestIntersection(lightRay);
+  assert(idatal.material != IAccDataStruct::IntersectionData::NOT_FOUND);
+
+  if (dot(dir,(idata.interPoint - idatal.interPoint)) > 0.001+settings->test) {
+    return vec4();
+  } else {
+    Material* material = scene->getMaterialVector()[idata.material];
+    return vec4(material->getDiffuse(),1);
+  }
+
 }
 
 }

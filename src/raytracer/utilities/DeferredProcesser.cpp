@@ -48,13 +48,13 @@ DeferredProcesser::DeferredProcesser(unsigned int width, unsigned int height) {
   // create a renderbuffer object to store depth info
   glGenRenderbuffersEXT(1, &normal_rbo);
   glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, normal_rbo);
-  glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGB, width, height);
+  glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGBA32F, width, height);
   glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
 
   // create a renderbuffer object to store depth info
   glGenRenderbuffersEXT(1, &texcoord_rbo);
   glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, texcoord_rbo);
-  glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGB, width, height);
+  glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RG32F, width, height);
   glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
 
   CHECK_GL_ERROR();
@@ -102,8 +102,10 @@ void DeferredProcesser::render(Scene* scene, mat4 viewMatrix, int width, int hei
   glPixelZoom(1,1);
   glRasterPos2f(-1,1);
   // clear buffers
-  glClearColor(0,0,0,0);
+  glClearColor(0,0,0,-1);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glDisable(GL_ALPHA_TEST);
+  glDisable(GL_BLEND);
   glEnable(GL_DEPTH_TEST);
   glDisable(GL_CULL_FACE);
 
@@ -121,22 +123,24 @@ void DeferredProcesser::render(Scene* scene, mat4 viewMatrix, int width, int hei
 }
 
 
-void DeferredProcesser::readNormals(unsigned int width, unsigned int height, vec3* buffer){
+void DeferredProcesser::readNormals(unsigned int width, unsigned int height, vec4* buffer){
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
 
   glReadBuffer(GL_COLOR_ATTACHMENT0_EXT);
-  glReadPixels(0, 0, width, height, GL_RGB, GL_FLOAT, buffer);
+  glReadPixels(0, 0, width, height, GL_RGBA, GL_FLOAT, buffer);
 
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+  CHECK_GL_ERROR();
 }
 
-void DeferredProcesser::readTexCoords(unsigned int width, unsigned int height, vec3* buffer){
+void DeferredProcesser::readTexCoords(unsigned int width, unsigned int height, vec2* buffer){
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
 
   glReadBuffer(GL_COLOR_ATTACHMENT1_EXT);
-  glReadPixels(0, 0, width, height, GL_RGB, GL_FLOAT, buffer);
+  glReadPixels(0, 0, width, height, GL_RG, GL_FLOAT, buffer);
 
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+  CHECK_GL_ERROR();
 }
 
 void DeferredProcesser::readDepths(unsigned int width, unsigned int height, float* buffer){
@@ -146,6 +150,7 @@ void DeferredProcesser::readDepths(unsigned int width, unsigned int height, floa
   glReadPixels(0, 0, width, height, GL_DEPTH_COMPONENT, GL_FLOAT, buffer);
 
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+  CHECK_GL_ERROR();
 }
 
 }
