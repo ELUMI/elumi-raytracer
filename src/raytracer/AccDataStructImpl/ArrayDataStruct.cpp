@@ -32,7 +32,7 @@ ArrayDataStruct::findClosestIntersection(Ray ray) {
   vec3 d = ray.getDirection();
 
   Triangle* closest_tri = NULL;
-  float closest_dist = -1;
+  //float closest_dist = -1;
   vec3 closest_pos;
 
   float closest_t = numeric_limits<float>::infinity( );
@@ -61,19 +61,17 @@ ArrayDataStruct::findClosestIntersection(Ray ray) {
 
     if(u >= 0 && v >= 0 && u + v <= 1
         ) {  // Intersection!
-      if(t < closest_t) {
+      if(t < closest_t && t>=0) {
         closest_tri = cur_triangle;
         closest_pos = o + t * d;
-        closest_dist = dist;
+        //closest_dist = dist;
         closest_t = t;
       }
     }
   }
 
   if(closest_t == numeric_limits<float>::infinity( )) {
-
     return IntersectionData(IntersectionData::NOT_FOUND, vec3(), vec3(), vec2());
-
   }
 
   vec3 v1v0 = *(closest_tri->getVertices()[1]) - *(closest_tri->getVertices()[0]);
@@ -91,13 +89,11 @@ ArrayDataStruct::findClosestIntersection(Ray ray) {
                       a1 * *(closest_tri->getNormals()[1]) +
                       a2 * *(closest_tri->getNormals()[2]);
 
-  vec3 inter_tex = vec3(-1,-1,-1);
-  if(closest_tri->getTextures().size() > 0)
-  inter_tex =    a0 * *(closest_tri->getTextures()[0]) +
+  vec3 inter_tex =    a0 * *(closest_tri->getTextures()[0]) +
                       a1 * *(closest_tri->getTextures()[1]) +
                       a2 * *(closest_tri->getTextures()[2]);
 
-  return IntersectionData(closest_tri->getMaterial(), closest_pos, inter_normal, vec2(inter_tex),closest_tri->getTextures());
+  return IntersectionData(closest_tri->getMaterial(), closest_pos, glm::normalize(inter_normal), vec2(inter_tex));
 }
 
 void ArrayDataStruct::setData(std::vector<Triangle*> new_triangles) {

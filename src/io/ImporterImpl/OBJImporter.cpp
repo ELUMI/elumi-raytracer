@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include "OBJImporterImpl/obj_loader.h"
 
+
 #include <IL/il.h>
 
 #include "OBJImporter.h"
@@ -29,7 +30,6 @@ OBJImporter::~OBJImporter(){
 	quad_lights.clear();
 	disc_lights.clear();
 };
-
 
 void OBJImporter::loadFile(char* filename){
 
@@ -57,7 +57,8 @@ void OBJImporter::loadFile(char* filename){
 		float _shininess = material->shiny;
 		float _sharpness = material->glossy;
 		float _reflection = material->reflect;
-		float _index_of_reflection = material->refract_index;
+		float _index_of_refraction = material->refract_index;
+		float _refraction = material->refract;
 		std::string _texture_map = material->texture_filename;
 		std::string _bump_map = material->bump_filename;
 
@@ -70,19 +71,9 @@ void OBJImporter::loadFile(char* filename){
 		//Texture
     if(_texture_map != "") {
 
-      const char* bla = _texture_map.c_str();
+      ilLoadImage("face.jpg");
 
-      cout << bla << endl;
-
-      //ilLoadImage(_texture_map.c_str());
-      ilLoadImage("brickwall.jpg");
-
-      ilGetError();
-
-      ILenum error;
-      error = ilGetError();
-
-      if(error == IL_NO_ERROR) {
+      if(ilGetError() == IL_NO_ERROR) {
         cout << "Image loaded" << endl;
         ILuint w,h;
 
@@ -100,27 +91,19 @@ void OBJImporter::loadFile(char* filename){
 
     //Bump map
     if(_bump_map != "") {
-
-      const char* bla = _bump_map.c_str();
-
-      cout << bla << endl;
-
-      //ilLoadImage(_texture_map.c_str());
       image = ilGenImage();
       ilBindImage(image);
-      ilLoadImage("brickwall_normal.jpg");
 
-      ilGetError();
+      ilLoadImage("face_norm.jpg");
 
-      ILenum error;
-      error = ilGetError();
-
-      if(error == IL_NO_ERROR) {
+      if(ilGetError() == IL_NO_ERROR) {
         cout << "Image loaded" << endl;
         ILuint w,h;
 
         w = ilGetInteger(IL_IMAGE_WIDTH);
         h = ilGetInteger(IL_IMAGE_HEIGHT);
+
+        cout << ilGetInteger(IL_FORMAT_MODE) << endl;
 
         textures.push_back(new Texture(w,h,ilGetData()));
         bump_map = textures.size()-1;
@@ -132,7 +115,7 @@ void OBJImporter::loadFile(char* filename){
     }
 
 		OBJImporter::materials.push_back(new Material(_name,_ambient,_diffuse,_specular,_emissive,
-				_transparency,_shininess,_sharpness,_reflection,_index_of_reflection,texture,bump_map));
+				_transparency,_shininess,_sharpness,_reflection,_index_of_refraction,texture,bump_map));
 	}
 
 	// Start creating the triangles
@@ -157,7 +140,7 @@ void OBJImporter::loadFile(char* filename){
 
 			if(face->texture_index[j] != -1)
 			  _texCoords.push_back(new vec3(_text->e[0],_text->e[1],_text->e[2]));
-			//else _texCoords.push_back(new vec3(0,0,0));
+			else _texCoords.push_back(new vec3(0,0,0));
 		}
 		unsigned int _material = face->material_index;
 		OBJImporter::triangles.push_back(new Triangle(_vertices,_normals,_texCoords,_material));
@@ -181,7 +164,7 @@ void OBJImporter::loadFile(char* filename){
 						_normals.push_back(new vec3(_norm->e[0],_norm->e[1],_norm->e[2]));
 						if(face->texture_index[j] != -1)
 						  _textures.push_back(new vec3(_text->e[0],_text->e[1],_text->e[2]));
-						//else _texCoords.push_back(new vec3(0,0,0));
+						else _texCoords.push_back(new vec3(0,0,0));
 				}
 			}
 			OBJImporter::triangles.push_back(new Triangle(_vertices,_normals,_texCoords,_material));

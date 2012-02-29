@@ -5,12 +5,20 @@ precision highp float;
 
 uniform sampler2D colortexture;
 
-in vec4 outColor;
-in vec2 texCoord;
+in float	fmaterial;
+smooth in vec3 fnormal;
+smooth in vec2 ftexcoord;
 
-out vec4 fragmentColor;
+out vec3 onormal;
+out vec3 otexcoord;
+
+//we save the material as a float in the z component of the texcoords
+//the buffer is cleared to 0, thus we need to differentiate material 0 from it
+//we do that by using the formula below
 
 void main() 
 {
-	fragmentColor = outColor; //texture(colortexture, texCoord.xy);
+  onormal = fnormal;
+  //otexcoord = vec3(1,1,1); 
+  otexcoord = vec3(ftexcoord.x, ftexcoord.y, (fmaterial+1)/256); 
 }

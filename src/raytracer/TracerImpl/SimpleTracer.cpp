@@ -103,56 +103,6 @@ vec4 SimpleTracer::traceHelper(Ray* ray, IAccDataStruct::IntersectionData inters
   } else {
     Material* material = scene->getMaterialVector()[intersection_data.material];
 
-    vec3 texture_color = vec3(0,0,0);
-
-    vec3 bump_normal = vec3(0,0,0);
-
-    /*if(material->getTexture() != -1) {
-
-      Texture* texture = scene->getTextureAt(material->getTexture());
-
-      vec3 p = intersection_data.interPoint;
-      vec2 texCoords = vec2(0,0);
-
-      float x;
-      float y;
-
-      //Planar mapping
-      if(intersection_data.uvcoords.size() ==  0) {
-        x = p.x;
-        y = p.y;
-
-        if(x > y) {
-          x = p.y;
-          y = p.x;
-        }
-        if(y > p.z) {
-          y = p.z;
-        }
-
-        texCoords.x = x;
-        texCoords.y = y;
-
-      } else { //We have texture coordinatesalf
-
-        texCoords.x = intersection_data.texcoord.x * p.x;
-        texCoords.y = intersection_data.texcoord.y * p.y;
-
-        /*texCoords.x = alfa.x * coords[0]->x + alfa.y * coords[1]->x + alfa.z * coords[2]->x;
-        texCoords.y = alfa.x * coords[0]->y + alfa.y * coords[1]->y + alfa.z * coords[2]->y;
-
-      }
-
-      texCoords.x = (int)(texCoords.x*(texture->getWidth()/2))%texture->getWidth();
-      texCoords.y = (int)(texCoords.y*(texture->getHeight()/2))%texture->getHeight();
-
-      int x_coord = (int)texCoords.x;
-      int y_coord = (int)texCoords.y;
-
-      texture_color = texture->getColorAt(x_coord,y_coord)/255.0f;
-
-    }*/
-
     vec3 color;
     //Light
     ILight* light = scene->getLightVector().front();
@@ -173,11 +123,11 @@ vec4 SimpleTracer::traceHelper(Ray* ray, IAccDataStruct::IntersectionData inters
 
       //Specular
       Ray invLightRay = Ray(intersection_data.interPoint, -lightRay.getDirection());
-      Ray refl = ray->reflection(invLightRay, intersection_data.normal, intersection_data.interPoint);
+      Ray refl = ray->reflection(invLightRay, normal, intersection_data.interPoint);
       vec3 v = normalize(ray->getPosition()-intersection_data.interPoint);
 
       float spec;
-      if(dot(intersection_data.normal,-lightRay.getDirection()) < 0) {
+      if(dot(normal,-lightRay.getDirection()) < 0) {
         spec = 0.0f;
       } else {
         //spec = glm::max(0.0f,glm::pow( dot(refl.getDirection(),ray->getPosition()-intersection_data.interPoint),0.3f));
@@ -186,7 +136,14 @@ vec4 SimpleTracer::traceHelper(Ray* ray, IAccDataStruct::IntersectionData inters
 
       vec3 white = vec3(1,1,1);
 
-      color  = falloff * (1.0f * spec * white + diff * texture_color);
+      color  = falloff * (1.0f * spec * white + diff);
+      /*if((int)up.z == 1) {
+        //color = vec3(diff,diff,diff);
+        color = diff*;
+        cout << "diff: " << diff << endl;
+      } else {
+        color  = falloff * (diff * vec3(50,0,0));
+      }*/
 
       //color  = falloff * (diff * texture_color);
 
@@ -199,7 +156,7 @@ vec4 SimpleTracer::traceHelper(Ray* ray, IAccDataStruct::IntersectionData inters
       //cout << dot(lightRay.getDirection(), intersection_data.normal) << endl;
 
     }
-    return vec4(color, material->getTransparency());
+    return vec4(color, material->getOpacity());
   }
 }
 

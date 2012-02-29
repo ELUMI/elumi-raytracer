@@ -26,21 +26,11 @@ public:
   struct IntersectionData {
     IntersectionData() {}
     IntersectionData(unsigned int material, vec3 interPoint, vec3 normal, vec2 texcoord) {
-          IntersectionData::material = material;
-          IntersectionData::texture = texture;
-          IntersectionData::interPoint = interPoint;
-          IntersectionData::normal = normal;
-          IntersectionData::texcoord = texcoord;
-          IntersectionData::uvcoords = vector<vec3*>();
-    };
-    IntersectionData(unsigned int material, vec3 interPoint, vec3 normal, vec2 texcoord,
-        vector<vec3*> uvcoords) {
       IntersectionData::material = material;
       IntersectionData::texture = texture;
       IntersectionData::interPoint = interPoint;
       IntersectionData::normal = normal;
       IntersectionData::texcoord = texcoord;
-      IntersectionData::uvcoords = uvcoords;
     };
 
     vector<vec3*> uvcoords;
@@ -48,7 +38,7 @@ public:
     vec3 interPoint;
     vec3 normal;
     vec2 texcoord;
-    const unsigned static int NOT_FOUND = -1;
+    const static int NOT_FOUND = -1;
   };
 
 

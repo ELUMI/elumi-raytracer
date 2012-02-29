@@ -49,17 +49,14 @@ int main(int argc, char* argv[]) {
   int running = GL_TRUE;
 
   // Initial values.
-  settings.width = 180;
-  settings.height = 180;
+  settings.width = 1000;
+  settings.height = 1000;
   settings.background_color[0] = 0;
   settings.background_color[1] = 50.0f / 255.0f;
   settings.background_color[2] = 50.0f / 255.0f;
-  settings.background_color[3] = 1.0f;
+  settings.background_color[3] = 0;
 
   char* inputFileName, *outputFileName;
-
-  settings.width = 400;
-  settings.height = 400;
 
   // Declare the supported options.
   po::options_description desc("Allowed options");
@@ -126,11 +123,6 @@ int main(int argc, char* argv[]) {
     outputFileName = "out.png";
   }
 
-  if (vm.count("height")) {
-    settings.height = vm["height"].as<int>();
-  } else {
-  }
-
   if (vm.count("width")) {
     settings.width = vm["width"].as<int>();
   } else {
@@ -152,8 +144,11 @@ int main(int argc, char* argv[]) {
   }
 
   if (settings.use_opengl) {
+    win_width = settings.width*4;
+    win_height = settings.height*4;
+
     //Open an OpenGl window
-    if (!glfwOpenWindow(settings.width, settings.height, 0, 0, 0, 0, 0, 0,
+    if (!glfwOpenWindow(win_width, win_height, 0, 0, 0, 0, 0, 0,
         GLFW_WINDOW)) {
       glfwTerminate();
       exit(EXIT_FAILURE);
@@ -173,25 +168,22 @@ int main(int argc, char* argv[]) {
   std::vector<raytracer::Triangle*> triangles = importer->getTriangleList();
   std::vector<raytracer::Material*> materials = importer->getMaterialList();
   std::vector<raytracer::Texture*> textures = importer->getTextures();
-  //CHECK_GL_ERROR();
 
   /* RENDERER
    ***************** */
-  //camera.setPosition(vec3(3.512f, 2.5f, 3.5f));
-  camera.setPosition(vec3(-3.0f, 0.0f, 5.0f));
-  //camera.setDirection(normalize(vec3(-1.0f, -0.5f, -1.0f)));
-  camera.setDirection(normalize(vec3(1.0f, -0.0f, -1.0f)));
+  camera.setPosition(vec3(-4.0f, -3.0f, 5.0f));
+  camera.setDirection(normalize(vec3(1.0f, 1.0f, -1.0f)));
   camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
 
-  ILight* lights = new OmniLight(vec3(5, 3, 5));
-  lights->setIntensity(800);
-  lights->setColor(vec3(1,1,1));
-  lights->setDistanceFalloff(LINEAR);
+  OmniLight* lights = new OmniLight(vec3(4, -3, 5));
+  lights->setIntensity(100);
+  lights->setColor(vec3(1,0,0));
+  lights->setDistanceFalloff(QUADRATIC);
 
-  ILight* light2 = new OmniLight(vec3(5, 0, 5));
-  light2->setIntensity(800);
-  light2->setColor(vec3(1,1,1));
-  light2->setDistanceFalloff(QUADRATIC);
+  OmniLight* light2 = new OmniLight(vec3(-10, -10, 3));
+    light2->setIntensity(150);
+    light2->setColor(vec3(1,1,1));
+    light2->setDistanceFalloff(QUADRATIC);
 
   myRenderer = new Renderer(&settings);
   myRenderer->loadCamera(camera);
@@ -201,7 +193,7 @@ int main(int argc, char* argv[]) {
     myRenderer->loadTriangles(triangles);
   }
 
-  //myRenderer->loadLights(lights, 1, false);
+  myRenderer->loadLights(lights, 1, false);
   myRenderer->loadLights(light2, 1, false);
 
   buffer = myRenderer->getColorBuffer();
@@ -247,12 +239,14 @@ int main(int argc, char* argv[]) {
       switch (renderMode) {
       case 1: {
         glUseProgram(shader_program);
-        int loc = glGetUniformLocation(shader_program,
-            "modelViewProjectionMatrix");
+        int loc = glGetUniformLocation(shader_program, "modelViewProjectionMatrix");
         mat4 view = camera.getViewMatrix();
-        glUniformMatrix4fv(loc, 1, GL_FALSE, value_ptr(view));
 
-        myRenderer->getScene().drawVertexArray();
+        myRenderer->getScene().getDrawable()->drawWithView(view, loc);
+
+        lights->drawWithView(view, loc);
+        light2->drawWithView(view, loc);
+
         break;
       }
       case 2:
@@ -417,6 +411,25 @@ void timedCallback() {
     myRenderer->asyncRender();
     renderMode = 2;
   }
+
+  if (glfwGetKey(GLFW_KEY_KP_ADD)) {
+    myRenderer->loadCamera(camera);
+    myRenderer->stopRendering();
+    settings.test += speed/10;
+    myRenderer->asyncRender();
+    renderMode = 2;
+  }
+  if (glfwGetKey(GLFW_KEY_KP_SUBTRACT)) {
+    myRenderer->loadCamera(camera);
+    myRenderer->stopRendering();
+    settings.test -= speed/10;
+    myRenderer->asyncRender();
+    renderMode = 2;
+  }
+
+
+
+  //cout << settings.test << "\n";
 
   //cout << myRenderer->renderComplete() << "\n";
 }

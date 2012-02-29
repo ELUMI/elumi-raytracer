@@ -18,17 +18,17 @@ Material::Material() {
   Material::diffuse = glm::vec3(0.8f,0.8f,0.8f);
   Material::specular = glm::vec3(0.2f,0.2f,0.2f);
   Material::emissive = glm::vec3(1.0f,1.0f,1.0f); //?
-  Material::transparency = 1.0f;
-  Material::shininess = 0;
+  Material::opacity = 1.0f;
+  Material::shininess = 0.0f;
   Material::sharpness = 98; //glossy
-  Material::index_of_refraction = 1;
+  Material::index_of_refraction = 1.0f;
   Material::reflection = 0.0f;
   Material::texture = -1;
   Material::bump_map = -1;
 }
 
 Material::Material(std::string name,glm::vec3 ambient,glm::vec3 diffuse,glm::vec3 specular,
-    glm::vec3 emissive,glm::vec3 transperency,float shininess,float sharpness,
+    glm::vec3 emissive,glm::vec3 _opacity,float shininess,float sharpness,
     float reflection ,float index_of_refraction, int texture, int bump_map){
 
   Material::name = name;
@@ -36,7 +36,7 @@ Material::Material(std::string name,glm::vec3 ambient,glm::vec3 diffuse,glm::vec
   Material::diffuse = diffuse;
   Material::specular = specular;
   Material::emissive = emissive;
-  Material::transparency = (transperency.x + transperency.y + transperency.z) / 3.0f;
+  Material::opacity = (_opacity.x + _opacity.y + _opacity.z) / 3.0f;
   Material::shininess = shininess;
   Material::sharpness = sharpness;
   Material::index_of_refraction = index_of_refraction;
@@ -90,8 +90,8 @@ glm::vec3 Material::getSpecular() const {
   return specular;
 }
 
-float Material::getTransparency() const {
-  return transparency;
+float Material::getOpacity() const {
+  return opacity;
 }
 
 

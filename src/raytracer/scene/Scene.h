@@ -43,13 +43,15 @@ public:
 
 	void drawVertexArray();
 
+	IDraw* getDrawable();
+
 private:
 	Camera m_camera;
 	IAccDataStruct* m_acc_data_struct;
 	std::vector<ILight*> m_lights;
 	std::vector<Material*> m_materials;
   std::vector<Texture*> m_textures;
-	VertexArrayDataStruct* m_vertex_array;
+	IDraw* m_drawable;
 	Settings* m_settings;
 };
 

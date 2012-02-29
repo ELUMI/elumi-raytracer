@@ -145,7 +145,6 @@ int BaseTracer::spawnRays() {
   // Initiate ray array
   rays = new Ray[number_of_rays];
 
-
   Camera camera = scene->getCamera();
   vec3 camera_position = camera.getPosition();
   mat4 trans = camera.getViewportToModelMatrix(width, height);
@@ -153,8 +152,14 @@ int BaseTracer::spawnRays() {
   //We step over all "pixels" from the cameras viewpoint
   for(int y = 0; y < height; y++) {
     for(int x = 0; x < width; x++) {
-      vec4 dir = trans * vec4(x,y,1,1);
-      rays[y*width+x] = Ray(camera_position,vec3(normalize(dir)));
+      vec4 apoint = vec4(0,0,0,1);
+      vec4 aray = vec4(x,y,settings->test,1);
+      apoint = trans * apoint;
+      //aray = transpose(inverse(trans)) * aray;
+      aray = trans * aray;
+      vec3 p = vec3(apoint); ///apoint.w;
+      vec3 r = normalize(vec3(aray));
+      rays[y*width+x] = Ray(camera_position,r);
     }
   }
 

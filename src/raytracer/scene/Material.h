@@ -21,7 +21,7 @@ class Material {
 public:
   Material();
   Material(std::string name,glm::vec3 ambient,glm::vec3 diffuse,glm::vec3 specular,
-      glm::vec3 emissive,glm::vec3 transperancy,float shininess,float sharpness,
+      glm::vec3 emissive,glm::vec3 opacity,float shininess,float sharpness,
       float reflection ,float index_of_refraction, int texture,int bump_map);
   virtual ~Material();
 
@@ -34,9 +34,9 @@ public:
   float getSharpness() const;
   float getShininess() const;
   glm::vec3 getSpecular() const;
-  float getTransparency() const;
   int getTexture();
   int getBumpMap();
+  float getOpacity() const;
 
 
 private:
@@ -47,14 +47,16 @@ private:
   glm::vec3 specular;	//	Specular
   glm::vec3 emissive;	//	Emissive
 
-  float transparency;	//	Transparency (Tr)
-  float shininess;			//	Shininess
-  float index_of_refraction;// --||--
-  float reflection;
-  float sharpness;			// 	Sharpness
+
+  float opacity;	          // (d)
+  float shininess;			    // (Ns)
+  float index_of_refraction;// (Ni)
+  float reflection;         // (r)
+  float sharpness;			    // ???????????????????????????????????????????????
 
   int texture;
   int bump_map;
+
 };
 
 }
