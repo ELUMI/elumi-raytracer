@@ -14,12 +14,10 @@ using namespace glm;
 
 namespace raytracer {
 
-enum TextureType { TEXTURE,HEIGHTMAP,NORMALMAP };
-
-enum MappingType { PLANAR };
-
 class Texture {
 public:
+  enum TextureType { TEXTURE,HEIGHTMAP,NORMALMAP };
+  enum DataType { RGB,RGBA,BGR,BGRA };
   Texture();
   Texture(unsigned int width, unsigned int height, unsigned char* data);
   Texture(unsigned int width, unsigned int height, unsigned char* data,TextureType type);
@@ -29,7 +27,7 @@ public:
 	unsigned int getHeight();
 	vec3 getColorAt(int x, int y);
 	vec3 getColorAt(vec2 coords);
-	vec2 getUVCoordinates(vec3 point, MappingType type);
+	vec2 getUVCoordinates(vec3 point, vec3 e1, vec3 e2);
 
 private:
   int width, height;

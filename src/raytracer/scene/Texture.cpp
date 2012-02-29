@@ -43,25 +43,10 @@ vec3 Texture::getColorAt(int x, int y) {
   return vec3(data[width*y*3+x*3],data[width*y*3+x*3+1],data[width*y*3+x*3+2])/255.0f;
 }
 
-vec2 Texture::getUVCoordinates(vec3 position, MappingType type) {
+vec2 Texture::getUVCoordinates(vec3 position, vec3 e1, vec3 e2) {
   vec2 coords = vec2(0,0);
-  switch (type) {
-    case PLANAR:
-      float x,y;
-      x = abs(position.x);
-      y = abs(position.y);
-      if(x > y) {
-        x = abs(position.y);
-        y = abs(position.x);
-      }
-      if(y > abs(position.z)) {
-        y = abs(position.z);
-      }
-      coords = vec2(x,y);
-      break;
-    default:
-      break;
-  }
+  coords.x = length(dot(position,e1)*e1);
+  coords.y = length(dot(position,e2)*e2);
   return coords;
 }
 

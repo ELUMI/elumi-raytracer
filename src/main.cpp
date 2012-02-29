@@ -49,8 +49,8 @@ int main(int argc, char* argv[]) {
   int running = GL_TRUE;
 
   // Initial values.
-  settings.width = 150;
-  settings.height = 150;
+  settings.width = 400;
+  settings.height = 400;
   settings.background_color[0] = 0;
   settings.background_color[1] = 50.0f / 255.0f;
   settings.background_color[2] = 50.0f / 255.0f;
@@ -61,12 +61,12 @@ int main(int argc, char* argv[]) {
   // Declare the supported options.
   po::options_description desc("Allowed options");
   desc.add_options()
-      ("help,h", "produce help message")
-      ("no_opengl", "Do not use OpenGL")
-      ("input-file,i", po::value<string>(), "Input file")
-      ("output-file,o", po::value<string>(), "Output file")
-      ("settings-file,s", po::value<string>(), "Settings file")
-  ;
+          ("help,h", "produce help message")
+          ("no_opengl", "Do not use OpenGL")
+          ("input-file,i", po::value<string>(), "Input file")
+          ("output-file,o", po::value<string>(), "Output file")
+          ("settings-file,s", po::value<string>(), "Settings file")
+          ;
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -117,7 +117,7 @@ int main(int argc, char* argv[]) {
   }
 
   if (vm.count("output-file")) {
-      outputFileName = const_cast<char*>(vm["output-file"].as<string>().c_str());
+    outputFileName = const_cast<char*>(vm["output-file"].as<string>().c_str());
   } else {
     cout << "Saving file to default destination (out.png)." << endl;
     outputFileName = "out.png";
@@ -165,31 +165,31 @@ int main(int argc, char* argv[]) {
   /* RENDERER
    ***************** */
 
-  camera.set(vec3(), vec3(), vec3(), 0.7845f, settings.width/settings.height);
-  camera.setPosition(vec3(4,0,0));
-  camera.setDirection(normalize(vec3(-1.0f, 0.0f, 0.0f)));
-  camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
+  camera.set(vec3(0,0,0), vec3(0,0,0), vec3(0,0,0), 0.7845f, settings.width/settings.height);
+  camera.setPosition(vec3(0,0,5.5f));
+  camera.setDirection(normalize(vec3(0.0f, -0.2f, -1.0f)));
+  camera.setUpVector(vec3(0.0f, -1.0f, 0.0f));
 
 
-  OmniLight* lights = new OmniLight(vec3(-4, 2, 1));
-  lights->setIntensity(15);
+  OmniLight* lights = new OmniLight(vec3(4, 0, 5));
+  lights->setIntensity(70);
   lights->setColor(vec3(1,1,1));
   lights->setDistanceFalloff(QUADRATIC);
 
   OmniLight* light2 = new OmniLight(vec3(3, 2, -5));
-    light2->setIntensity(15);
-    light2->setColor(vec3(1,1,1));
-    light2->setDistanceFalloff(QUADRATIC);
+  light2->setIntensity(15);
+  light2->setColor(vec3(1,1,1));
+  light2->setDistanceFalloff(QUADRATIC);
 
-    OmniLight* light3 = new OmniLight(vec3(0, -5, 0));
-      light3->setIntensity(15);
-      light3->setColor(vec3(1,1,1));
-      light3->setDistanceFalloff(QUADRATIC);
+  OmniLight* light3 = new OmniLight(vec3(0, -5, 0));
+  light3->setIntensity(50);
+  light3->setColor(vec3(1,1,1));
+  light3->setDistanceFalloff(QUADRATIC);
 
-      OmniLight* light4 = new OmniLight(vec3(0, 5, 0));
-        light4->setIntensity(15);
-        light4->setColor(vec3(1,1,1));
-        light4->setDistanceFalloff(QUADRATIC);
+  OmniLight* light4 = new OmniLight(vec3(0, 5, 0));
+  light4->setIntensity(15);
+  light4->setColor(vec3(1,1,1));
+  light4->setDistanceFalloff(QUADRATIC);
 
   myRenderer = new Renderer(&settings);
   myRenderer->loadCamera(camera);
@@ -200,9 +200,9 @@ int main(int argc, char* argv[]) {
   }
 
   myRenderer->loadLights(lights, 1, false);
-  myRenderer->loadLights(light2, 1, false);
-  myRenderer->loadLights(light3, 1, false);
-  myRenderer->loadLights(light4, 1, false);
+//  myRenderer->loadLights(light2, 1, false);
+//  myRenderer->loadLights(light3, 1, false);
+//  myRenderer->loadLights(light4, 1, false);
 
 
   buffer = myRenderer->getColorBuffer();

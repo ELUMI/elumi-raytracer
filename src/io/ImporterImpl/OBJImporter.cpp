@@ -9,6 +9,7 @@
 
 
 #include <IL/il.h>
+#include <IL/ilu.h>
 
 #include "OBJImporter.h"
 #include "../IImporter.h"
@@ -35,6 +36,7 @@ OBJImporter::~OBJImporter(){
 void OBJImporter::loadFile(char* filename){
 
   ilInit();
+  iluInit();
 
 	obj_loader *obj_data = new obj_loader();
 
@@ -60,10 +62,10 @@ void OBJImporter::loadFile(char* filename){
 		float _reflection = material->reflect;
 		float _index_of_refraction = material->refract_index;
 		float _refraction = material->refract;
-		std::string _texture_map = material->texture_filename;
+		std::string _diffuse_map = material->diffuse_map;
 		std::string _bump_map = material->bump_filename;
 
-    replace(_texture_map.begin(), _texture_map.end(), '\n', '\0');
+    replace(_diffuse_map.begin(), _diffuse_map.end(), '\n', '\0');
     replace(_bump_map.begin(), _bump_map.end(), '\n', '\0');
 
 
@@ -74,8 +76,8 @@ void OBJImporter::loadFile(char* filename){
 		ilBindImage(image);
 
 		//Texture
-    if(!_texture_map.empty()) {
-      ilLoadImage(_texture_map.c_str());
+    if(!_diffuse_map.empty()) {
+      ilLoadImage(_diffuse_map.c_str());
 
       if(ilGetError() == IL_NO_ERROR) {
         cout << "Image loaded" << endl;
@@ -83,6 +85,10 @@ void OBJImporter::loadFile(char* filename){
 
         w = ilGetInteger(IL_IMAGE_WIDTH);
         h = ilGetInteger(IL_IMAGE_HEIGHT);
+
+//        if(iluBuildMipmaps()) {
+//
+//        }
 
         textures.push_back(new Texture(w,h,ilGetData()));
         texture = textures.size()-1;
@@ -106,8 +112,6 @@ void OBJImporter::loadFile(char* filename){
 
         w = ilGetInteger(IL_IMAGE_WIDTH);
         h = ilGetInteger(IL_IMAGE_HEIGHT);
-
-        cout << ilGetInteger(IL_FORMAT_MODE) << endl;
 
         textures.push_back(new Texture(w,h,ilGetData()));
         bump_map = textures.size()-1;

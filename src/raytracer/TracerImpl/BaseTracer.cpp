@@ -65,7 +65,7 @@ void BaseTracer::first_bounce() {
 
       first_intersections[i] = IAccDataStruct::IntersectionData(
           material, vec3(pos)/pos.w,
-          vec3(normals[i]), texcoords[i]);
+          vec3(normals[i]), texcoords[i],vec3(),vec3());
     }
   }
 

@@ -60,13 +60,13 @@ vec4 StandardTracer::shade(Ray incoming_ray,
   vec3 normal = idata.normal;
   vec2 tex_coords = vec2(0,0);
 
-  if(material->getTexture() != -1) {
+  if(material->getDiffuseMap() != -1) {
 
-    Texture* texture = scene->getTextureAt(material->getTexture());
+    Texture* texture = scene->getTextureAt(material->getDiffuseMap());
 
     //Planar mapping
     if(idata.uvcoords.size() ==  0) {
-      tex_coords  = texture->getUVCoordinates(idata.interPoint,PLANAR);
+      tex_coords  = texture->getUVCoordinates(idata.interPoint,idata.e1,idata.e2);
       texture_color = texture->getColorAt(tex_coords);
     } else { //We have texture coordinates
       texture_color = texture->getColorAt(idata.texcoord);
@@ -76,7 +76,8 @@ vec4 StandardTracer::shade(Ray incoming_ray,
   //Bump mapping
   if(material->getBumpMap() != -1) {
     Texture* bumpmap = scene->getTextureAt(material->getBumpMap());
-    bump_normal = bumpmap->getColorAt(tex_coords);
+    vec2 coords  = bumpmap->getUVCoordinates(idata.interPoint,idata.e1,idata.e2);
+    bump_normal = bumpmap->getColorAt(coords);
     bump_normal = normalize(faceforward(bump_normal,incoming_ray.getDirection(),normal));
 
     normal = normalize(normal+bump_normal);
@@ -105,7 +106,7 @@ vec4 StandardTracer::shade(Ray incoming_ray,
           * clamp(glm::dot(-light_ray.getDirection(), normal))
           * light->getColor();
 
-      if(material->getTexture() == -1) {
+      if(material->getDiffuseMap() == -1) {
         diffuse *= material->getDiffuse();
       } else {
         diffuse *= texture_color;

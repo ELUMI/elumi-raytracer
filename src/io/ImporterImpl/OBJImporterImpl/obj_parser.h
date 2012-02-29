@@ -43,7 +43,7 @@ typedef struct obj_vector
 typedef struct obj_material
 {
 	char name[MATERIAL_NAME_SIZE];
-	char texture_filename[OBJ_FILENAME_LENGTH];
+	char diffuse_map[OBJ_FILENAME_LENGTH];
 	char bump_filename[OBJ_FILENAME_LENGTH];
 	double amb[3];
 	double diff[3];
