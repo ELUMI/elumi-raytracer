@@ -194,6 +194,14 @@ void OBJImporter::loadFile(char* filename){
 	delete(obj_data);
   aabb = new AABB(min[0],min[1],min[2],max[0]-min[0],max[1]-min[1],max[2]-min[2]);
 }
+void OBJImporter::testMax(float* max,float value){
+  if(value>*(max))
+    *(max)=value;
+}
+void OBJImporter::testMin(float* min,float value){
+  if(value<*(min))
+      *(min)=value;
+}
 
 std::vector<Triangle*>& OBJImporter::getTriangleList(){
 	return OBJImporter::triangles;

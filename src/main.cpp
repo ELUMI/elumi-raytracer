@@ -11,6 +11,8 @@ namespace po = boost::program_options;
 #include "raytracer/scene/ILight.h"
 #include "raytracer/scene/LightImpl/OmniLight.h"
 #include "raytracer/utilities/glutil.h"
+#include "raytracer/common.hpp"
+#include "raytracer/AccDataStructImpl/LineArrayDataStruct.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -159,6 +161,7 @@ int main(int argc, char* argv[]) {
   importer->loadFile(inputFileName);
   std::vector<raytracer::Triangle*> triangles = importer->getTriangleList();
   std::vector<raytracer::Material*> materials = importer->getMaterialList();
+  AABB* aabb = importer->getAABB();
   std::vector<raytracer::Texture*> textures   = importer->getTextures();
 
 
@@ -195,7 +198,7 @@ int main(int argc, char* argv[]) {
   myRenderer->loadCamera(camera);
   if (!triangles.empty()) {
     myRenderer->getScene().loadMaterials(materials); //load materials BEFORE triangles!
-    myRenderer->loadTriangles(triangles);
+    myRenderer->loadTriangles(triangles,aabb);
     myRenderer->getScene().loadTextures(textures);
   }
 
@@ -232,6 +235,8 @@ int main(int argc, char* argv[]) {
     glfwEnable(GLFW_AUTO_POLL_EVENTS);
     glfwSetWindowSizeCallback(windowSize); // TODO: In settings
 
+    IDraw* data_struct_drawable = new LineArrayDataStruct(aabb->getLines());
+
     while (running) {
       //OpenGl rendering goes here...d
       glViewport(0, 0, win_width, win_height);
@@ -256,8 +261,8 @@ int main(int argc, char* argv[]) {
         light3->drawWithView(view, loc);
         light4->drawWithView(view, loc);
 
-        if()
-
+        if(settings.draw_data_struct)
+          data_struct_drawable->drawWithView(view, loc);
         break;
       }
       case 2:

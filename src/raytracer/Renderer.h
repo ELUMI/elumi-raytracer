@@ -29,7 +29,7 @@ public:
   Scene& getScene();
   ITracer* getTracer();
 
-  void loadTriangles(vector<Triangle*> triangles, bool overwrite=false);
+  void loadTriangles(vector<Triangle*> triangles,AABB* aabb, bool overwrite=false);
   void loadCamera(Camera& camera);
   void loadLights(ILight* lights, int length, bool overwrite=false);
   void loadSettings(Settings& settings);

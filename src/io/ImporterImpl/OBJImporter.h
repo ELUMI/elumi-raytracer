@@ -36,6 +36,9 @@ public:
 		std::vector<ILight*>&  getLightQuadList();
 		std::vector<ILight*>&  getLightDiscList();
 private:
+    void testMin(float* min,float value);
+    void testMax(float* max,float value);
+
 		std::vector<Triangle*> triangles;
 		std::vector<Material*> materials;
 		std::vector<Texture*> textures;

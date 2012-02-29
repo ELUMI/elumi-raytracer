@@ -27,7 +27,7 @@ public:
 	virtual std::vector<Material*>& getMaterialList() = 0;
 	virtual std::vector<Texture*>& getTextures() = 0;
 
-	virtual AABB* getAABB();
+	virtual AABB* getAABB() = 0;
 	virtual Camera* getCamera() = 0;
 
 	virtual std::vector<ILight*>& getLightPointList() = 0;

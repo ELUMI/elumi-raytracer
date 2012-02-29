@@ -18,8 +18,8 @@ Scene::Scene(Settings* settings)
 
 Scene::~Scene() {}
 
-void Scene::loadTriangles(vector<Triangle*> triangles, bool overwrite) {
-  m_acc_data_struct->setData(triangles);
+void Scene::loadTriangles(vector<Triangle*> triangles,AABB* aabb, bool overwrite) {
+  m_acc_data_struct->setData(triangles,aabb);
   if(m_settings->use_opengl){
     m_drawable = new VertexArrayDataStruct(this, triangles);
   }
