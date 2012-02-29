@@ -15,6 +15,7 @@
 #include "../raytracer/scene/Material.h"
 #include "../raytracer/scene/Texture.h"
 #include "../raytracer/scene/ILight.h"
+#include "../raytracer/common.hpp"
 
 namespace raytracer {
 
@@ -26,6 +27,7 @@ public:
 	virtual std::vector<Material*>& getMaterialList() = 0;
 	virtual std::vector<Texture*>& getTextures() = 0;
 
+	virtual AABB* getAABB();
 	virtual Camera* getCamera() = 0;
 
 	virtual std::vector<ILight*>& getLightPointList() = 0;

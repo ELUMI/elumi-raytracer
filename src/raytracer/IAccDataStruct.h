@@ -10,6 +10,7 @@
 
 #include <stdexcept>
 
+#include "common.hpp"
 #include "utilities/Triangle.h"
 #include "utilities/Ray.h"
 using std::runtime_error;

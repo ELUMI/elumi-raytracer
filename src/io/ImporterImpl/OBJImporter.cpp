@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <algorithm>
 #include "OBJImporterImpl/obj_loader.h"
+#include "../../raytracer/common.hpp"
 
 
 #include <IL/il.h>
@@ -177,6 +178,7 @@ void OBJImporter::loadFile(char* filename){
 	}
 
 	delete(obj_data);
+  aabb = new AABB(min[0],min[1],min[2],max[0]-min[0],max[1]-min[1],max[2]-min[2]);
 }
 
 std::vector<Triangle*>& OBJImporter::getTriangleList(){
@@ -187,6 +189,15 @@ std::vector<Material*>& OBJImporter::getMaterialList(){
 }
 std::vector<Texture*>& OBJImporter::getTextures() {
   return textures;
+}
+
+AABB* OBJImporter::getAABB(){
+  if(aabb!=NULL){
+    return aabb;
+  }
+  else{
+    return NULL;
+  }
 }
 
 Camera* OBJImporter::getCamera(){
