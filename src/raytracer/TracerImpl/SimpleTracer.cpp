@@ -115,19 +115,17 @@ vec4 SimpleTracer::traceHelper(Ray* ray, IAccDataStruct::IntersectionData inters
 
     } else {
 
-      vec3 normal = glm::normalize(intersection_data.normal);
-
       //Diffuse
-      float diff = abs(dot(lightRay.getDirection(), normal));
+      float diff = abs(dot(lightRay.getDirection(), intersection_data.normal));
       float falloff = light->getIntensity(length(light->getPosition()-intersection_data.interPoint));
 
       //Specular
       Ray invLightRay = Ray(intersection_data.interPoint, -lightRay.getDirection());
-      Ray refl = ray->reflection(invLightRay, normal, intersection_data.interPoint);
+      Ray refl = ray->reflection(invLightRay, intersection_data.normal, intersection_data.interPoint);
       vec3 v = normalize(ray->getPosition()-intersection_data.interPoint);
 
       float spec;
-      if(dot(normal,-lightRay.getDirection()) < 0) {
+      if(dot(intersection_data.normal,-lightRay.getDirection()) < 0) {
         spec = 0.0f;
       } else {
         //spec = glm::max(0.0f,glm::pow( dot(refl.getDirection(),ray->getPosition()-intersection_data.interPoint),0.3f));
@@ -136,19 +134,7 @@ vec4 SimpleTracer::traceHelper(Ray* ray, IAccDataStruct::IntersectionData inters
 
       vec3 white = vec3(1,1,1);
 
-      color  = falloff * (1.0f * spec * white + diff);
-      /*if((int)up.z == 1) {
-        //color = vec3(diff,diff,diff);
-        color = diff*;
-        cout << "diff: " << diff << endl;
-      } else {
-        color  = falloff * (diff * vec3(50,0,0));
-      }*/
-
-      //color  = falloff * (diff * texture_color);
-
-      //color  = (texture_color);
-
+      color  = falloff * (1.0f * spec * white + diff * material->getDiffuse());
       //color = falloff * diff * intersection_data.triangle->getMaterial()->getColor();
       // diff * intersection_data.triangle->getMaterial()->getColor()
 
