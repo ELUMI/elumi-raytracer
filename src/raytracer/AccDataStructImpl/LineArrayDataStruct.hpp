@@ -1,5 +1,5 @@
 
-#include "../IGLDataStruct.hpp"
+#include "../IDraw.h"
 #include "../common.hpp"
 
 namespace raytracer {

@@ -25,7 +25,7 @@ public:
   virtual ~KDTreeDataStruct();
 
   IAccDataStruct::IntersectionData* findClosestIntersection(Ray ray);
-  void setData(vector<Triangle>* triangles,AABB* aabb);
+  void setData(std::vector<Triangle*> triangles,AABB* aabb);
   void build();
 
 

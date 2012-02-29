@@ -41,7 +41,7 @@ IAccDataStruct::IntersectionData
     ArrayDataStruct* triangle_test =new ArrayDataStruct();
     vector<Triangle>* _temp = new vector<Triangle>;
     _temp->assign(node->getSize(),*node->getTriangles());
-    triangle_test->setData(_temp,aabb);
+    //triangle_test->setData(_temp,aabb);
     IntersectionData* temp = triangle_test->findClosestIntersection(*ray);
     delete triangle_test;
     return temp;
@@ -189,11 +189,12 @@ KDTreeDataStruct::KDNode* KDTreeDataStruct::constructTree(Triangle* triangles,in
     return node;
   }
 }
-void KDTreeDataStruct::setData(vector<Triangle>* triangles,AABB* aabb){
+void KDTreeDataStruct::setData(std::vector<Triangle*> triangles,AABB* aabb){
 //  delete(KDTreeDataStruct::triangles);
-  KDTreeDataStruct::triangles = new Triangle[triangles->size()];
-  copy(triangles->data(),triangles->data()+triangles->size(),KDTreeDataStruct::triangles);
-  KDTreeDataStruct::triangle_count = triangles->size();
+  //TODO:FIXME
+  KDTreeDataStruct::triangles = new Triangle[triangles.size()];
+  //copy(triangles->data(),triangles->data()+triangles->size(),KDTreeDataStruct::triangles);
+  KDTreeDataStruct::triangle_count = triangles.size();
   KDTreeDataStruct::aabb=aabb;
 }
 }
