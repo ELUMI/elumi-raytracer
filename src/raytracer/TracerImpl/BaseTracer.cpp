@@ -90,10 +90,10 @@ void BaseTracer::traceImage(float* color_buffer) {
       if(!abort)
       {
         vec4 c = trace(rays[i], first_intersections[i]);
-        buffer[i*4] = glm::min(1.0f, c.r);
-        buffer[i*4 +1] = glm::min(1.0f, c.g);
-        buffer[i*4 +2] = glm::min(1.0f, c.b);
-        buffer[i*4 +3] = glm::min(1.0f, c.a);
+        buffer[i*4] = c.r;
+        buffer[i*4 +1] = c.g;
+        buffer[i*4 +2] = c.b;
+        buffer[i*4 +3] = c.a;
 
         #pragma omp atomic
         --pixelsLeft;
@@ -110,10 +110,10 @@ void BaseTracer::traceImage(float* color_buffer) {
         IAccDataStruct::IntersectionData intersection_data =
             scene->getAccDataStruct()->findClosestIntersection(rays[i]);
         vec4 c = trace(rays[i], intersection_data);
-        buffer[i*4] = glm::min(1.0f, c.r);
-        buffer[i*4 +1] = glm::min(1.0f, c.g);
-        buffer[i*4 +2] = glm::min(1.0f, c.b);
-        buffer[i*4 +3] = glm::min(1.0f, c.a);
+        buffer[i*4] = c.r;
+        buffer[i*4 +1] = c.g;
+        buffer[i*4 +2] = c.b;
+        buffer[i*4 +3] = c.a;
 
         #pragma omp atomic
         --pixelsLeft;

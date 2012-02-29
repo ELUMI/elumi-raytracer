@@ -36,12 +36,14 @@ void OmniLight::setIntensity(float intensity) {
 float OmniLight::getIntensity(float distance) {
   switch (m_falloff_type) {
     case NONE:
-      return 1.0f;
+      return m_intensity;
       break;
     case LINEAR:
-      return min((1/distance)*m_intensity,1.0f);
+      //return min((1/distance)*m_intensity,1.0f);
+      return (1.0f/distance) * m_intensity;
     case QUADRATIC:
-      return min((1/(distance*distance))*m_intensity,1.0f);
+      // return min((1/(distance*distance))*m_intensity,1.0f);
+      return (1.0f/(distance*distance)) * m_intensity;
     default:
       return 1.0f;
       break;
