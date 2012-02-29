@@ -4,6 +4,7 @@
 #include <string.h>
 #include <iostream>
 #include <stdlib.h>
+#include <algorithm>
 #include "OBJImporterImpl/obj_loader.h"
 
 
@@ -62,6 +63,10 @@ void OBJImporter::loadFile(char* filename){
 		std::string _texture_map = material->texture_filename;
 		std::string _bump_map = material->bump_filename;
 
+    replace(_texture_map.begin(), _texture_map.end(), '\n', '\0');
+    replace(_bump_map.begin(), _bump_map.end(), '\n', '\0');
+
+
 		ILuint image;
 		int texture = -1, bump_map = -1;
 
@@ -69,9 +74,8 @@ void OBJImporter::loadFile(char* filename){
 		ilBindImage(image);
 
 		//Texture
-    if(_texture_map != "") {
-
-      ilLoadImage("face.jpg");
+    if(!_texture_map.empty()) {
+      ilLoadImage(_texture_map.c_str());
 
       if(ilGetError() == IL_NO_ERROR) {
         cout << "Image loaded" << endl;
@@ -90,11 +94,11 @@ void OBJImporter::loadFile(char* filename){
     }
 
     //Bump map
-    if(_bump_map != "") {
+    if(!_bump_map.empty()) {
       image = ilGenImage();
       ilBindImage(image);
 
-      ilLoadImage("face_norm.jpg");
+      ilLoadImage(_bump_map.c_str());
 
       if(ilGetError() == IL_NO_ERROR) {
         cout << "Image loaded" << endl;
