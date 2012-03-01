@@ -25,7 +25,7 @@ public:
   virtual ~KDTreeDataStruct();
 
   IAccDataStruct::IntersectionData findClosestIntersection(Ray ray);
-  void setData(std::vector<Triangle*> triangles,AABB* aabb);
+  void setData(Triangle** triangles,size_t size,AABB* aabb);
   void build();
 
 
@@ -53,7 +53,8 @@ private:
     float split;
     bool leaf;
   };
-  KDNode* constructTree(Triangle** triangles,int size,int depth);
+  KDNode* constructTree(vector<Triangle*> triangles,int size,int depth);
+  void constructTreeStack();
   IAccDataStruct::IntersectionData findClosestIntersectionR(KDNode* node,Ray* ray,float min,float max,int depth);
   void quickSort(Triangle** triangles,int top,int bottom,int axis);
   int qsPartition(Triangle** triangles,int top,int bottom,int axis);
@@ -62,6 +63,7 @@ private:
   KDNode* root;
   AABB* aabb;
   Triangle** triangles;
+  vector<Triangle*> triangles_vec;
   size_t triangle_count;
   float lookUpTable[3];
 

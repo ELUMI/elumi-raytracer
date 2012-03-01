@@ -51,8 +51,8 @@ int main(int argc, char* argv[]) {
   int running = GL_TRUE;
 
   // Initial values.
-  settings.width = 150;
-  settings.height = 150;
+//  settings.width = 150;
+//  settings.height = 150;
   settings.background_color[0] = 0;
   settings.background_color[1] = 50.0f / 255.0f;
   settings.background_color[2] = 50.0f / 255.0f;

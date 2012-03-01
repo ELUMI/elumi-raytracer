@@ -6,6 +6,7 @@
  */
 
 #include "BaseTracer.h"
+#include <omp.h>
 #include <glm/gtc/matrix_transform.hpp> //translate, rotate, scale, perspective
 
 namespace raytracer {
@@ -83,10 +84,10 @@ void BaseTracer::traceImage(float* color_buffer) {
 
   if(settings->use_first_bounce) {
     // For every pixel
-    #pragma omp parallel for
+//    #pragma omp parallel for
     for (size_t i=0; i<number_of_rays; ++i) {
       //#pragma omp task
-      #pragma omp flush (abort)
+//      #pragma omp flush (abort)
       if(!abort)
       {
         vec4 c = trace(rays[i], first_intersections[i]);
@@ -101,26 +102,28 @@ void BaseTracer::traceImage(float* color_buffer) {
     }
   } else {
     // For every pixel
-    #pragma omp parallel for
-    for (size_t i=0; i<number_of_rays; ++i) {
-      //#pragma omp task
-      #pragma omp flush (abort)
-      if(!abort)
-      {
-        IAccDataStruct::IntersectionData intersection_data =
-            scene->getAccDataStruct()->findClosestIntersection(rays[i]);
-        vec4 c = trace(rays[i], intersection_data);
-        buffer[i*4] = glm::min(1.0f, c.r);
-        buffer[i*4 +1] = glm::min(1.0f, c.g);
-        buffer[i*4 +2] = glm::min(1.0f, c.b);
-        buffer[i*4 +3] = glm::min(1.0f, c.a);
+//      #pragma omp parallel num_threads(omp_get_num_procs()+1)
+//      {
+//      #pragma omp for
+      for (size_t i=0; i<number_of_rays; ++i) {
+        //#pragma omp task
+//        #pragma omp flush (abort)
+        if(!abort)
+        {
+          IAccDataStruct::IntersectionData intersection_data =
+              scene->getAccDataStruct()->findClosestIntersection(rays[i]);
+          vec4 c = trace(rays[i], intersection_data);
+          buffer[i*4] = glm::min(1.0f, c.r);
+          buffer[i*4 +1] = glm::min(1.0f, c.g);
+          buffer[i*4 +2] = glm::min(1.0f, c.b);
+          buffer[i*4 +3] = glm::min(1.0f, c.a);
 
-        #pragma omp atomic
-        --pixelsLeft;
+          #pragma omp atomic
+          --pixelsLeft;
+        }
       }
-    }
+//    }
   }
-
 }
 
 void BaseTracer::stopTracing() {

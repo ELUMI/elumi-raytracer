@@ -26,6 +26,7 @@ public:
 
 	void set(vector<vec3*> _vertices,vector<vec3*> _normals,vector<vec3*> texCoords,
 	    unsigned int material);
+  void set(Triangle* copy);
 	const vector<vec3*>& getVertices();
 	const vector<vec3*>& getNormals();
 	const vector<vec3*>& getTextures();
@@ -38,7 +39,8 @@ private:
 	vector<vec3*> vertices;
 	vector<vec3*> normals;
 	vector<vec3*> texCoords;
-	float* min,*max;
+	float* min;
+	float* max;
 	unsigned int material;
 	unsigned int texture;
 };

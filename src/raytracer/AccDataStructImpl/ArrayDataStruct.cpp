@@ -16,11 +16,11 @@ namespace raytracer {
 IAccDataStruct::~IAccDataStruct(){}
 
 ArrayDataStruct::ArrayDataStruct() {
-  triangles.reserve(10000);
+//  triangles.reserve(10000);
 }
 
 ArrayDataStruct::ArrayDataStruct(int size) {
-  triangles.reserve(size);
+//  triangles.reserve(size);
 }
 ArrayDataStruct::~ArrayDataStruct() {
 
@@ -37,8 +37,8 @@ ArrayDataStruct::findClosestIntersection(Ray ray) {
 
   float closest_t = numeric_limits<float>::infinity( );
 
-  for(int i = 0; i < triangles.size(); i++) {
-    Triangle* cur_triangle = triangles.at(i);
+  for(int i = 0; i < size; i++) {
+    Triangle* cur_triangle = triangles[i];
     const vector<vec3*> vertices = cur_triangle->getVertices();
     vec3 v0 = *(vertices[0]);
     vec3 v1 = *(vertices[1]);
@@ -95,8 +95,13 @@ ArrayDataStruct::findClosestIntersection(Ray ray) {
   return IntersectionData(closest_tri->getMaterial(), closest_pos, glm::normalize(inter_normal), vec2(inter_tex));
 }
 
-void ArrayDataStruct::setData(std::vector<Triangle*> new_triangles,AABB* aabb) {
-  ArrayDataStruct::triangles = new_triangles;
+void ArrayDataStruct::setData(Triangle** triangles,size_t size,AABB* aabb) {
+  ArrayDataStruct::triangles = new Triangle*[size];
+  for(size_t t=0;t<size;t++){
+    ArrayDataStruct::triangles[t] = new Triangle();
+    ArrayDataStruct::triangles[t]->set(triangles[t]);
+  }
+  ArrayDataStruct::size = size;
   ArrayDataStruct::aabb = aabb;
 }
 
