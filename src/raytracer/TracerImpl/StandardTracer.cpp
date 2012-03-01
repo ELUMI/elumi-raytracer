@@ -85,13 +85,19 @@ vec4 StandardTracer::shade(Ray incoming_ray,
   // For each light source in the scene
   for(unsigned int i=0; i<lights->size(); ++i) {
     ILight* light  = lights->at(i);
+
     Ray light_ray = Ray::generateRay(light->getPosition(), idata.interPoint);
     IAccDataStruct::IntersectionData light_idata = datastruct->findClosestIntersection(light_ray);
 
     float distance_to_light = length(idata.interPoint - light->getPosition()); // 1
     float distance_between_light_and_first_hit = length(light_idata.interPoint - light->getPosition()); // 2
 
-    if (//light_idata.material != IAccDataStruct::IntersectionData::NOT_FOUND
+    if (light->getFalloffType() == ILight::NONE) {
+
+      // add ambient component
+      ambient += light->getColor();
+
+    } else if (//light_idata.material != IAccDataStruct::IntersectionData::NOT_FOUND
          (distance_between_light_and_first_hit + 0.0001f) < distance_to_light) {
       // IN SHADOW!
       //diffuse = vec3(1,0,0);
@@ -119,9 +125,6 @@ vec4 StandardTracer::shade(Ray incoming_ray,
       * light->getColor();
     }
 
-
-    // For each light, add ambient component
-    ambient += light->getColor();
   }
 
   // Multiply the accumelated ambient light colors with ambient material color
@@ -149,7 +152,7 @@ vec4 StandardTracer::shade(Ray incoming_ray,
     if(material->getOpacity() < 1.0f) {
 
       float eta = material->getIndexOfRefraction();
-      if(refraction_sign > 0.0f)
+      if(refraction_sign < 0.0f)
         eta = 1/eta;
 
       vec3 refr_normal = -normal*refraction_sign;

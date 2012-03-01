@@ -165,31 +165,28 @@ int main(int argc, char* argv[]) {
   /* RENDERER
    ***************** */
 
-  camera.set(vec3(), vec3(), vec3(), 0.7845f, settings.width/settings.height);
-  camera.setPosition(vec3(4,0,0));
-  camera.setDirection(normalize(vec3(-1.0f, 0.0f, 0.0f)));
-  camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
+  //camera.set(vec3(), vec3(), vec3(), 0.7845f, settings.width/settings.height);
+  camera.set(vec3(0,1,-8), vec3(0,0,1), vec3(0,1,0), 0.7845f, settings.width/settings.height);
+  //camera.setPosition(vec3(4,0,0));
+  //camera.setDirection(normalize(vec3(-1.0f, 0.0f, 0.0f)));
+  //camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
 
 
-  OmniLight* lights = new OmniLight(vec3(-4, 2, 1));
-  lights->setIntensity(15);
+  OmniLight* lights = new OmniLight(vec3(0, 5, 5));
+  lights->setIntensity(10);
   lights->setColor(vec3(1,1,1));
-  lights->setDistanceFalloff(QUADRATIC);
+  lights->setDistanceFalloff(ILight::LINEAR);
 
-  OmniLight* light2 = new OmniLight(vec3(3, 2, -5));
-    light2->setIntensity(15);
+  OmniLight* light2 = new OmniLight(vec3(0, 2, -3));
+    light2->setIntensity(10);
     light2->setColor(vec3(1,1,1));
-    light2->setDistanceFalloff(QUADRATIC);
+    light2->setDistanceFalloff(ILight::QUADRATIC);
 
-    OmniLight* light3 = new OmniLight(vec3(0, -5, 0));
-      light3->setIntensity(15);
-      light3->setColor(vec3(1,1,1));
-      light3->setDistanceFalloff(QUADRATIC);
+    OmniLight* light3 = new OmniLight(vec3(0, 6, 0));
+      light2->setIntensity(1);
+      light3->setColor(vec3(1.0f,1.0f,1.0f));
+      light3->setDistanceFalloff(ILight::NONE);
 
-      OmniLight* light4 = new OmniLight(vec3(0, 5, 0));
-        light4->setIntensity(15);
-        light4->setColor(vec3(1,1,1));
-        light4->setDistanceFalloff(QUADRATIC);
 
   myRenderer = new Renderer(&settings);
   myRenderer->loadCamera(camera);
@@ -199,10 +196,10 @@ int main(int argc, char* argv[]) {
     myRenderer->getScene().loadTextures(textures);
   }
 
+
   myRenderer->loadLights(lights, 1, false);
   myRenderer->loadLights(light2, 1, false);
-  myRenderer->loadLights(light3, 1, false);
-  myRenderer->loadLights(light4, 1, false);
+  //myRenderer->loadLights(light3, 1, false);
 
 
   buffer = myRenderer->getColorBuffer();
@@ -253,8 +250,7 @@ int main(int argc, char* argv[]) {
 
         lights->drawWithView(view, loc);
         light2->drawWithView(view, loc);
-        light3->drawWithView(view, loc);
-        light4->drawWithView(view, loc);
+        //light3->drawWithView(view, loc);
 
         break;
       }
@@ -310,7 +306,7 @@ void initGL() {
   //************************************
   // The loadShaderProgram and linkShaderProgam functions are defined in glutil.cpp and
   // do exactly what we did in lab1 but are hidden for convenience
-  shader_program = loadShaderProgram("simple.vert", "simple.frag");
+  shader_program = loadShaderProgram("data/gl_shaders/simple.vert", "data/gl_shaders/simple.frag");
   glBindAttribLocation(shader_program, 0, "position");
   glBindAttribLocation(shader_program, 1, "color");
   glBindAttribLocation(shader_program, 2, "normal");

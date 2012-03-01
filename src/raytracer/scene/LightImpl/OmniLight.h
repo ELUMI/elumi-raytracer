@@ -25,7 +25,7 @@ public:
   vec3 getPosition();
   float getIntensity(float distance);
   vec3 getColor() const;
-
+  ILight::FalloffType getFalloffType() const;
 
   void setDistanceFalloff(FalloffType falloff_type);
   void setIntensity(float intesity);

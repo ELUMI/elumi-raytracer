@@ -48,6 +48,10 @@ float OmniLight::getIntensity(float distance) {
   }
 }
 
+ILight::FalloffType OmniLight::getFalloffType() const {
+  return m_falloff_type;
+}
+
 vec3 OmniLight::getColor() const {
   return color;
 }

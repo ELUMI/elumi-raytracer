@@ -17,14 +17,16 @@ using namespace glm;
 
 namespace raytracer {
 
-enum FalloffType { NONE, LINEAR, QUADRATIC, FACTOR };
-
 class ILight {
 public:
+
+  enum FalloffType { NONE, LINEAR, QUADRATIC, FACTOR };
+
   virtual ~ILight() {};
   virtual vec3 getPosition() = 0;
   virtual float getIntensity(float distance) = 0;
   virtual vec3 getColor() const = 0;
+  virtual FalloffType getFalloffType() const = 0;
 
   virtual void setIntensity(float intensity) = 0;
   virtual void setColor(vec3 color) = 0;
