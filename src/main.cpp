@@ -166,7 +166,8 @@ int main(int argc, char* argv[]) {
    ***************** */
 
   //camera.set(vec3(), vec3(), vec3(), 0.7845f, settings.width/settings.height);
-  camera.set(vec3(0,1,-8), vec3(0,0,1), vec3(0,1,0), 0.7845f, settings.width/settings.height);
+  //COOL camera.set(vec3(0,1,-8), vec3(0,0,1), vec3(0,1,0), 0.7845f, settings.width/settings.height);
+  camera.set(vec3(3.23387,0.61721,-0.0291648), vec3(-0.830073,0.492424,0.261721), vec3(0,1,0), 0.7845f, settings.width/settings.height);
   //camera.setPosition(vec3(4,0,0));
   //camera.setDirection(normalize(vec3(-1.0f, 0.0f, 0.0f)));
   //camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
@@ -199,7 +200,7 @@ int main(int argc, char* argv[]) {
 
   myRenderer->loadLights(lights, 1, false);
   myRenderer->loadLights(light2, 1, false);
-  //myRenderer->loadLights(light3, 1, false);
+  myRenderer->loadLights(light3, 1, false);
 
 
   buffer = myRenderer->getColorBuffer();
@@ -250,7 +251,7 @@ int main(int argc, char* argv[]) {
 
         lights->drawWithView(view, loc);
         light2->drawWithView(view, loc);
-        //light3->drawWithView(view, loc);
+        light3->drawWithView(view, loc);
 
         break;
       }

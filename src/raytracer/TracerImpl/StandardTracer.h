@@ -23,8 +23,8 @@ private:
   vec4 trace(Ray ray, IAccDataStruct::IntersectionData idata);
   vec4 tracePrim(Ray ray, const unsigned int depth);
   vec4 shade(Ray ray, IAccDataStruct::IntersectionData idata, const unsigned int depth);
-
-  unsigned int max_recursion_depth;
+  //
+   int max_recursion_depth;
 };
 
 }

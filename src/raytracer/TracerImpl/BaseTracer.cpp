@@ -79,6 +79,17 @@ void BaseTracer::traceImage(float* color_buffer) {
   pixelsLeft = settings->width*settings->height;
   abort = false;
 
+  cout << "Camera: Pos=" << scene->getCamera().getPosition().x << ","
+                         << scene->getCamera().getPosition().y << ","
+                         << scene->getCamera().getPosition().z << ","
+       << "; Dir=" << scene->getCamera().getDirection().x << ","
+                   << scene->getCamera().getDirection().y << ","
+                   << scene->getCamera().getDirection().z << ","
+       << "; Up=" << scene->getCamera().getUpVector().x << ","
+                  << scene->getCamera().getUpVector().y << ","
+                  << scene->getCamera().getUpVector().z << ","
+       << "\n";
+
   int number_of_rays = spawnRays();
 
   if(settings->use_first_bounce) {

@@ -6,6 +6,8 @@
  */
 
 
+
+
 #include "StandardTracer.h"
 
 namespace raytracer {
@@ -18,6 +20,7 @@ StandardTracer::StandardTracer(Scene* scene, Settings* settings)
 StandardTracer::~StandardTracer() {
 
 }
+
 
 void StandardTracer::traceImage(float* color_buffer) {
   max_recursion_depth = 3;
@@ -73,7 +76,8 @@ vec4 StandardTracer::shade(Ray incoming_ray,
       tex_coords = idata.texcoord;
     }
   }
-  //Bump mapping
+
+  /**** Bump mapping ****/
   if(material->getBumpMap() != -1) {
     Texture* bumpmap = scene->getTextureAt(material->getBumpMap());
     bump_normal = bumpmap->getColorAt(tex_coords);
@@ -82,49 +86,54 @@ vec4 StandardTracer::shade(Ray incoming_ray,
     normal = normalize(normal+bump_normal);
   }
 
-  // For each light source in the scene
+  /**** For each light source in the scene ****/
   for(unsigned int i=0; i<lights->size(); ++i) {
     ILight* light  = lights->at(i);
 
-    Ray light_ray = Ray::generateRay(light->getPosition(), idata.interPoint);
-    IAccDataStruct::IntersectionData light_idata = datastruct->findClosestIntersection(light_ray);
-
-    float distance_to_light = length(idata.interPoint - light->getPosition()); // 1
-    float distance_between_light_and_first_hit = length(light_idata.interPoint - light->getPosition()); // 2
-
+    /**** ABMIENT LIGHT, skip light_ray calculations ****/
     if (light->getFalloffType() == ILight::NONE) {
 
-      // add ambient component
       ambient += light->getColor();
 
-    } else if (//light_idata.material != IAccDataStruct::IntersectionData::NOT_FOUND
-         (distance_between_light_and_first_hit + 0.0001f) < distance_to_light) {
-      // IN SHADOW!
-      //diffuse = vec3(1,0,0);
     } else {
+      /**** NON AMBIENT LIGHT, CALCULATE SHADOW RAYS ***/
 
-      // Falloff intensity
-      float intensity = light->getIntensity(distance_to_light);
+      Ray light_ray = Ray::generateRay(light->getPosition(), idata.interPoint);
+      IAccDataStruct::IntersectionData light_idata = datastruct->findClosestIntersection(light_ray);
 
-      //Diffuse
-      diffuse += intensity
-          * clamp(glm::dot(-light_ray.getDirection(), normal))
-          * light->getColor();
+      float distance_to_light = length(idata.interPoint - light->getPosition()); // 1
+      float distance_between_light_and_first_hit = length(light_idata.interPoint - light->getPosition()); // 2
 
-      if(material->getTexture() == -1) {
-        diffuse *= material->getDiffuse();
+      /**** IF IN SHADOW ****/
+      if (light_idata.material != IAccDataStruct::IntersectionData::NOT_FOUND
+          && (distance_between_light_and_first_hit + 0.0001f) < distance_to_light) {
+
+        //diffuse = vec3(1,0,0);
+
       } else {
-        diffuse *= texture_color;
+
+        // Falloff intensity
+        float intensity = light->getIntensity(distance_to_light);
+
+        //Diffuse
+        diffuse += intensity
+            * clamp(glm::dot(-light_ray.getDirection(), normal))
+        * light->getColor();
+
+        if(material->getTexture() == -1) {
+          diffuse *= material->getDiffuse();
+        } else {
+          diffuse *= texture_color;
+        }
+
+        //Specular
+        vec3 h = normalize(-incoming_ray.getDirection() - light_ray.getDirection());
+        specular += intensity
+            * glm::pow( clamp( glm::dot(normal, h) ), material->getShininess() )
+        * material->getSpecular()
+        * light->getColor();
       }
-
-      //Specular
-      vec3 h = normalize(-incoming_ray.getDirection() - light_ray.getDirection());
-      specular += intensity
-          * glm::pow( clamp( glm::dot(normal, h) ), material->getShininess() )
-      * material->getSpecular()
-      * light->getColor();
     }
-
   }
 
   // Multiply the accumelated ambient light colors with ambient material color
@@ -132,31 +141,30 @@ vec4 StandardTracer::shade(Ray incoming_ray,
 
   if (depth < max_recursion_depth) {
 
-	// är -1 på väg in
-	// är 1 på väg ut
+    // REFRACTION_SIGN:
+    // Ray enters mesh => -1
+    // Ray leaves mesh => 1
     float refraction_sign = glm::sign(glm::dot(normal, incoming_ray.getDirection()));
-   
-    // TODO 
-    // reflective bounce innuti också, multiplicera normal med refr_sign
+    vec3 refr_normal = -normal * refraction_sign;
 
+    /**** REFLECTION RAY ****/
+    if(material->getReflection() > 0.0f) {
 
-    // REFLECTION RAY
-    if(material->getReflection() > 0.0f /*&& refraction_sign<0.0f*/) {
-      vec3 refl_normal = -normal*refraction_sign;
-      Ray refl_ray = Ray(idata.interPoint, glm::reflect(incoming_ray.getDirection(), refl_normal ));
-      refl_ray = Ray( refl_ray.getPosition() + refl_normal*0.001f , refl_ray.getDirection() );
-      refl_color = tracePrim(refl_ray, depth+1) * material->getReflection() ;//* vec4((vec3(1,1,1)-material->getDiffuse()),1);
+      vec3 offset = refr_normal * 0.001f;
+      vec3 refl_dir = glm::reflect(incoming_ray.getDirection(), refr_normal);
+      Ray refl_ray = Ray(idata.interPoint + offset, glm::normalize(refl_dir));
+      refl_color = tracePrim(refl_ray, depth+1) * material->getReflection();
+
     }
 
-    // REFRACTION RAY
+    /**** REFRACTION RAY ****/
     if(material->getOpacity() < 1.0f) {
 
       float eta = material->getIndexOfRefraction();
-      if(refraction_sign < 0.0f)
+      if(refraction_sign == -1.0f)
         eta = 1/eta;
 
-      vec3 refr_normal = -normal*refraction_sign;
-      vec3 offset = glm::normalize(normal) * refraction_sign * 0.001f;
+      vec3 offset = -refr_normal * 0.001f;
       vec3 refr_dir = glm::refract(incoming_ray.getDirection(), refr_normal, eta);
       Ray refr_ray = Ray(idata.interPoint + offset, glm::normalize(refr_dir));
       refr_color = tracePrim(refr_ray, depth+1) * (1-material->getOpacity());
