@@ -39,8 +39,14 @@ IAccDataStruct::IntersectionData
 KDTreeDataStruct::findClosestIntersectionR(KDNode* node,Ray* ray,float min,float max, int depth){
   if(node->isLeaf()){
     ArrayDataStruct* triangle_test =new ArrayDataStruct();
-    triangle_test->setData(node->getTriangles(),node->getSize(),aabb);
+    Triangle** temp_tri = new Triangle*[node->getSize()];
+    for(size_t i=0;i<node->getSize();i++){
+      temp_tri[i] = new Triangle();
+      temp_tri[i] = KDTreeDataStruct::triangles[(depth-1)%3][i];
+    }
+    triangle_test->setData(temp_tri,node->getSize(),aabb);
     IntersectionData temp = triangle_test->findClosestIntersection(*ray);
+    delete[] temp_tri;
     delete triangle_test;
     return temp;
   }
@@ -136,73 +142,81 @@ int KDTreeDataStruct::qsPartition(Triangle** triangles,int top,int bottom,int ax
   return j;
 }
 
-
+/**
+ * Doing a stack implementation instead of a recursive approach because the call_stack may end up loosing some data
+ * or giving corrupt data. This way we will never leave the method and therefor don't risk damaging the call_stack
+ */
 void KDTreeDataStruct::constructTreeStack(){
   int depth = 0;
-  stack< Triangle** > triangle_stack;
-  stack<int> count_stack;
+
+  stack<int> start_node;
+  stack<int> end_node;
+
+  start_node.push(0);
+  end_node.push(triangle_count);
+
   stack< KDNode* > node_stack;
-  triangle_stack.push(triangles);
-  count_stack.push(triangle_count);
   root = new KDNode();
   node_stack.push(root);
 
   while(!node_stack.empty()){
-    Triangle** triangles = triangle_stack.top();
-    triangle_stack.pop();
-    size_t size = count_stack.top();
-    count_stack.pop();
+    int axis = depth%3;
+    Triangle** triangles = KDTreeDataStruct::triangles[axis];
 
+    size_t start = start_node.top();
+    size_t end = end_node.top();
+    size_t size = end-start;
+    start_node.pop();
+    end_node.pop();
+
+    KDNode* node = node_stack.top();
+    node_stack.pop();
+
+    // TODO: Should make size and depth check values so they can be set from a easier location. TODO: test different values for size and depth
     if(size<=6 || depth>20){
-      KDNode* node = node_stack.top();
-      node_stack.pop();
-      node->setTriangles(triangles);
-      node->setSize(size);
+      node->setStart(start);
+      node->setEnd(end);
       node->setLeaf(true);
       depth--;
     }
     else{
-      int axis = depth%3;
-      quickSort(triangles,0,size-1,axis); // Add a function that sorts for the axis
 
       //Pick median triangle and just select one of the points with the axis
       float median = triangles[(int)(size/2)]->getMax(axis);
-      // find triangles that are on both sides
+
+      // Sort with max vertice of each triangle, so we will always get all triangles on right node correct
+      // but some of the triangles on the right plane may also be on the left plane so need to check for those
+      // This approach will make the tree a little unbalanced but it's pretty fast
       size_t left_intersect=size/2+1;
       size_t left_extra=0;
-      while(1){
-        if(left_intersect<size&&triangles[left_intersect]->getMin(axis)<median){
+      while(left_intersect<size){
+        if(triangles[left_intersect]->getMin(axis)<median){
           left_extra++;
           left_intersect++;
         }
         else break;
       }
 
-      Triangle** left_vert = new Triangle*[size/2+left_extra];
-      for(size_t i=0;i<size/2+left_extra;i++){
-        left_vert[i] = new Triangle();
-        left_vert[i]->set(triangles[i]);
-      }
-      Triangle** right_vert= new Triangle*[size/2+size%2];
-      for(size_t i=0;i<size/2+size%2;i++){
-        right_vert[i] = new Triangle();
-        right_vert[i]->set(triangles[size/2+i]);
-      }
-      delete[] triangles;
-      KDNode* node = node_stack.top();
-      node_stack.pop();
+      // Set the split values and position in the array in which contains the node triangles
       node->setSplit(median);
-      node->setSize(size);
+      node->setStart(start);
+      node->setEnd(end);
 
       KDNode* left = new KDNode();
       KDNode* right = new KDNode();
 
-      triangle_stack.push(right_vert);
-      triangle_stack.push(left_vert);
+      // Start position for the right and left node
+      // Traverse the left node first, so add the right start point first
+      start_node.push(start+size/2);
+      start_node.push(start);
+
+      // End position for the right end left node
+      end_node.push(end);
+      end_node.push(start+size/2+left_extra);
+
+      // Push both children to the stack, make sure to put left on bottom to traverse fist
       node_stack.push(right);
       node_stack.push(left);
-      count_stack.push(size/2+size%2);
-      count_stack.push(size/2+left_extra);
 
       node->setLeft(left);
       node->setRight(right);
@@ -213,77 +227,19 @@ void KDTreeDataStruct::constructTreeStack(){
 }
 
 /**
- * Recursive loop for creating the splitting planes
+ * Creates three triangle lists that are sorted after x,y,z axises. This is mush faster than
+ * sorting every time we create a node. The three triangle lists are also the only triangle lists
+ * that need to be created because each node has an axis, start and end position.
  */
-KDTreeDataStruct::KDNode* KDTreeDataStruct::constructTree(vector<Triangle*> triangles,int size,int depth){
-  //TODO: recursive loop and create splitting planes etc.
-
-
-  if(triangles.size()<=0) // Can add depth max or anything other
-    return NULL;
-  else if(triangles.size()<=12){
-    KDNode* node = new KDNode();
-//    node->setTriangles(triangles);
-    node->setSize(size);
-    node->setLeaf(true);
-    return node;
-  }
-  else{
-    int axis = depth%3;
-    //quickSort(triangles,0,size-1,axis); // Add a function that sorts for the axis
-
-
-    //Pick median triangle and just select one of the points with the axis
-    float median = triangles[(int)(size/2)]->getMax(axis);
-    // find triangles that are on both sides
-    size_t left_intersect=size/2+1;
-    size_t left_extra=0;
-    while(1){
-      if(left_intersect<size&&triangles[left_intersect]->getMin(axis)<median){
-        left_extra++;
-        left_intersect++;
-      }
-      else break;
-
-    }
-//    Triangle** left_vert = new Triangle*[size/2+left_extra];
-//    memcpy(left_vert,triangles,sizeof(Triangle**));
-//    for(int i=0;i<size/2+left_extra;i++){
-//      left_vert[i] = triangles[i];
-//    }
-//    copy(triangles,triangles+size/2+left_extra,left_vert);
-//    Triangle** right_vert= new Triangle*[size/2+size%2];
-    //    copy(triangles+size/2,triangles+size/2+size%2,right_vert);
-//
-//    for(int i=size/2;i<size;i++){
-//      right_vert[i] = triangles[i];
-//    }
-//    memcpy(right_vert,triangles,sizeof(Triangle**));
-
-    vector<Triangle*> left_vert(size/2+left_extra);
-    left_vert.assign(size/2+left_extra,*triangles.data());
-    vector<Triangle*> right_vert(size/2+size%2);
-    right_vert.assign(size/2+size%2,*triangles.data()+size/2);
-
-    KDNode* node = new KDNode();
-    node->setSplit(median);
-//    node->setTriangles(triangles);
-    node->setSize(size);
-
-
-    node->setLeft(KDTreeDataStruct::constructTree(left_vert,size/2+left_extra,depth+1));
-    node->setRight(KDTreeDataStruct::constructTree(right_vert,size/2+size%2,depth+1));
-    if(node->getLeft()==NULL&&node->getRight()==NULL)
-      node->setLeaf(true);
-
-    return node;
-  }
-}
 void KDTreeDataStruct::setData(Triangle** triangles,size_t size,AABB* aabb){
-  KDTreeDataStruct::triangles = new Triangle*[size];
-  for(size_t t=0;t<size;t++){
-    KDTreeDataStruct::triangles[t] = new Triangle();
-    KDTreeDataStruct::triangles[t]->set(triangles[t]);
+  KDTreeDataStruct::triangles = new Triangle**[3];
+  for(size_t n=0;n<3;n++){
+    KDTreeDataStruct::triangles[n] = new Triangle*[size];
+    for(size_t t=0;t<size;t++){
+      KDTreeDataStruct::triangles[n][t] = new Triangle();
+      KDTreeDataStruct::triangles[n][t]= triangles[t];
+    }
+    quickSort(KDTreeDataStruct::triangles[n],0,size-1,n);
   }
   KDTreeDataStruct::triangle_count = size;
   KDTreeDataStruct::aabb=aabb;

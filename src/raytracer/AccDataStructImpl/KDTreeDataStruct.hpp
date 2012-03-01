@@ -39,21 +39,22 @@ private:
     KDNode* getRight(){return KDNode::right;}
     bool isLeaf(){return KDNode::leaf;}
     void setLeaf(bool leaf){KDNode::leaf=leaf;}
-    void setTriangles(Triangle** triangles){KDNode::triangles = triangles;}
-    Triangle** getTriangles(){return triangles;}
-    void setSize(size_t size){KDNode::size=size;}
-    size_t getSize(){return KDNode::size;}
+    void setStart(size_t start){KDNode::start=start;}
+    void setEnd(size_t end){KDNode::end=end;}
+    size_t getStart(){return KDNode::start;}
+    size_t getEnd(){return KDNode::end;}
+    size_t getSize(){return KDNode::end-KDNode::start;}
     float getSplit(){return KDNode::split;}
     void setSplit(float split){KDNode::split=split;}
   private:
     KDNode* left;
     KDNode* right;
-    Triangle** triangles;
-    size_t size;
+    size_t start;
+    size_t end;
     float split;
     bool leaf;
   };
-  KDNode* constructTree(vector<Triangle*> triangles,int size,int depth);
+//  KDNode* constructTree(vector<Triangle*> triangles,int size,int depth);
   void constructTreeStack();
   IAccDataStruct::IntersectionData findClosestIntersectionR(KDNode* node,Ray* ray,float min,float max,int depth);
   void quickSort(Triangle** triangles,int top,int bottom,int axis);
@@ -62,7 +63,7 @@ private:
 
   KDNode* root;
   AABB* aabb;
-  Triangle** triangles;
+  Triangle*** triangles;
   vector<Triangle*> triangles_vec;
   size_t triangle_count;
   float lookUpTable[3];
