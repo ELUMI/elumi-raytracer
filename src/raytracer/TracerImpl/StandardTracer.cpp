@@ -13,7 +13,9 @@
 namespace raytracer {
 
 StandardTracer::StandardTracer(Scene* scene, Settings* settings)
-: BaseTracer(scene, settings) {
+  : BaseTracer(scene, settings)
+  , MAX_RECURSION_DEPTH(10)
+  , ATTENUATION_THRESHOLD( glm::pow(0.5f, 8.0f) * 2.0f ) {
 
 }
 
@@ -23,23 +25,24 @@ StandardTracer::~StandardTracer() {
 
 
 void StandardTracer::traceImage(float* color_buffer) {
-  max_recursion_depth = 3;
   BaseTracer::traceImage(color_buffer);
 }
 
 vec4 StandardTracer::trace(Ray ray, IAccDataStruct::IntersectionData idata) {
-  return shade(ray, idata, 0);
+  return shade(ray, idata, 1.0f, 0);
 }
 
-vec4 StandardTracer::tracePrim(Ray ray,
-    const unsigned int depth) {
+vec4 StandardTracer::tracePrim(Ray ray, float attenuation, unsigned short depth) {
   IAccDataStruct::IntersectionData idata = datastruct->findClosestIntersection(ray);
-  return shade(ray, idata, depth);
+  return shade(ray, idata, attenuation, depth);
 }
 
-vec4 StandardTracer::shade(Ray incoming_ray,
-    IAccDataStruct::IntersectionData idata,
-    const unsigned int depth) {
+vec4 StandardTracer::shade(Ray incoming_ray
+    , IAccDataStruct::IntersectionData idata
+    , float attenuation
+    , unsigned short depth) {
+
+  //cout << "RECURSION_LEVEL=" << depth << ", ATTENUATION=" << attenuation << "/" << ATTENUATION_THRESHOLD << "\n";
 
   if (idata.material == IAccDataStruct::IntersectionData::NOT_FOUND) {
     // No intersection
@@ -139,7 +142,9 @@ vec4 StandardTracer::shade(Ray incoming_ray,
   // Multiply the accumelated ambient light colors with ambient material color
   ambient *= material->getAmbient();
 
-  if (depth < max_recursion_depth) {
+
+
+  if (attenuation > ATTENUATION_THRESHOLD && depth < MAX_RECURSION_DEPTH) {
 
     // REFRACTION_SIGN:
     // Ray enters mesh => -1
@@ -153,7 +158,7 @@ vec4 StandardTracer::shade(Ray incoming_ray,
       vec3 offset = refr_normal * 0.001f;
       vec3 refl_dir = glm::reflect(incoming_ray.getDirection(), refr_normal);
       Ray refl_ray = Ray(idata.interPoint + offset, glm::normalize(refl_dir));
-      refl_color = tracePrim(refl_ray, depth+1) * material->getReflection();
+      refl_color = tracePrim(refl_ray, attenuation*material->getReflection(), depth+1) * material->getReflection();
 
     }
 
@@ -167,7 +172,7 @@ vec4 StandardTracer::shade(Ray incoming_ray,
       vec3 offset = -refr_normal * 0.001f;
       vec3 refr_dir = glm::refract(incoming_ray.getDirection(), refr_normal, eta);
       Ray refr_ray = Ray(idata.interPoint + offset, glm::normalize(refr_dir));
-      refr_color = tracePrim(refr_ray, depth+1) * (1-material->getOpacity());
+      refr_color = tracePrim(refr_ray, attenuation*(1-material->getOpacity()), depth+1) * (1-material->getOpacity());
 
     }
   }
