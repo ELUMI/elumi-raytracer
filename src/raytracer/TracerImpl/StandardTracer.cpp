@@ -90,8 +90,8 @@ vec4 StandardTracer::shade(Ray incoming_ray
   }
 
   /**** For each light source in the scene ****/
-  for(unsigned int i=0; i<lights->size(); ++i) {
-    ILight* light  = lights->at(i);
+  for(unsigned int i=0; i<lights.size(); ++i) {
+    ILight* light  = lights.at(i);
 
     /**** ABMIENT LIGHT, skip light_ray calculations ****/
     if (light->getFalloffType() == ILight::NONE) {
