@@ -37,3 +37,6 @@ Release/**/*
 /memorial.exr
 /memorial.hdr
 /memorial.png
+
+# pdflatex files
+doc/tex/*
