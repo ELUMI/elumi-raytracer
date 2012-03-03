@@ -12,6 +12,11 @@ namespace po = boost::program_options;
 #include "raytracer/scene/LightImpl/OmniLight.h"
 #include "raytracer/utilities/glutil.h"
 
+#include "raytracer/IPostEffect.h"
+#include "raytracer/PostEffectImpl/ReinhardOperator.h"
+#include "raytracer/PostEffectImpl/ClampOperator.h"
+#include "raytracer/PostEffectImpl/GammaEncode.h"
+
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
@@ -46,6 +51,7 @@ void initGL();
 unsigned int win_width, win_height;
 
 int main(int argc, char* argv[]) {
+
   int running = GL_TRUE;
 
   // Initial values.
@@ -166,30 +172,30 @@ int main(int argc, char* argv[]) {
    ***************** */
 
   camera.set(vec3(), vec3(), vec3(), 0.7845f, settings.width/settings.height);
-  camera.setPosition(vec3(4,0,0));
-  camera.setDirection(normalize(vec3(-1.0f, 0.0f, 0.0f)));
+  camera.setPosition(vec3(0,0,5));
+  camera.setDirection(normalize(vec3(0.0f, 0.0f, -1.0f)));
   camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
 
 
-  OmniLight* lights = new OmniLight(vec3(-4, 2, 1));
-  lights->setIntensity(15);
-  lights->setColor(vec3(1,1,1));
-  lights->setDistanceFalloff(QUADRATIC);
+  OmniLight* lights = new OmniLight(vec3(-2, 1,-1));
+    lights->setIntensity(15);
+    lights->setColor(vec3(1,1,1));
+    lights->setDistanceFalloff(LINEAR);
 
-  OmniLight* light2 = new OmniLight(vec3(3, 2, -5));
+  OmniLight* light2 = new OmniLight(vec3(0, 1, -1));
     light2->setIntensity(15);
     light2->setColor(vec3(1,1,1));
-    light2->setDistanceFalloff(QUADRATIC);
+    light2->setDistanceFalloff(LINEAR);
 
-    OmniLight* light3 = new OmniLight(vec3(0, -5, 0));
-      light3->setIntensity(15);
-      light3->setColor(vec3(1,1,1));
-      light3->setDistanceFalloff(QUADRATIC);
+  OmniLight* light3 = new OmniLight(vec3(2, 1, -1));
+    light3->setIntensity(15);
+    light3->setColor(vec3(1,1,1));
+    light3->setDistanceFalloff(LINEAR);
 
-      OmniLight* light4 = new OmniLight(vec3(0, 5, 0));
-        light4->setIntensity(15);
-        light4->setColor(vec3(1,1,1));
-        light4->setDistanceFalloff(QUADRATIC);
+//  OmniLight* light4 = new OmniLight(vec3(0, 5, 0));
+//    light4->setIntensity(15);
+//    light4->setColor(vec3(1,1,1));
+//    light4->setDistanceFalloff(QUADRATIC);
 
   myRenderer = new Renderer(&settings);
   myRenderer->loadCamera(camera);
@@ -199,10 +205,10 @@ int main(int argc, char* argv[]) {
     myRenderer->getScene().loadTextures(textures);
   }
 
-  myRenderer->loadLights(lights, 1, false);
-  myRenderer->loadLights(light2, 1, false);
   myRenderer->loadLights(light3, 1, false);
-  myRenderer->loadLights(light4, 1, false);
+  myRenderer->loadLights(light2, 1, false);
+  myRenderer->loadLights(lights, 1, false);
+//  myRenderer->loadLights(light4, 1, false);
 
 
   buffer = myRenderer->getColorBuffer();
@@ -254,7 +260,7 @@ int main(int argc, char* argv[]) {
         lights->drawWithView(view, loc);
         light2->drawWithView(view, loc);
         light3->drawWithView(view, loc);
-        light4->drawWithView(view, loc);
+        //light4->drawWithView(view, loc);
 
         break;
       }
@@ -286,7 +292,19 @@ int main(int argc, char* argv[]) {
    ***************** */
   if (myRenderer->renderComplete() == 0) {
     raytracer::IExporter* exporter = new raytracer::PNGExporter;
+    raytracer::IPostEffect* reinhard = new raytracer::ReinhardOperator();
+    raytracer::IPostEffect* clamp = new raytracer::ClampOperator();
+    raytracer::IPostEffect* gamma = new raytracer::GammaEncode();
+
+    //reinhard->run(buffer, settings.width*settings.height*4);
+    //gamma->run(buffer, settings.width*settings.height*4);
+    //clamp->run(buffer, settings.width*settings.height*4);
+
     exporter->exportImage(outputFileName, settings.width, settings.height, buffer);
+
+    delete gamma;
+    delete clamp;
+    delete reinhard;
     delete exporter;
   }
   delete importer;
