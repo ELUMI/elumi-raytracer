@@ -40,3 +40,4 @@ Release/**/*
 
 # pdflatex files
 doc/tex/*
+/doc
