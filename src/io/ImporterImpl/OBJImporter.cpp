@@ -32,7 +32,7 @@ OBJImporter::~OBJImporter(){
 	disc_lights.clear();
 };
 
-void OBJImporter::loadFile(char* filename){
+void OBJImporter::loadFile(const char* filename){
 
   ilInit();
 
