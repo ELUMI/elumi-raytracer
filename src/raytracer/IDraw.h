@@ -21,6 +21,7 @@ public:
   virtual ~IDraw();
 
   virtual void drawWithView(mat4 view, GLuint loc);
+  void drawWithGLView(mat4 view);
   virtual void draw();
 
   virtual vec3 getPosition();

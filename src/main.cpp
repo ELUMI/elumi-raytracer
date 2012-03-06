@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
 
   if (vm.count("no_opengl")) {
     cout << "Not using OpenGL" << endl;
-    settings.opengl_version = false;
+    settings.opengl_version = 0;
   } else {
     cout << "Using OpenGL.\n";
   }
@@ -184,15 +184,19 @@ int main(int argc, char* argv[]) {
 
       switch (renderMode) {
       case 1: {
-        glUseProgram(shader_program);
-        int loc = glGetUniformLocation(shader_program, "modelViewProjectionMatrix");
         mat4 view = camera.getViewMatrix();
-
-        myRenderer->getScene().getDrawable()->drawWithView(view, loc);
-
-        lights->drawWithView(view, loc);
-        light2->drawWithView(view, loc);
-
+        if(settings.opengl_version >= 3) {
+          glUseProgram(shader_program);
+          int loc = glGetUniformLocation(shader_program, "modelViewProjectionMatrix");
+          myRenderer->getScene().getDrawable()->drawWithView(view, loc);
+          lights->drawWithView(view, loc);
+          light2->drawWithView(view, loc);
+          glUseProgram(0);
+        } else if (settings.opengl_version < 3) {
+          myRenderer->getScene().getDrawable()->drawWithGLView(view);
+          lights->drawWithGLView(view);
+          light2->drawWithGLView(view);
+        }
         break;
       }
       case 2:
@@ -203,7 +207,6 @@ int main(int argc, char* argv[]) {
         break;
       }
 
-      glUseProgram(0);
       CHECK_GL_ERROR();
 
       //Swap front and back rendering buffers
@@ -234,6 +237,9 @@ int main(int argc, char* argv[]) {
 }
 
 void initGL() {
+  if(settings.opengl_version == 2) {
+    return;
+  }
   glewInit();
   //startupGLDiagnostics();
   CHECK_GL_ERROR();
@@ -343,7 +349,7 @@ void timedCallback() {
   if (glfwGetKey('T')) {
     myRenderer->stopRendering();
   }
-  if (glfwGetKey('F')) {
+  if (glfwGetKey('F') && settings.opengl_version >= 3) {
     myRenderer->loadCamera(camera);
     myRenderer->stopRendering();
     settings.use_first_bounce = true;
