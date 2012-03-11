@@ -298,7 +298,7 @@ int main(int argc, char* argv[]) {
 
     //reinhard->run(buffer, settings.width*settings.height*4);
     //gamma->run(buffer, settings.width*settings.height*4);
-    //clamp->run(buffer, settings.width*settings.height*4);
+    clamp->run(buffer, settings.width*settings.height*4);
 
     exporter->exportImage(outputFileName, settings.width, settings.height, buffer);
 
