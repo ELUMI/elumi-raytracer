@@ -13,9 +13,7 @@
 #include <GL/glfw.h>
 
 #include "../IAccDataStruct.h"
-
 #include "../utilities/Ray.h"
-
 #include "../IDraw.h"
 
 using namespace glm;

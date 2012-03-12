@@ -139,7 +139,7 @@ typedef struct obj_scene_data
 	obj_camera *camera;
 };
 
-int parse_obj_scene(obj_scene_data *data_out, char *filename);
+int parse_obj_scene(obj_scene_data *data_out, const char *filename);
 void delete_obj_data(obj_scene_data *data_out);
 
 #endif

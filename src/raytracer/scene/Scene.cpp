@@ -8,12 +8,13 @@
 #include "Scene.h"
 #include "../AccDataStructImpl/ArrayDataStruct.h"
 #include "../AccDataStructImpl/KDTreeDataStruct.hpp"
+#include "../AccDataStructImpl/TriangleArray.h"
 
 namespace raytracer {
 
 Scene::Scene(Settings* settings)
   : m_camera(), m_lights(), m_materials() {
-  m_acc_data_struct = new KDTreeDataStruct();//ArrayDataStruct();//
+  m_acc_data_struct = new ArrayDataStruct();
   m_settings = settings;
 }
 
@@ -21,8 +22,10 @@ Scene::~Scene() {}
 
 void Scene::loadTriangles(vector<Triangle*> triangles,AABB* aabb, bool overwrite) {
   m_acc_data_struct->setData(triangles.data(),triangles.size(),aabb);
-  if(m_settings->use_opengl){
+  if(m_settings->opengl_version == 3){
     m_drawable = new VertexArrayDataStruct(this, triangles);
+  } else if(m_settings->opengl_version == 2){
+    m_drawable = new TriangleArray(this, triangles);
   }
 }
 

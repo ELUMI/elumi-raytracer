@@ -24,7 +24,7 @@ public:
 		OBJImporter();
 		virtual ~OBJImporter();
 
-		void loadFile(char* filename);
+		void loadFile(const char* filename);
 		std::vector<Triangle*>& getTriangleList();
 		std::vector<Material*>& getMaterialList();
 		std::vector<Texture*>& getTextures();

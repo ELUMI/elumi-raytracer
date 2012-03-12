@@ -22,7 +22,7 @@ namespace raytracer {
 class IImporter {
 public:
 
-	virtual void loadFile(char* filename) = 0;
+	virtual void loadFile(const char* filename) = 0;
 	virtual std::vector<Triangle*>& getTriangleList() =0;
 	virtual std::vector<Material*>& getMaterialList() = 0;
 	virtual std::vector<Texture*>& getTextures() = 0;
