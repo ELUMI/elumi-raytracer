@@ -70,13 +70,14 @@ void OBJImporter::loadFile(char* filename){
 
 
 		ILuint image;
-		int texture = -1, bump_map = -1;
-
-		image = ilGenImage();
-		ilBindImage(image);
+		int diff_map_index = -1, bump_map = -1;
 
 		//Texture
     if(!_diffuse_map.empty()) {
+
+      image = ilGenImage();
+      ilBindImage(image);
+
       ilLoadImage(_diffuse_map.c_str());
 
       if(ilGetError() == IL_NO_ERROR) {
@@ -86,12 +87,18 @@ void OBJImporter::loadFile(char* filename){
         w = ilGetInteger(IL_IMAGE_WIDTH);
         h = ilGetInteger(IL_IMAGE_HEIGHT);
 
-//        if(iluBuildMipmaps()) {
-//
-//        }
-
         textures.push_back(new Texture(w,h,ilGetData()));
-        texture = textures.size()-1;
+        diff_map_index = textures.size()-1;
+
+        //Mip maps
+        if(iluBuildMipmaps()) {
+          for(int i = 0;ilActiveMipmap(i);i++) {
+            w = ilGetInteger(IL_IMAGE_WIDTH);
+            h = ilGetInteger(IL_IMAGE_HEIGHT);
+            textures.push_back(new Texture(w,h,ilGetData()));
+            textures.at(diff_map_index)->addMipmap();
+          }
+        }
 
       } else {
         //Image not loaded (?)
@@ -115,7 +122,7 @@ void OBJImporter::loadFile(char* filename){
 
         textures.push_back(new Texture(w,h,ilGetData()));
         bump_map = textures.size()-1;
-
+        image++;
       } else {
         //Image not loaded (?)
         cout << "Image not loaded" << endl;
@@ -123,7 +130,7 @@ void OBJImporter::loadFile(char* filename){
     }
 
 		OBJImporter::materials.push_back(new Material(_name,_ambient,_diffuse,_specular,_emissive,
-				_transparency,_shininess,_sharpness,_reflection,_index_of_refraction,texture,bump_map));
+				_transparency,_shininess,_sharpness,_reflection,_index_of_refraction,diff_map_index,bump_map));
 	}
 
 	// Start creating the triangles

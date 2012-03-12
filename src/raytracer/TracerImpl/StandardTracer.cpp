@@ -63,15 +63,34 @@ vec4 StandardTracer::shade(Ray incoming_ray,
   if(material->getDiffuseMap() != -1) {
 
     Texture* texture = scene->getTextureAt(material->getDiffuseMap());
+    int mipmap_levels = texture->getMipmapLevels();
 
-    //Planar mapping
     if(idata.uvcoords.size() ==  0) {
       tex_coords  = texture->getUVCoordinates(idata.interPoint,idata.e1,idata.e2);
-      texture_color = texture->getColorAt(tex_coords);
     } else { //We have texture coordinates
-      texture_color = texture->getColorAt(idata.texcoord);
       tex_coords = idata.texcoord;
     }
+
+    if(false) {
+
+      float d = 0;
+
+      if(d > 0) {
+        Texture* mmp_bottom = scene->getTextureAt(material->getDiffuseMap()+(int)d);
+        Texture* mmp_top = scene->getTextureAt(material->getDiffuseMap()+(int)d+1);
+
+        texture_color = ( (1.0f-d-floor(d))*mmp_bottom->getColorAt(tex_coords) + d-floor(d)*mmp_top->getInterpolatedColor(tex_coords) );
+      } else {
+        texture_color = texture->getColorAt(tex_coords);
+      }
+
+      //float dv = 1.0f/(float)mipmap_levels;
+
+    } else {
+      cout << "x: " << tex_coords.x << " y: " << tex_coords.y << endl;
+      texture_color = texture->getColorAt(tex_coords);
+    }
+
   }
   //Bump mapping
   if(material->getBumpMap() != -1) {

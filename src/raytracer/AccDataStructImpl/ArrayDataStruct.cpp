@@ -92,7 +92,8 @@ ArrayDataStruct::findClosestIntersection(Ray ray) {
                       a1 * *(closest_tri->getTextures()[1]) +
                       a2 * *(closest_tri->getTextures()[2]);
 
-  return IntersectionData(closest_tri->getMaterial(), closest_pos, glm::normalize(inter_normal), vec2(inter_tex),normalize(v1v0),normalize(v2v0));
+  return IntersectionData(closest_tri->getMaterial(), closest_pos, glm::normalize(inter_normal), vec2(inter_tex),
+      v1v0,v2v0);
 }
 
 void ArrayDataStruct::setData(std::vector<Triangle*> new_triangles) {

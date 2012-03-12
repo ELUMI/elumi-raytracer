@@ -166,15 +166,15 @@ int main(int argc, char* argv[]) {
    ***************** */
 
   camera.set(vec3(0,0,0), vec3(0,0,0), vec3(0,0,0), 0.7845f, settings.width/settings.height);
-  camera.setPosition(vec3(0,0,5.5f));
-  camera.setDirection(normalize(vec3(0.0f, -0.2f, -1.0f)));
+  camera.setPosition(vec3(0,10.0f,5.5f));
+  camera.setDirection(normalize(vec3(0.0f, -1.4f, -1.0f)));
   camera.setUpVector(vec3(0.0f, -1.0f, 0.0f));
 
 
   OmniLight* lights = new OmniLight(vec3(4, 0, 5));
-  lights->setIntensity(70);
+  lights->setIntensity(230);
   lights->setColor(vec3(1,1,1));
-  lights->setDistanceFalloff(QUADRATIC);
+  lights->setDistanceFalloff(LINEAR);
 
   OmniLight* light2 = new OmniLight(vec3(3, 2, -5));
   light2->setIntensity(15);
