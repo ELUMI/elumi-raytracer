@@ -17,6 +17,7 @@ BaseTracer::BaseTracer(Scene* scene, Settings* settings) : lights((scene->getLig
   datastruct = scene->getAccDataStruct();
 
   first_pass = 0;
+  first_intersections = 0;
 
   abort = false;
 }
@@ -37,7 +38,7 @@ void BaseTracer::first_bounce() {
 
   if(first_pass) {
     delete first_pass; //there may be a unneccesary delete here, which may be very slow
-    delete first_intersections;
+    delete [] first_intersections;
   }
   first_pass = new DeferredProcesser(settings->width,settings->height); //TODO: use settings, and check useopengl
   first_intersections = new IAccDataStruct::IntersectionData[size];

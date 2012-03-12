@@ -28,7 +28,7 @@ Available options are:
 
 width:int
 height:int
-use_opengl:bool
+opengl_version:int
 use_first_bounce:bool
 
 ############################################################
