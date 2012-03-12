@@ -1,4 +1,4 @@
-width:200
-height:200
-use_opengl:1
+width:400
+height:400
+opengl_version:2
 use_first_bounce:0
