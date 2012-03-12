@@ -27,6 +27,7 @@ public:
   vec3 getColor() const;
   ILight::FalloffType getFalloffType() const;
 
+  void setPosition(vec3 position);
   void setDistanceFalloff(FalloffType falloff_type);
   void setIntensity(float intesity);
   void setColor(vec3 color);

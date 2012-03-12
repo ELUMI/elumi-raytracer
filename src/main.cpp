@@ -92,22 +92,30 @@ int main(int argc, char* argv[]) {
   //camera.setDirection(normalize(vec3(-1.0f, 0.0f, 0.0f)));
   //camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
 
+  const int NR_LIGHTS = 2;
+  OmniLight * lights = new OmniLight[NR_LIGHTS];
+  lights[0].setPosition(vec3(0,3,3));
+  lights[0].setIntensity(1.0f);
+  lights[0].setDistanceFalloff(ILight::QUADRATIC);
+  lights[1].setPosition(vec3(0,3,0));
+  lights[1].setIntensity(1.0f);
+  lights[1].setDistanceFalloff(ILight::QUADRATIC);
 
-  OmniLight* light1 = new OmniLight(vec3(0, 5, 5));
+  /*OmniLight* light1 = new OmniLight(vec3(0, 5, 5));
   light1->setIntensity(10);
   light1->setColor(vec3(1,1,1));
   light1->setDistanceFalloff(ILight::LINEAR);
 
   OmniLight* light2 = new OmniLight(vec3(0, 2, -3));
-    light2->setIntensity(10);
-    light2->setColor(vec3(1,1,1));
-    light2->setDistanceFalloff(ILight::QUADRATIC);
+  light2->setIntensity(10);
+  light2->setColor(vec3(1,1,1));
+  light2->setDistanceFalloff(ILight::QUADRATIC);
 
-    OmniLight* light3 = new OmniLight(vec3(0, 6, 0));
-      light2->setIntensity(1);
-      light3->setColor(vec3(1.0f,1.0f,1.0f));
-      light3->setDistanceFalloff(ILight::NONE);
-
+  OmniLight* light3 = new OmniLight(vec3(0, 6, 0));
+  light2->setIntensity(1);
+  light3->setColor(vec3(1.0f,1.0f,1.0f));
+  light3->setDistanceFalloff(ILight::NONE);
+*/
 
   myRenderer = new Renderer(&settings);
   myRenderer->loadCamera(camera);
@@ -117,11 +125,12 @@ int main(int argc, char* argv[]) {
     myRenderer->getScene().loadTextures(textures);
   }
 
+  myRenderer->loadLights(lights, NR_LIGHTS, false);
 
-  myRenderer->loadLights(light1, 1, false);
+  /*myRenderer->loadLights(light1, 1, false);
   myRenderer->loadLights(light2, 1, false);
   myRenderer->loadLights(light3, 1, false);
-
+*/
 
   buffer = myRenderer->getColorBuffer();
   for (int i = 0; i < settings.width * settings.height-3; i += 3) {
@@ -165,7 +174,12 @@ int main(int argc, char* argv[]) {
       case 1: {
         mat4 view = camera.getViewMatrix();
 
-        IDraw* drawables[] = { myRenderer->getScene().getDrawable(), light1, light2, light3};
+        //IDraw* drawables[] = { myRenderer->getScene().getDrawable(), light1, light2, light3};
+        IDraw* drawables[1+NR_LIGHTS];
+        drawables[0] = myRenderer->getScene().getDrawable();
+        for(int i=0; i<NR_LIGHTS; ++i)
+          drawables[1+i] = &lights[i];
+
         if(settings.opengl_version >= 3) {
           glUseProgram(shader_program);
           int loc = glGetUniformLocation(shader_program, "modelViewProjectionMatrix");
@@ -230,8 +244,8 @@ void getSettings(int argc, char *argv[]) {
   po::options_description desc("Allowed options");
   desc.add_options()("help,h", "produce help message")("no_opengl",
       "Do not use OpenGL")("input-file,i", po::value<string>(), "Input file")(
-      "output-file,o", po::value<string>(), "Output file")("settings-file,s",
-      po::value<string>(), "Settings file");
+          "output-file,o", po::value<string>(), "Output file")("settings-file,s",
+              po::value<string>(), "Settings file");
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
   po::notify(vm);
@@ -250,7 +264,7 @@ void getSettings(int argc, char *argv[]) {
         string option = boost::trim_copy(strs[0]);
         string value = boost::trim_copy(strs[1]);
         cout << "Using setting: " << option
-             << "\t\twith value: " << value << endl;
+            << "\t\twith value: " << value << endl;
         stringstream ssvalue(value);
         if (option == "width") {
           ssvalue >> settings.width;

@@ -135,6 +135,7 @@ vec4 StandardTracer::shade(Ray incoming_ray
             * glm::pow( clamp( glm::dot(normal, h) ), material->getShininess() )
         * material->getSpecular()
         * light->getColor();
+
       }
     }
   }
@@ -153,12 +154,18 @@ vec4 StandardTracer::shade(Ray incoming_ray
     vec3 refr_normal = -normal * refraction_sign;
 
     /**** REFLECTION RAY ****/
-    if(material->getReflection() > 0.0f) {
+    float reflectance = material->getReflection();
+    if(reflectance > 0.0f) {
+
+      // Fresnel reflectance (with Schlick's approx.)
+      float fresnel_refl = reflectance
+                           + (1 - reflectance)
+                           * glm::pow( clamp(1.0f + glm::dot(incoming_ray.getDirection(), normal) ), 5.0f);
 
       vec3 offset = refr_normal * 0.001f;
       vec3 refl_dir = glm::reflect(incoming_ray.getDirection(), refr_normal);
       Ray refl_ray = Ray(idata.interPoint + offset, glm::normalize(refl_dir));
-      refl_color = tracePrim(refl_ray, attenuation*material->getReflection(), depth+1) * material->getReflection();
+      refl_color = tracePrim(refl_ray, attenuation*fresnel_refl/*material->getReflection()*/, depth+1) * fresnel_refl; //material->getReflection();
 
     }
 

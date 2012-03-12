@@ -20,6 +20,7 @@ OmniLight::OmniLight(vec3 position) {
   OmniLight::m_position = position;
   m_intensity = 1.0f;
   m_falloff_type = NONE;
+  color = vec3(1,1,1);
 }
 
 OmniLight::~OmniLight() {
@@ -27,6 +28,10 @@ OmniLight::~OmniLight() {
 
 vec3 OmniLight::getPosition() {
   return m_position;
+}
+
+void OmniLight::setPosition(vec3 position) {
+  m_position = position;
 }
 
 void OmniLight::setIntensity(float intensity) {

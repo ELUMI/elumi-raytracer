@@ -34,6 +34,7 @@ void Scene::loadCamera(Camera camera) {
 
 void Scene::loadLights(ILight* lights, int length, bool overwrite) {
   for (int i=0; i<length; ++i) {
+    cout << "yo ";
     m_lights.push_back(&lights[i]);
   }
 }
