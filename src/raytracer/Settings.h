@@ -25,6 +25,7 @@ struct Settings {
     use_first_bounce = false;
     test=0;
     debug_mode=0;
+    tracer = 2;
   }
 
   int width;
@@ -34,6 +35,7 @@ struct Settings {
   vec4 background_color;
   float test;
   int debug_mode;
+  int tracer;
 };
 
 }

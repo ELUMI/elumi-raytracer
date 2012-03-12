@@ -176,7 +176,6 @@ int main(int argc, char* argv[]) {
           }
           glUseProgram(0);
         } else if (settings.opengl_version < 3) {
-          myRenderer->getScene().getDrawable()->drawWithGLView(view);
           for(int i=0; i<sizeof(drawables)/sizeof(IDraw*); ++i) {
             drawables[i]->drawWithGLView(view);
           }
@@ -265,6 +264,8 @@ void getSettings(int argc, char *argv[]) {
           //TODO Handle backgroudn color
         } else if (option == "use_first_bounce") {
           ssvalue >> settings.use_first_bounce;
+        } else if (option == "tracer") {
+          ssvalue >> settings.tracer;
         } else {
           cout << "Unknown option: " << option << endl;
         }
