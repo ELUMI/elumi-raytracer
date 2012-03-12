@@ -25,6 +25,8 @@ void Scene::loadTriangles(vector<Triangle*> triangles, bool overwrite) {
     m_drawable = new VertexArrayDataStruct(this, triangles);
   } else if(m_settings->opengl_version == 2){
     m_drawable = new TriangleArray(this, triangles);
+  } else {
+    assert(m_settings->opengl_version == 3); //error
   }
 }
 

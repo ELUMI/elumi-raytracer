@@ -50,6 +50,7 @@ string inputFileName, outputFileName;
 int main(int argc, char* argv[]) {
   int running = GL_TRUE;
   getSettings(argc, argv);
+  cout << "OpenGL version: " << settings.opengl_version;
 
   if (settings.opengl_version) {
     win_width = settings.width*4;
@@ -97,19 +98,19 @@ int main(int argc, char* argv[]) {
   lights->setDistanceFalloff(QUADRATIC);
 
   OmniLight* light2 = new OmniLight(vec3(3, 2, -5));
-    light2->setIntensity(15);
-    light2->setColor(vec3(1,1,1));
-    light2->setDistanceFalloff(QUADRATIC);
+  light2->setIntensity(15);
+  light2->setColor(vec3(1, 1, 1));
+  light2->setDistanceFalloff(QUADRATIC);
 
-    OmniLight* light3 = new OmniLight(vec3(0, -5, 0));
-      light3->setIntensity(15);
-      light3->setColor(vec3(1,1,1));
-      light3->setDistanceFalloff(QUADRATIC);
+  OmniLight* light3 = new OmniLight(vec3(0, -5, 0));
+  light3->setIntensity(15);
+  light3->setColor(vec3(1, 1, 1));
+  light3->setDistanceFalloff(QUADRATIC);
 
-      OmniLight* light4 = new OmniLight(vec3(0, 5, 0));
-        light4->setIntensity(15);
-        light4->setColor(vec3(1,1,1));
-        light4->setDistanceFalloff(QUADRATIC);
+  OmniLight* light4 = new OmniLight(vec3(0, 5, 0));
+  light4->setIntensity(15);
+  light4->setColor(vec3(1, 1, 1));
+  light4->setDistanceFalloff(QUADRATIC);
 
   myRenderer = new Renderer(&settings);
   myRenderer->loadCamera(camera);
@@ -175,7 +176,8 @@ int main(int argc, char* argv[]) {
           }
           glUseProgram(0);
         } else if (settings.opengl_version < 3) {
-          for(int i=0; i<sizeof(drawables); ++i) {
+          myRenderer->getScene().getDrawable()->drawWithGLView(view);
+          for(int i=0; i<sizeof(drawables)/sizeof(IDraw*); ++i) {
             drawables[i]->drawWithGLView(view);
           }
         }
