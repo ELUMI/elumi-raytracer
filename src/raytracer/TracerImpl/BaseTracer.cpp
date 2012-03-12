@@ -10,7 +10,7 @@
 
 namespace raytracer {
 
-BaseTracer::BaseTracer(Scene* scene, Settings* settings) : lights((scene->getLightVector())) {
+BaseTracer::BaseTracer(Scene* scene, Settings* settings) {
   this->scene = scene;
   this->settings = settings;
 

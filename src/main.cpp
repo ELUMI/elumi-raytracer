@@ -92,14 +92,21 @@ int main(int argc, char* argv[]) {
   //camera.setDirection(normalize(vec3(-1.0f, 0.0f, 0.0f)));
   //camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
 
-  const int NR_LIGHTS = 2;
-  OmniLight * lights = new OmniLight[NR_LIGHTS];
-  lights[0].setPosition(vec3(0,3,3));
-  lights[0].setIntensity(1.0f);
-  lights[0].setDistanceFalloff(ILight::QUADRATIC);
-  lights[1].setPosition(vec3(0,3,0));
-  lights[1].setIntensity(1.0f);
-  lights[1].setDistanceFalloff(ILight::QUADRATIC);
+  const int NR_LIGHTS = 3;
+  ILight *lights[NR_LIGHTS];
+
+  lights[0] = new OmniLight();
+  lights[0]->setPosition(vec3(0,3,3));
+  lights[0]->setIntensity(1.0f);
+  lights[0]->setDistanceFalloff(ILight::QUADRATIC);
+  lights[1] = new OmniLight();
+  lights[1]->setPosition(vec3(0,3,0));
+  lights[1]->setIntensity(1.0f);
+  lights[1]->setDistanceFalloff(ILight::NONE);
+  lights[2] = new OmniLight();
+  lights[2]->setPosition(vec3(0,5,-3));
+  lights[2]->setIntensity(1.0f);
+  lights[2]->setDistanceFalloff(ILight::LINEAR);
 
   /*OmniLight* light1 = new OmniLight(vec3(0, 5, 5));
   light1->setIntensity(10);
@@ -127,10 +134,6 @@ int main(int argc, char* argv[]) {
 
   myRenderer->loadLights(lights, NR_LIGHTS, false);
 
-  /*myRenderer->loadLights(light1, 1, false);
-  myRenderer->loadLights(light2, 1, false);
-  myRenderer->loadLights(light3, 1, false);
-*/
 
   buffer = myRenderer->getColorBuffer();
   for (int i = 0; i < settings.width * settings.height-3; i += 3) {
@@ -178,7 +181,7 @@ int main(int argc, char* argv[]) {
         IDraw* drawables[1+NR_LIGHTS];
         drawables[0] = myRenderer->getScene().getDrawable();
         for(int i=0; i<NR_LIGHTS; ++i)
-          drawables[1+i] = &lights[i];
+          drawables[1+i] = lights[i];
 
         if(settings.opengl_version >= 3) {
           glUseProgram(shader_program);

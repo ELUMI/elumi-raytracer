@@ -44,7 +44,6 @@ protected:
   Ray* rays;
 
   IAccDataStruct* datastruct;
-  const std::vector<ILight*>& lights;
 
   bool abort;
   unsigned int pixelsLeft;

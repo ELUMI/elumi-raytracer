@@ -16,7 +16,7 @@ using namespace glm;
 
 namespace raytracer {
 
-class OmniLight : public ILight , public IDraw {
+class OmniLight : public ILight {
 public:
   OmniLight();
   OmniLight(vec3 position);
@@ -25,7 +25,7 @@ public:
   vec3 getPosition();
   float getIntensity(float distance);
   vec3 getColor() const;
-  ILight::FalloffType getFalloffType() const;
+  FalloffType getFalloffType() const;
 
   void setPosition(vec3 position);
   void setDistanceFalloff(FalloffType falloff_type);

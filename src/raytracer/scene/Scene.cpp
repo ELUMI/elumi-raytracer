@@ -32,10 +32,9 @@ void Scene::loadCamera(Camera camera) {
   m_camera = camera;
 }
 
-void Scene::loadLights(ILight* lights, int length, bool overwrite) {
+void Scene::loadLights(ILight** lights, int length, bool overwrite) {
   for (int i=0; i<length; ++i) {
-    cout << "yo ";
-    m_lights.push_back(&lights[i]);
+    m_lights.push_back(lights[i]);
   }
 }
 
@@ -52,7 +51,7 @@ void Scene::loadTextures(std::vector<raytracer::Texture*> textures) {
   m_textures = textures;
 }
 
-const std::vector<ILight*>& Scene::getLightVector() {
+std::vector<ILight*> Scene::getLightVector() {
   return m_lights;
 }
 

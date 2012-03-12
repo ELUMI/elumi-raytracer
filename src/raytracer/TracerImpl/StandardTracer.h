@@ -26,6 +26,7 @@ private:
 
   const unsigned short MAX_RECURSION_DEPTH;
   const float ATTENUATION_THRESHOLD;
+  std::vector<ILight*>* lights;
 //  unsigned int recursion_depth;
 //  float recursion_attenuation;
 };

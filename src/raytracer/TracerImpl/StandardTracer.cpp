@@ -25,6 +25,7 @@ StandardTracer::~StandardTracer() {
 
 
 void StandardTracer::traceImage(float* color_buffer) {
+  lights = &(scene->getLightVector());
   BaseTracer::traceImage(color_buffer);
 }
 
@@ -90,10 +91,9 @@ vec4 StandardTracer::shade(Ray incoming_ray
   }
 
   /**** For each light source in the scene ****/
-  for(unsigned int i=0; i<lights.size(); ++i) {
-    ILight* light  = lights.at(i);
+  for(unsigned int i=0; i<scene->getLightVector().size(); ++i) {
+    ILight* light  = scene->getLightVector().at(i);
 
-    /**** ABMIENT LIGHT, skip light_ray calculations ****/
     if (light->getFalloffType() == ILight::NONE) {
 
       ambient += light->getColor();
