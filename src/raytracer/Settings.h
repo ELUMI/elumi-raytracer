@@ -18,8 +18,8 @@ namespace raytracer {
 struct Settings {
 
   Settings() {
-    width = 80;
-    height = 60;
+    width = 160;
+    height = 120;
     use_opengl = true;
     draw_data_struct = true;
     background_color = vec4(0,0,0,1);

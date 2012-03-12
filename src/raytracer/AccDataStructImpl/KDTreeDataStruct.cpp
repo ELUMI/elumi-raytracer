@@ -35,61 +35,144 @@ KDTreeDataStruct::KDTreeDataStruct(std::vector<Triangle*> triangles){
 KDTreeDataStruct::~KDTreeDataStruct() {
   //delete(triangles);
 }
-IAccDataStruct::IntersectionData
-KDTreeDataStruct::findClosestIntersectionR(KDNode* node,Ray* ray,float min,float max, int depth){
-  if(node->isLeaf()){
-    ArrayDataStruct* triangle_test =new ArrayDataStruct();
-    Triangle** temp_tri = new Triangle*[node->getSize()];
+
+IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(Ray* ray,float _min,float _max){
+  stack<KDNode*> node_stack;
+  stack<float> min_stack;
+  stack<float> max_stack;
+
+  node_stack.push(root);
+  min_stack.push(_min);
+  max_stack.push(_max);
+
+  IntersectionData hit = IntersectionData(IntersectionData::NOT_FOUND, vec3(), vec3(), vec2());
+  while(!node_stack.empty()){
+    KDNode* node = node_stack.top();
+    float min = min_stack.top();
+    float max = max_stack.top();
+
+    node_stack.pop();
+    min_stack.pop();
+    max_stack.pop();
+
+    while(!node->isLeaf()){
+      int axis = node->getAxis();
+      float t = (node->getSplit()-ray->getPosition()[axis]) / ray->getDirection()[axis];
+      vec3 p = ray->getDirection()*t;
+      float split = glm::distance(ray->getPosition(),p);
+
+      if(t<0||split>=max){
+        node = (ray->getPosition()[axis] < p[axis] ?
+                      node->getLeft() : node->getRight());
+      }
+      else if(split<=min){
+        node = (ray->getPosition()[axis] > p[axis] ?
+                      node->getLeft() : node->getRight());
+      }
+      else{
+        KDNode* first = (ray->getPosition()[axis] < p[axis] ?
+            node->getLeft() : node->getRight());
+        KDNode* second = (
+            first == node->getLeft() ? node->getRight() : node->getLeft());
+        node_stack.push(second);
+        min_stack.push(split);
+        max_stack.push(max);
+        node = first;
+        max = split;
+      }
+
+//      KDNode* first = (
+//          ray->getPosition()[axis] < p[axis] ?
+//              node->getLeft() : node->getRight());
+//      KDNode* second = (
+//          first == node->getLeft() ? node->getRight() : node->getLeft());
+//
+//      if(split >= max || split < 0){
+//        node = first;
+//      }
+//      else if (split <= min){
+//        node = second;
+//      }
+//      else{
+//        node_stack.push(second);
+//        min_stack.push(split);
+//        max_stack.push(max);
+//        node = first;
+//        max = split;
+//      }
+    }
+    vec3 o = ray->getPosition();
+    vec3 d = ray->getDirection();
+
+    Triangle* closest_tri = NULL;
+    vec3 closest_pos;
+    float closest_dist;
+    float closest_t = numeric_limits<float>::infinity( );
     for(size_t i=0;i<node->getSize();i++){
-      temp_tri[i] = new Triangle();
-      temp_tri[i] = KDTreeDataStruct::triangles[(depth-1)%3][i];
-    }
-    triangle_test->setData(temp_tri,node->getSize(),aabb);
-    IntersectionData temp = triangle_test->findClosestIntersection(*ray);
-    delete[] temp_tri;
-    delete triangle_test;
-    return temp;
-  }
-  int axis = depth%3;
-  float split = (node->getSplit()-ray->getPosition()[axis])/ray->getDirection()[axis];
-  KDNode* near = (ray->getPosition()[axis]<split?node->getLeft():node->getRight());
-  KDNode* far = (near==node->getLeft()?node->getRight():node->getLeft());
+      int axis = node->getAxis();
+      Triangle* cur_triangle = triangles[axis][node->getStart()+i];
+      const vector<vec3*> vertices = cur_triangle->getVertices();
+      vec3 v0 = *(vertices[0]);
+      vec3 v1 = *(vertices[1]);
+      vec3 v2 = *(vertices[2]);
 
-  if(split>max){
-    return findClosestIntersectionR(near,ray,min,max,depth+1);
-  }
-  else if(split<min){
-    if(split>0){
-      return findClosestIntersectionR(far,ray,min,max,depth+1);
-    }
-    else if(split<0){
-      return findClosestIntersectionR(near,ray,min,max,depth+1);
-    }
-    else if(ray->getDirection()[axis]<0){
-      return findClosestIntersectionR(far,ray,min,max,depth+1);
-    }
-    else{
-      return findClosestIntersectionR(near,ray,min,max,depth+1);
-    }
-  }
-  else{
-    if(split>0){
-      IntersectionData temp =  findClosestIntersectionR(near,ray, min, split,depth+1);
-      return (temp.material!=IntersectionData::NOT_FOUND?temp:findClosestIntersectionR(near,ray, split, max,depth+1));
-    }
-    else{
-      return findClosestIntersectionR(near,ray,split, max,depth+1);//case G
-    }
-  }
+      vec3 e1 = v1 - v0;
+      vec3 e2 = v2 - v0;
+      vec3 s = o - v0;
 
+      vec3 dxe2 = cross(d, e2);
+      vec3 sxe1 = cross(s, e1);
+      vec3 res = ( 1.0f /  dot(dxe2, e1) ) *
+          vec3( dot(sxe1, e2), dot(dxe2, s), dot(sxe1, d) );
+
+      float t = res.x;
+      float u = res.y;
+      float v = res.z;
+
+      float dist = glm::distance(o, closest_pos);
+
+      if(u >= 0 && v >= 0 && u + v <= 1) {  // Intersection!
+        if(t > 0 && t < closest_t) {
+          closest_tri = cur_triangle;
+          closest_pos = o + t * d;
+          closest_dist = dist;
+          closest_t = t;
+        }
+      }
+    }
+    if(closest_t != numeric_limits<float>::infinity( )) {
+
+      vec3 v1v0 = *(closest_tri->getVertices()[1]) - *(closest_tri->getVertices()[0]);
+      vec3 v2v1 = *(closest_tri->getVertices()[2]) - *(closest_tri->getVertices()[1]);
+      vec3 v2v0 = *(closest_tri->getVertices()[2]) - *(closest_tri->getVertices()[0]);
+      vec3 pv0 = closest_pos - *(closest_tri->getVertices()[0]);
+      vec3 pv1 = closest_pos - *(closest_tri->getVertices()[1]);
+
+      float a = length(cross(v1v0, v2v0));
+      float a0 = length(cross(v2v1, pv1))/a;
+      float a1 = length(cross(v2v0, pv0))/a;
+      float a2 = length(cross(v1v0, pv0))/a;
+
+      vec3 inter_normal = a0 * *(closest_tri->getNormals()[0]) +
+          a1 * *(closest_tri->getNormals()[1]) +
+          a2 * *(closest_tri->getNormals()[2]);
+
+      vec3 inter_tex =    a0 * *(closest_tri->getTextures()[0]) +
+          a1 * *(closest_tri->getTextures()[1]) +
+          a2 * *(closest_tri->getTextures()[2]);
+
+     // if(closest_dist<max)
+      return IntersectionData(closest_tri->getMaterial(), closest_pos, glm::normalize(inter_normal), vec2(inter_tex));
+    }
+  }
+  return hit;
 }
 
 IAccDataStruct::IntersectionData
 KDTreeDataStruct::findClosestIntersection(Ray ray) {
   float min,max;
   if(aabb->intersect(ray,min,max)){
-    //run intersection;
-      return findClosestIntersectionR(root,&ray,min,max,0);
+    return findClosestIntersectionStack(&ray,min,max);
   }
   return (IntersectionData(IntersectionData::NOT_FOUND, vec3(), vec3(), vec2()));
 }
@@ -124,20 +207,19 @@ int KDTreeDataStruct::qsPartition(Triangle** triangles,int top,int bottom,int ax
     do
     {
       j--;
-    }while (t > triangles[j]->getMax(axis));
+    }while (t < triangles[j]->getMax(axis));
 
     do
     {
       i++;
-    } while (t <triangles[i]->getMax(axis));
+    } while (t > triangles[i]->getMax(axis));
 
     if (i < j)
     {
-      temp = triangles[i];
-      triangles[i] = triangles[j];
-      triangles[j] = temp;
+      temp = triangles[j];
+      triangles[j] = triangles[i];
+      triangles[i] = temp;
     }
-    //delete &t;
   }while (i < j);
   return j;
 }
@@ -173,9 +255,13 @@ void KDTreeDataStruct::constructTreeStack(){
     node_stack.pop();
 
     // TODO: Should make size and depth check values so they can be set from a easier location. TODO: test different values for size and depth
-    if(size<=6 || depth>20){
+    if(size<=8 || depth>20){
       node->setStart(start);
       node->setEnd(end);
+      axis-=1;
+      if(axis==-1)
+        axis=2;
+      node->setAxis(axis);
       node->setLeaf(true);
       depth--;
     }
@@ -187,12 +273,24 @@ void KDTreeDataStruct::constructTreeStack(){
       // Sort with max vertice of each triangle, so we will always get all triangles on right node correct
       // but some of the triangles on the right plane may also be on the left plane so need to check for those
       // This approach will make the tree a little unbalanced but it's pretty fast
-      size_t left_intersect=size/2+1;
+      // (can sort with middle instead to make it balanced)
+      size_t left_intersect=size/2;
       size_t left_extra=0;
       while(left_intersect<size){
-        if(triangles[left_intersect]->getMin(axis)<median){
+        float min_triangle = triangles[left_intersect]->getMin(axis);
+        if(min_triangle<=median){
           left_extra++;
           left_intersect++;
+        }
+        else break;
+      }
+      size_t right_intersect=size/2;
+      size_t right_extra=0;
+      while(right_intersect>=0){
+        float max_triangle = triangles[right_intersect]->getMax(axis);
+        if(max_triangle==median){
+          right_extra++;
+          right_intersect--;
         }
         else break;
       }
@@ -200,6 +298,7 @@ void KDTreeDataStruct::constructTreeStack(){
       // Set the split values and position in the array in which contains the node triangles
       node->setSplit(median);
       node->setStart(start);
+      node->setAxis(axis);
       node->setEnd(end);
 
       KDNode* left = new KDNode();
@@ -207,7 +306,7 @@ void KDTreeDataStruct::constructTreeStack(){
 
       // Start position for the right and left node
       // Traverse the left node first, so add the right start point first
-      start_node.push(start+size/2);
+      start_node.push(start+size/2-right_extra);
       start_node.push(start);
 
       // End position for the right end left node
@@ -236,10 +335,12 @@ void KDTreeDataStruct::setData(Triangle** triangles,size_t size,AABB* aabb){
   for(size_t n=0;n<3;n++){
     KDTreeDataStruct::triangles[n] = new Triangle*[size];
     for(size_t t=0;t<size;t++){
-      KDTreeDataStruct::triangles[n][t] = new Triangle();
       KDTreeDataStruct::triangles[n][t]= triangles[t];
     }
     quickSort(KDTreeDataStruct::triangles[n],0,size-1,n);
+    for(size_t t=0;t<size;t++){
+      cout << KDTreeDataStruct::triangles[n][t]->getMax(n) << endl;
+    }
   }
   KDTreeDataStruct::triangle_count = size;
   KDTreeDataStruct::aabb=aabb;

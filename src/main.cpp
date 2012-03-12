@@ -169,8 +169,8 @@ int main(int argc, char* argv[]) {
    ***************** */
 
   camera.set(vec3(), vec3(), vec3(), 0.7845f, settings.width/settings.height);
-  camera.setPosition(vec3(4,0,0));
-  camera.setDirection(normalize(vec3(-1.0f, 0.0f, 0.0f)));
+  camera.setPosition(vec3(0,0,4));
+  camera.setDirection(normalize(vec3(0.0f, 0.0f, -1.0f)));
   camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
 
 
@@ -381,11 +381,23 @@ void timedCallback() {
   if (glfwGetKey('A')) {
     camera.translate(vec3(0, -speed, 0));
   }
-  if (glfwGetKey(' ')) {
+  if (glfwGetKey('X')) {
     camera.translate(vec3(0, 0, speed));
   }
   if (glfwGetKey('Z')) {
     camera.translate(vec3(0, 0, -speed));
+  }
+  if (glfwGetKey(GLFW_KEY_UP)) {
+    camera.rotate(vec2(0,-1));
+  }
+  if (glfwGetKey(GLFW_KEY_DOWN)) {
+    camera.rotate(vec2(0,1));
+  }
+  if (glfwGetKey(GLFW_KEY_RIGHT)) {
+    camera.rotate(vec2(1,0));
+  }
+  if (glfwGetKey(GLFW_KEY_LEFT)) {
+    camera.rotate(vec2(-1,0));
   }
   if (glfwGetKey('1')) {
     renderMode = 1;

@@ -110,6 +110,8 @@ void BaseTracer::traceImage(float* color_buffer) {
 //        #pragma omp flush (abort)
         if(!abort)
         {
+          if(i==6483)
+            int test = 1;
           IAccDataStruct::IntersectionData intersection_data =
               scene->getAccDataStruct()->findClosestIntersection(rays[i]);
           vec4 c = trace(rays[i], intersection_data);

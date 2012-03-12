@@ -41,9 +41,11 @@ private:
     void setLeaf(bool leaf){KDNode::leaf=leaf;}
     void setStart(size_t start){KDNode::start=start;}
     void setEnd(size_t end){KDNode::end=end;}
+    void setAxis(int axis){KDNode::axis=axis;}
     size_t getStart(){return KDNode::start;}
     size_t getEnd(){return KDNode::end;}
     size_t getSize(){return KDNode::end-KDNode::start;}
+    int getAxis(){return KDNode::axis;}
     float getSplit(){return KDNode::split;}
     void setSplit(float split){KDNode::split=split;}
   private:
@@ -51,12 +53,15 @@ private:
     KDNode* right;
     size_t start;
     size_t end;
+    int axis;
     float split;
     bool leaf;
   };
 //  KDNode* constructTree(vector<Triangle*> triangles,int size,int depth);
   void constructTreeStack();
   IAccDataStruct::IntersectionData findClosestIntersectionR(KDNode* node,Ray* ray,float min,float max,int depth);
+
+  IAccDataStruct::IntersectionData findClosestIntersectionStack(Ray* ray,float min,float max);
   void quickSort(Triangle** triangles,int top,int bottom,int axis);
   int qsPartition(Triangle** triangles,int top,int bottom,int axis);
 
