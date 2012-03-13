@@ -198,7 +198,7 @@ void KDTreeDataStruct::quickSort(Triangle** triangles,int top,int bottom,int axi
   }
 }
 int KDTreeDataStruct::qsPartition(Triangle** triangles,int top,int bottom,int axis){
-  float t=triangles[top]->getMax(axis);
+  float t=triangles[top]->getBarycenter(axis);
   int i = top - 1;
   int j = bottom + 1;
   Triangle* temp;
@@ -207,12 +207,12 @@ int KDTreeDataStruct::qsPartition(Triangle** triangles,int top,int bottom,int ax
     do
     {
       j--;
-    }while (t < triangles[j]->getMax(axis));
+    }while (t < triangles[j]->getBarycenter(axis));
 
     do
     {
       i++;
-    } while (t > triangles[i]->getMax(axis));
+    } while (t > triangles[i]->getBarycenter(axis));
 
     if (i < j)
     {
@@ -229,12 +229,13 @@ int KDTreeDataStruct::qsPartition(Triangle** triangles,int top,int bottom,int ax
  * or giving corrupt data. This way we will never leave the method and therefor don't risk damaging the call_stack
  */
 void KDTreeDataStruct::constructTreeStack(){
-  int depth = 0;
 
   stack<int> start_node;
   stack<int> end_node;
+  stack<int> depth_node;
 
   start_node.push(0);
+  depth_node.push(0);
   end_node.push(triangle_count);
 
   stack< KDNode* > node_stack;
@@ -242,6 +243,7 @@ void KDTreeDataStruct::constructTreeStack(){
   node_stack.push(root);
 
   while(!node_stack.empty()){
+    int depth = depth_node.top();
     int axis = depth%3;
     Triangle** triangles = KDTreeDataStruct::triangles[axis];
 
@@ -250,6 +252,7 @@ void KDTreeDataStruct::constructTreeStack(){
     size_t size = end-start;
     start_node.pop();
     end_node.pop();
+    depth_node.pop();
 
     KDNode* node = node_stack.top();
     node_stack.pop();
@@ -263,18 +266,17 @@ void KDTreeDataStruct::constructTreeStack(){
         axis=2;
       node->setAxis(axis);
       node->setLeaf(true);
-      depth--;
     }
     else{
 
       //Pick median triangle and just select one of the points with the axis
-      float median = triangles[(int)(size/2)]->getMax(axis);
+      float median = triangles[(int)(size/2)-1+size%2]->getBarycenter(axis);
 
       // Sort with max vertice of each triangle, so we will always get all triangles on right node correct
       // but some of the triangles on the right plane may also be on the left plane so need to check for those
       // This approach will make the tree a little unbalanced but it's pretty fast
       // (can sort with middle instead to make it balanced)
-      size_t left_intersect=size/2;
+      int left_intersect=size/2+size%2;
       size_t left_extra=0;
       while(left_intersect<size){
         float min_triangle = triangles[left_intersect]->getMin(axis);
@@ -284,11 +286,11 @@ void KDTreeDataStruct::constructTreeStack(){
         }
         else break;
       }
-      size_t right_intersect=size/2;
+      int right_intersect=size/2-1+size%2;
       size_t right_extra=0;
       while(right_intersect>=0){
         float max_triangle = triangles[right_intersect]->getMax(axis);
-        if(max_triangle==median){
+        if(max_triangle>=median){
           right_extra++;
           right_intersect--;
         }
@@ -306,20 +308,22 @@ void KDTreeDataStruct::constructTreeStack(){
 
       // Start position for the right and left node
       // Traverse the left node first, so add the right start point first
-      start_node.push(start+size/2-right_extra);
+      start_node.push(start+size/2+size%2-right_extra);
       start_node.push(start);
 
       // End position for the right end left node
       end_node.push(end);
-      end_node.push(start+size/2+left_extra);
+      end_node.push(start+size/2+size%2+left_extra);
 
       // Push both children to the stack, make sure to put left on bottom to traverse fist
       node_stack.push(right);
       node_stack.push(left);
 
+      depth_node.push(depth+1);
+      depth_node.push(depth+1);
+
       node->setLeft(left);
       node->setRight(right);
-      depth++;
     }
   }
 
@@ -339,7 +343,7 @@ void KDTreeDataStruct::setData(Triangle** triangles,size_t size,AABB* aabb){
     }
     quickSort(KDTreeDataStruct::triangles[n],0,size-1,n);
     for(size_t t=0;t<size;t++){
-      cout << KDTreeDataStruct::triangles[n][t]->getMax(n) << endl;
+      cout << KDTreeDataStruct::triangles[n][t]->getBarycenter(n) << endl;
     }
   }
   KDTreeDataStruct::triangle_count = size;

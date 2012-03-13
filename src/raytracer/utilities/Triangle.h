@@ -32,6 +32,7 @@ public:
 	const vector<vec3*>& getTextures();
   const float& getMax(int axis);
   const float& getMin(int axis);
+  const float& getBarycenter(int axis);
 	unsigned int getMaterial();
 	unsigned int getTexture();
 
@@ -39,6 +40,7 @@ private:
 	vector<vec3*> vertices;
 	vector<vec3*> normals;
 	vector<vec3*> texCoords;
+	vec3* barycenter;
 	float* min;
 	float* max;
 	unsigned int material;

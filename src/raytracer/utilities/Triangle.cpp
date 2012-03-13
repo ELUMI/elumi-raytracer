@@ -35,6 +35,10 @@ void Triangle::set(vector<vec3*> vertices, vector<vec3*> normals, vector<vec3*> 
 	Triangle::material = material;
 	Triangle::texture = texture;
 
+	Triangle::barycenter = new vec3((vertices[0]->x + vertices[1]->x + vertices[2]->x)/3
+	    ,(vertices[0]->y + vertices[1]->y + vertices[2]->y)/3
+	    ,(vertices[0]->z + vertices[1]->z + vertices[2]->z)/3);
+
 	min[0] = (*vertices[0])[0];min[1] = (*vertices[0])[1]; min[2] = (*vertices[0])[2];
 
 	max[0] = (*vertices[0])[0]; max[1] = (*vertices[0])[1]; max[3] = (*vertices[0])[2];
@@ -67,5 +71,6 @@ const float& Triangle::getMin(int axis){return min[axis];}
 const float& Triangle::getMax(int axis){return max[axis];}
 unsigned int Triangle::getMaterial() {return Triangle::material;}
 unsigned int Triangle::getTexture() {return Triangle::texture;}
+const float& Triangle::getBarycenter(int axis){return (*Triangle::barycenter)[axis];}
 
 }
