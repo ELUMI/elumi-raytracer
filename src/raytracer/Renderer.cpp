@@ -6,6 +6,7 @@
  */
 
 #include "Renderer.h"
+#include "TracerImpl/DebugTracer.h"
 #include "TracerImpl/SimpleTracer.h"
 #include "TracerImpl/StandardTracer.h"
 #include <boost/thread.hpp>
@@ -19,6 +20,9 @@ Renderer::Renderer(Settings* settings)
   : m_scene(settings) {
   m_settings = settings;
   switch (settings->tracer) {
+    case -1:
+      m_tracer = new DebugTracer(&m_scene, settings);
+      break;
     case 0:
       m_tracer = new BaseTracer(&m_scene, settings);
       break;

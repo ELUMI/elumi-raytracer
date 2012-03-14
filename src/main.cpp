@@ -325,6 +325,9 @@ void initGL() {
   int texLoc = glGetUniformLocation(shader_program, "colortexture");
   // Set colortexture to 0, to associate it with texture unit 0
   glUniform1i(texLoc, 0);
+
+  glUseProgram(0);
+  CHECK_GL_ERROR();
 }
 
 
@@ -356,6 +359,7 @@ void drawPoints()
     glPushMatrix();
     glLoadMatrixf(value_ptr(view));
     glColor3f(0, 1, 0);
+
     glBegin(GL_POINTS);
     for(int x = 0;x < settings.width;++x){
         for(int y = 0;y < settings.height;++y){
@@ -365,8 +369,8 @@ void drawPoints()
             glVertex3f(v.x, v.y, v.z);
         }
     }
-
     glEnd();
+
     glPopMatrix();
     glEnable(GL_DEPTH_TEST);
 }
