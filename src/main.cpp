@@ -86,8 +86,13 @@ int main(int argc, char* argv[]) {
    ***************** */
 
   //camera.set(vec3(), vec3(), vec3(), 0.7845f, settings.width/settings.height);
-  //COOL camera.set(vec3(0,1,-8), vec3(0,0,1), vec3(0,1,0), 0.7845f, settings.width/settings.height);
-  camera.set(vec3(3.23387,0.61721,-0.0291648), vec3(-0.830073,0.492424,0.261721), vec3(0,1,0), 0.7845f, settings.width/settings.height);
+ // 2ballz camera.set(vec3(0,1,-6), vec3(0,0,1), vec3(0,1,0), 0.7845f, settings.width/settings.height);
+
+  //RUM
+  // Pos=1.09319,1.47483,-2.02129,; Dir=-0.402432,-0.537299,0.741187,; Up=0,1,0,
+  //Pos=1.80622,1.6665,1.76089,; Dir=-0.603289,-0.544639,-0.58259,; Up=0,1,0,
+  camera.set(vec3(1.80622,1.6665,1.76089), vec3(-0.603289,-0.544639,-0.58259), vec3(0,1,0), 0.7845f, settings.width/settings.height);
+  //camera.set(vec3(3.23387,0.61721,-0.0291648), vec3(-0.830073,0.492424,0.261721), vec3(0,1,0), 0.7845f, settings.width/settings.height);
   //camera.setPosition(vec3(4,0,0));
   //camera.setDirection(normalize(vec3(-1.0f, 0.0f, 0.0f)));
   //camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
@@ -96,33 +101,18 @@ int main(int argc, char* argv[]) {
   ILight *lights[NR_LIGHTS];
 
   lights[0] = new OmniLight();
-  lights[0]->setPosition(vec3(0,3,3));
-  lights[0]->setIntensity(1.0f);
+  lights[0]->setPosition(vec3(2,1,2));
+  lights[0]->setIntensity(3.0f);
   lights[0]->setDistanceFalloff(ILight::QUADRATIC);
   lights[1] = new OmniLight();
-  lights[1]->setPosition(vec3(0,3,0));
-  lights[1]->setIntensity(1.0f);
+  lights[1]->setPosition(vec3(0,2,0));
+  lights[1]->setColor(vec3(0.4f,0.4f,0.4f));
   lights[1]->setDistanceFalloff(ILight::NONE);
   lights[2] = new OmniLight();
-  lights[2]->setPosition(vec3(0,5,-3));
-  lights[2]->setIntensity(1.0f);
-  lights[2]->setDistanceFalloff(ILight::LINEAR);
+  lights[2]->setPosition(vec3(-2,0,-2));
+  lights[2]->setIntensity(3.0f);
+  lights[2]->setDistanceFalloff(ILight::QUADRATIC);
 
-  /*OmniLight* light1 = new OmniLight(vec3(0, 5, 5));
-  light1->setIntensity(10);
-  light1->setColor(vec3(1,1,1));
-  light1->setDistanceFalloff(ILight::LINEAR);
-
-  OmniLight* light2 = new OmniLight(vec3(0, 2, -3));
-  light2->setIntensity(10);
-  light2->setColor(vec3(1,1,1));
-  light2->setDistanceFalloff(ILight::QUADRATIC);
-
-  OmniLight* light3 = new OmniLight(vec3(0, 6, 0));
-  light2->setIntensity(1);
-  light3->setColor(vec3(1.0f,1.0f,1.0f));
-  light3->setDistanceFalloff(ILight::NONE);
-*/
 
   myRenderer = new Renderer(&settings);
   myRenderer->loadCamera(camera);
@@ -177,7 +167,6 @@ int main(int argc, char* argv[]) {
       case 1: {
         mat4 view = camera.getViewMatrix();
 
-        //IDraw* drawables[] = { myRenderer->getScene().getDrawable(), light1, light2, light3};
         IDraw* drawables[1+NR_LIGHTS];
         drawables[0] = myRenderer->getScene().getDrawable();
         for(int i=0; i<NR_LIGHTS; ++i)

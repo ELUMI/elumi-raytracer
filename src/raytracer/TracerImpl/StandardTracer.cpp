@@ -13,9 +13,9 @@
 namespace raytracer {
 
 StandardTracer::StandardTracer(Scene* scene, Settings* settings)
-  : BaseTracer(scene, settings)
-  , MAX_RECURSION_DEPTH(10)
-  , ATTENUATION_THRESHOLD( glm::pow(0.5f, 8.0f) * 2.0f ) {
+: BaseTracer(scene, settings)
+, MAX_RECURSION_DEPTH(10)
+, ATTENUATION_THRESHOLD( glm::pow(0.5f, 8.0f) * 2.0f ) {
 
 }
 
@@ -53,7 +53,7 @@ vec4 StandardTracer::shade(Ray incoming_ray
 
   // Intersection!
 
-  vec3 color      = vec3(0,0,0);
+  //vec3 color      = vec3(0,0,0);
   vec3 ambient    = vec3(0,0,0);
   vec3 diffuse    = vec3(0,0,0);
   vec3 specular   = vec3(0,0,0);
@@ -143,7 +143,8 @@ vec4 StandardTracer::shade(Ray incoming_ray
   // Multiply the accumelated ambient light colors with ambient material color
   ambient *= material->getAmbient();
 
-
+  float reflectance = material->getReflection();
+  float transmittance = (1-material->getOpacity()); //* (1.0f - reflectance);
 
   if (attenuation > ATTENUATION_THRESHOLD && depth < MAX_RECURSION_DEPTH) {
 
@@ -153,24 +154,38 @@ vec4 StandardTracer::shade(Ray incoming_ray
     float refraction_sign = glm::sign(glm::dot(normal, incoming_ray.getDirection()));
     vec3 refr_normal = -normal * refraction_sign;
 
+
+
     /**** REFLECTION RAY ****/
-    float reflectance = material->getReflection();
     if(reflectance > 0.0f) {
 
       // Fresnel reflectance (with Schlick's approx.)
-      float fresnel_refl = reflectance
-                           + (1 - reflectance)
-                           * glm::pow( clamp(1.0f + glm::dot(incoming_ray.getDirection(), normal) ), 5.0f);
+//      float fresnel_refl = reflectance
+//          + (1 - reflectance)
+//          * glm::pow( clamp(1.0f + glm::dot(incoming_ray.getDirection(), normal) ), 5.0f);
+//      reflectance = fresnel_refl;
+
 
       vec3 offset = refr_normal * 0.001f;
       vec3 refl_dir = glm::reflect(incoming_ray.getDirection(), refr_normal);
       Ray refl_ray = Ray(idata.interPoint + offset, glm::normalize(refl_dir));
-      refl_color = tracePrim(refl_ray, attenuation*fresnel_refl/*material->getReflection()*/, depth+1) * fresnel_refl; //material->getReflection();
+      refl_color = tracePrim(refl_ray, attenuation*/*fresnel_refl*/reflectance, depth+1) * /*fresnel_refl;*/ reflectance;
+
+      if (refl_color == vec4(0,0,0,1) && depth==0) {
+              float dot = glm::dot(refr_normal, incoming_ray.getDirection());
+              cout << "FEL! refl: "<< refl_dir.x << ", "
+                                   << refl_dir.y << ", "
+                                   << refl_dir.z << ", "
+                        << "dir: " << incoming_ray.getDirection().x << ", "
+                                   << incoming_ray.getDirection().y << ", "
+                                   << incoming_ray.getDirection().z << "\n";
+//              cout << "dot(N,I)=" << dot << ", k=" << 1.0f - eta *eta * (1.0f - dot*dot) << " apa = " << refr_dir.x << "\n";
+            }
 
     }
 
     /**** REFRACTION RAY ****/
-    if(material->getOpacity() < 1.0f) {
+    if(transmittance > 0.0f && reflectance < 1.0f) {
 
       float eta = material->getIndexOfRefraction();
       if(refraction_sign == -1.0f)
@@ -178,18 +193,31 @@ vec4 StandardTracer::shade(Ray incoming_ray
 
       vec3 offset = -refr_normal * 0.001f;
       vec3 refr_dir = glm::refract(incoming_ray.getDirection(), refr_normal, eta);
-      Ray refr_ray = Ray(idata.interPoint + offset, glm::normalize(refr_dir));
-      refr_color = tracePrim(refr_ray, attenuation*(1-material->getOpacity()), depth+1) * (1-material->getOpacity());
+      if (refr_dir == vec3(0,0,0)) {
+        transmittance = 0.0f;
+      } else {
+
+        Ray refr_ray = Ray(idata.interPoint + offset, refr_dir);
+        refr_color = tracePrim(refr_ray, attenuation*(transmittance), depth+1) * (transmittance);
+
+          // SVART BEROR PÅ SELF SHADOWING
+      }
 
     }
   }
 
+  //cout << "Refl: " << reflectance << ", trans: " << transmittance << "\n";
   // Summarize all color components
-  color += (ambient + diffuse + specular) * (1-material->getReflection()) * material->getOpacity();
-  vec4 out_color = vec4(color, material->getOpacity()) + refl_color + refr_color;
+  //color += (ambient + diffuse + specular) * (1-material->getReflection()) * material->getOpacity();
+  //vec4 out_color = vec4(color, material->getOpacity()) + refl_color + refr_color;
 
-  return out_color;
+  // Mix the output colors
+  vec4 color = vec4((ambient + diffuse + specular),1.0f) * (1-transmittance) + refr_color;
+  color *= (1-reflectance);
+  color += refl_color;
+  color.a = 1.0f;
+
+  return color;
 }
-
 
 }
