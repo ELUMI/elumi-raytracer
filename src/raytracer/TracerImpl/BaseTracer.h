@@ -51,6 +51,8 @@ protected:
 
   DeferredProcesser* first_pass;
   IAccDataStruct::IntersectionData* first_intersections;
+public:
+  vec3* posbuff;
 };
 
 }

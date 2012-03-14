@@ -6,6 +6,7 @@ namespace po = boost::program_options;
 #include "io/ExporterImpl/PNGExporter.h"
 #include "io/ImporterImpl/OBJImporter.h"
 #include "raytracer/Renderer.h"
+#include "raytracer/TracerImpl/BaseTracer.h"
 #include "raytracer/scene/ILight.h"
 #include "raytracer/scene/LightImpl/OmniLight.h"
 #include "raytracer/utilities/glutil.h"
@@ -124,7 +125,7 @@ int main(int argc, char* argv[]) {
   camera.setDirection(normalize(vec3(-1.0f, 0.0f, 0.0f)));
   camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
 
-  OmniLight* lights = new OmniLight(vec3(2, 3, 5));
+  OmniLight* lights = new OmniLight(vec3(1.05, 10, 0));
   lights->setIntensity(1200);
   lights->setColor(vec3(1,1,1));
   lights->setDistanceFalloff(LINEAR);
@@ -201,6 +202,63 @@ int main(int argc, char* argv[]) {
         glDrawPixels(settings.width, settings.height, GL_RGBA,
             GL_FLOAT, buffer);
         break;
+      case 3: {
+        glUseProgram(shader_program);
+        int loc = glGetUniformLocation(shader_program, "modelViewProjectionMatrix");
+        mat4 view = camera.getViewMatrix();
+
+        myRenderer->getScene().getDrawable()->drawWithView(view, loc);
+
+        lights->drawWithView(view, loc);
+        light2->drawWithView(view, loc);
+
+        glUseProgram(0);
+
+        BaseTracer* bt = dynamic_cast<BaseTracer*>(myRenderer->getTracer());
+        vec3* posbuff = bt->posbuff;
+        glDisable(GL_DEPTH_TEST);
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+        glLoadMatrixf(value_ptr(view));
+        glColor3f(0,1,0);
+        glBegin(GL_POINTS);
+        for(int x = 0; x<settings.width; ++x) {
+          for(int y = 0; y<settings.height; ++y) {
+            vec3 v = posbuff[x*settings.height+y];
+            float* c = buffer + (x*settings.height+y)*4;
+            glColor4f(c[0], c[1], c[2], c[4]);
+            glVertex3f(v.x,v.y,v.z);
+          }
+        }
+        glEnd();
+        glPopMatrix();
+
+        break;
+      }
+      case 4: {
+        glUseProgram(0);
+        mat4 view = camera.getViewMatrix();
+
+        BaseTracer* bt = dynamic_cast<BaseTracer*>(myRenderer->getTracer());
+        vec3* posbuff = bt->posbuff;
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+        glLoadMatrixf(value_ptr(view));
+        glColor3f(0,1,0);
+        glBegin(GL_POINTS);
+        for(int x = 0; x<settings.width; ++x) {
+          for(int y = 0; y<settings.height; ++y) {
+            vec3 v = posbuff[x*settings.height+y];
+            float* c = buffer + (x*settings.height+y)*4;
+            glColor4f(c[0], c[1], c[2], c[4]);
+            glVertex3f(v.x,v.y,v.z);
+          }
+        }
+        glEnd();
+        glPopMatrix();
+
+        break;
+      }
       }
 
       glUseProgram(0);
@@ -299,6 +357,10 @@ void timedCallback() {
   prevTime += diffTime;
 
   double speed = diffTime * 10.0;
+
+  if (glfwGetKey(GLFW_KEY_LCTRL)) {
+    speed /= 100;
+  }
   if (glfwGetKey('W')) {
     camera.translate(vec3(speed, 0, 0));
   }
@@ -336,6 +398,7 @@ void timedCallback() {
     renderMode = 6;
   }
   if (glfwGetKey('R')) {
+    myRenderer->stopRendering();
     myRenderer->loadCamera(camera);
     myRenderer->asyncRender();
     renderMode = 2;
@@ -343,51 +406,42 @@ void timedCallback() {
   if (glfwGetKey('T')) {
     myRenderer->stopRendering();
   }
+  if (glfwGetKey('Y')) {
+    myRenderer->asyncRender();
+  }
   if (glfwGetKey('F')) {
-    myRenderer->loadCamera(camera);
     myRenderer->stopRendering();
     settings.use_first_bounce = true;
     myRenderer->asyncRender();
-    renderMode = 2;
   }
   if (glfwGetKey('G')) {
-    myRenderer->loadCamera(camera);
     myRenderer->stopRendering();
     settings.use_first_bounce = false;
     myRenderer->asyncRender();
-    renderMode = 2;
   }
   if (glfwGetKey(GLFW_KEY_KP_ADD)) {
-    myRenderer->loadCamera(camera);
     myRenderer->stopRendering();
     settings.test += speed/100;
     myRenderer->asyncRender();
-    renderMode = 2;
     cout << settings.test << "\n";
   }
   if (glfwGetKey(GLFW_KEY_KP_SUBTRACT)) {
-    myRenderer->loadCamera(camera);
     myRenderer->stopRendering();
     settings.test -= speed/100;
     myRenderer->asyncRender();
-    renderMode = 2;
     cout << settings.test << "\n";
   }
   if (glfwGetKey(GLFW_KEY_KP_MULTIPLY)) {
-    myRenderer->loadCamera(camera);
     myRenderer->stopRendering();
     settings.debug_mode += 1;
     myRenderer->asyncRender();
-    renderMode = 2;
     cout << settings.debug_mode << "\n";
     glfwSleep(0.5);
   }
   if (glfwGetKey(GLFW_KEY_KP_DIVIDE)) {
-    myRenderer->loadCamera(camera);
     myRenderer->stopRendering();
     settings.debug_mode -= 1;
     myRenderer->asyncRender();
-    renderMode = 2;
     cout << settings.debug_mode << "\n";
     glfwSleep(0.5);
   }

@@ -18,6 +18,8 @@ BaseTracer::BaseTracer(Scene* scene, Settings* settings) : lights(&(scene->getLi
 
   first_pass = 0;
 
+  posbuff = new vec3[settings->width * settings->height];
+
   abort = false;
 }
 
@@ -57,7 +59,7 @@ void BaseTracer::first_bounce() {
   for(int y=0; y<height; y++){
     for(int x=0; x<width; x++){
       int i = y*width+x;
-      vec4 pos = vp2m * vec4(x,y,depths[i],1);
+      vec4 pos = vp2m * vec4(x+0.5,y+0.5,depths[i],1);
 
       //see comment in deferred.frag
       unsigned int material = ceil(normals[i].w-0.5); //alpha channel is noise, but this works!
@@ -95,6 +97,8 @@ void BaseTracer::traceImage(float* color_buffer) {
         buffer[i*4 +2] = glm::min(1.0f, c.b);
         buffer[i*4 +3] = glm::min(1.0f, c.a);
 
+        posbuff[i] = first_intersections[i].interPoint;
+
         #pragma omp atomic
         --pixelsLeft;
       }
@@ -115,12 +119,13 @@ void BaseTracer::traceImage(float* color_buffer) {
         buffer[i*4 +2] = glm::min(1.0f, c.b);
         buffer[i*4 +3] = glm::min(1.0f, c.a);
 
+        posbuff[i] = intersection_data.interPoint;
+
         #pragma omp atomic
         --pixelsLeft;
       }
     }
   }
-
 }
 
 void BaseTracer::stopTracing() {
@@ -200,6 +205,22 @@ vec4 BaseTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata)
     IAccDataStruct::IntersectionData idata2 = scene->getAccDataStruct()->findClosestIntersection(incoming_ray);
     return vec4(abs(idata.interPoint-idata2.interPoint)*10.0f,1);
   }
+  case 9: {
+    ILight* light = scene->getLightVector().front();
+    Ray lightRay = Ray::generateRay(light->getPosition(), idata.interPoint);
+    IAccDataStruct::IntersectionData idatal = scene->getAccDataStruct()->findClosestIntersection(lightRay);
+    return vec4(abs(idata.interPoint-idatal.interPoint),1);
+  }
+  case 10: {
+    ILight* light = scene->getLightVector().front();
+    Ray lightRay = Ray::generateRay(light->getPosition(), idata.interPoint);
+    IAccDataStruct::IntersectionData idatal = scene->getAccDataStruct()->findClosestIntersection(lightRay);
+
+    IAccDataStruct::IntersectionData idata2 = scene->getAccDataStruct()->findClosestIntersection(incoming_ray);
+    lightRay = Ray::generateRay(light->getPosition(), idata2.interPoint);
+    IAccDataStruct::IntersectionData idatal2 = scene->getAccDataStruct()->findClosestIntersection(lightRay);
+    return vec4(abs(idatal2.interPoint-idatal.interPoint),1);
+  }
 
   }
 
@@ -207,7 +228,7 @@ vec4 BaseTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata)
   vec3 dir = normalize(idata.interPoint - light->getPosition());
   Ray lightRay = Ray(light->getPosition(), dir);
   IAccDataStruct::IntersectionData idatal = scene->getAccDataStruct()->findClosestIntersection(lightRay);
-  assert(idatal.material != IAccDataStruct::IntersectionData::NOT_FOUND);
+  //assert(idatal.material != IAccDataStruct::IntersectionData::NOT_FOUND);
 
   if (dot(dir,(idata.interPoint - idatal.interPoint)) > 0.001+settings->test) {
     return vec4();
