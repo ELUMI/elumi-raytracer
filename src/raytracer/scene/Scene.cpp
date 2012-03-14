@@ -7,6 +7,7 @@
 
 #include "Scene.h"
 #include "../AccDataStructImpl/ArrayDataStruct.h"
+#include "../AccDataStructImpl/TriangleArray.h"
 
 namespace raytracer {
 
@@ -20,8 +21,12 @@ Scene::~Scene() {}
 
 void Scene::loadTriangles(vector<Triangle*> triangles, bool overwrite) {
   m_acc_data_struct->setData(triangles);
-  if(m_settings->use_opengl){
+  if(m_settings->opengl_version == 3){
     m_drawable = new VertexArrayDataStruct(this, triangles);
+  } else if(m_settings->opengl_version == 2){
+    m_drawable = new TriangleArray(this, triangles);
+  } else {
+    assert(m_settings->opengl_version == 3); //error
   }
 }
 
@@ -44,10 +49,8 @@ void Scene::loadMaterials(Material* materials, int length) {
 void Scene::loadMaterials(std::vector<raytracer::Material*> materials) {
   m_materials = materials;
 }
-//Adds a texture and returns its index
-int Scene::addTexture(Texture* texture) {
-  m_textures.push_back(texture);
-  return m_textures.size()-1;
+void Scene::loadTextures(std::vector<raytracer::Texture*> textures) {
+  m_textures = textures;
 }
 
 const std::vector<ILight*>& Scene::getLightVector() {
@@ -56,6 +59,10 @@ const std::vector<ILight*>& Scene::getLightVector() {
 
 const std::vector<Material*>& Scene::getMaterialVector() {
   return m_materials;
+}
+
+Texture* Scene::getTextureAt(int index) {
+  return m_textures.at(index);
 }
 
 Camera& Scene::getCamera() {

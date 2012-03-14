@@ -3,6 +3,8 @@
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 
+#include <boost/algorithm/string.hpp>
+
 #include "io/ExporterImpl/PNGExporter.h"
 #include "io/ImporterImpl/OBJImporter.h"
 #include "raytracer/Renderer.h"
@@ -12,9 +14,12 @@ namespace po = boost::program_options;
 #include "raytracer/utilities/glutil.h"
 
 #include <iostream>
+#include <fstream>
 #include <stdlib.h>
 #include <GL/glfw.h>
 #include <string>
+#include <sstream>
+#include <vector>
 #include <omp.h>
 #include <glm/gtc/type_ptr.hpp> //value_ptr
 #define GL_UNSIGNED_INT_8_8_8_8_REV 0x8367
@@ -38,68 +43,27 @@ void mouseMove(int x, int y);
 void mouseMove(int x, int y);
 void windowSize(int width, int height);
 void initGL();
+void getSettings(int argc, char *argv[]);
+void drawDrawables(IDraw *drawables[], size_t n);
+void drawPoints();
 
 unsigned int win_width, win_height;
+string inputFileName, outputFileName;
 
 int main(int argc, char* argv[]) {
   int running = GL_TRUE;
+  getSettings(argc, argv);
+  cout << "OpenGL version: " << settings.opengl_version;
 
-  char* inputFileName, *outputFileName, *settingsFile;
-
-  // Declare the supported options.
-  po::options_description desc("Allowed options");
-  desc.add_options()("help", "produce help message")("input-file",
-      po::value<string>(), "Input file")("output-file", po::value<string>(),
-      "Output file")("no_opengl", "Do not use OpenGL");
-
-  po::variables_map vm;
-  po::store(po::parse_command_line(argc, argv, desc), vm);
-  po::notify(vm);
-
-  if (vm.count("help")) {
-    cout << desc << "\n";
-    return 1;
-  }
-
-  if (vm.count("input-file")) {
-  } else {
-  }
-
-  if (vm.count("no_opengl")) {
-    cout << "Not using OpenGL" << endl;
-    settings.use_opengl = false;
-  } else {
-    cout << "Using OpenGL.\n";
-  }
-  /** END TEST**/
-
-  //Initialize GLFW
-  if (!glfwInit()) {
-    exit(EXIT_FAILURE);
-  }
-
-  if (argc < 3) { // Check the value of argc. If not enough parameters have been passed, inform user and exit.
-    std::cout << "Usage is <flags> <infile> <outfile>\n"; // Inform the user of how to use the program
-    exit(0);
-  } // else if we got enough parameters...
-
-  inputFileName = argv[1];
-  outputFileName = argv[2];
-
-  settings.width = 150;
-  settings.height = 150;
-  settings.background_color[0] = 0;
-  settings.background_color[1] = 50.0f / 255.0f;
-  settings.background_color[2] = 50.0f / 255.0f;
-  settings.background_color[3] = 0;
-
-  if (settings.use_opengl) {
+  if (settings.opengl_version) {
     win_width = settings.width*4;
     win_height = settings.height*4;
 
+    glfwInit();
     //Open an OpenGl window
     if (!glfwOpenWindow(win_width, win_height, 0, 0, 0, 0, 0, 0,
         GLFW_WINDOW)) {
+      cerr << "Failed to open window";
       glfwTerminate();
       exit(EXIT_FAILURE);
     }
@@ -108,42 +72,60 @@ int main(int argc, char* argv[]) {
 
     glfwSetMouseButtonCallback(mouse);
     glfwSetMousePosCallback(mouseMove);
+  } else {
+    cout << "Not using OpenGL" << endl;
   }
 
   /* IMPORTER
    ***************** */
 
   raytracer::IImporter* importer = new raytracer::OBJImporter();
-  importer->loadFile(inputFileName);
+  importer->loadFile(inputFileName.c_str());
   std::vector<raytracer::Triangle*> triangles = importer->getTriangleList();
   std::vector<raytracer::Material*> materials = importer->getMaterialList();
+  std::vector<raytracer::Texture*> textures   = importer->getTextures();
+
 
   /* RENDERER
    ***************** */
+
   camera.set(vec3(), vec3(), vec3(), 0.7845f, settings.width/settings.height);
   camera.setPosition(vec3(4,0,0));
   camera.setDirection(normalize(vec3(-1.0f, 0.0f, 0.0f)));
   camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
 
-  OmniLight* lights = new OmniLight(vec3(1.05, 10, 0));
-  lights->setIntensity(1200);
+  OmniLight* lights = new OmniLight(vec3(-4, 2, 1));
+  lights->setIntensity(15);
   lights->setColor(vec3(1,1,1));
-  lights->setDistanceFalloff(LINEAR);
+  lights->setDistanceFalloff(QUADRATIC);
 
-  OmniLight* light2 = new OmniLight(vec3(-2, 2, 2));
-  light2->setIntensity(8000);
-  light2->setColor(vec3(1,1,1));
+  OmniLight* light2 = new OmniLight(vec3(3, 2, -5));
+  light2->setIntensity(15);
+  light2->setColor(vec3(1, 1, 1));
   light2->setDistanceFalloff(QUADRATIC);
+
+  OmniLight* light3 = new OmniLight(vec3(0, -5, 0));
+  light3->setIntensity(15);
+  light3->setColor(vec3(1, 1, 1));
+  light3->setDistanceFalloff(QUADRATIC);
+
+  OmniLight* light4 = new OmniLight(vec3(0, 5, 0));
+  light4->setIntensity(15);
+  light4->setColor(vec3(1, 1, 1));
+  light4->setDistanceFalloff(QUADRATIC);
 
   myRenderer = new Renderer(&settings);
   myRenderer->loadCamera(camera);
   if (!triangles.empty()) {
     myRenderer->getScene().loadMaterials(materials); //load materials BEFORE triangles!
     myRenderer->loadTriangles(triangles);
+    myRenderer->getScene().loadTextures(textures);
   }
 
   myRenderer->loadLights(lights, 1, false);
-  //myRenderer->loadLights(light2, 1, false);
+  myRenderer->loadLights(light2, 1, false);
+  myRenderer->loadLights(light3, 1, false);
+  myRenderer->loadLights(light4, 1, false);
 
   buffer = myRenderer->getColorBuffer();
   for (int i = 0; i < settings.width * settings.height-3; i += 3) {
@@ -161,7 +143,7 @@ int main(int argc, char* argv[]) {
     buffer[i * 4 + 11] = 1;
   }
 
-  if (!settings.use_opengl) {
+  if (!settings.opengl_version) {
     myRenderer->render();
   } else {
     myRenderer->asyncRender();
@@ -182,86 +164,26 @@ int main(int argc, char* argv[]) {
       glEnable(GL_DEPTH_TEST);
       glDisable(GL_CULL_FACE);
 
-
+      IDraw* drawables[] = { myRenderer->getScene().getDrawable(), lights, light2, light3, light4 };
       switch (renderMode) {
-      case 1: {
-        glUseProgram(shader_program);
-        int loc = glGetUniformLocation(shader_program, "modelViewProjectionMatrix");
-        mat4 view = camera.getViewMatrix();
-
-        myRenderer->getScene().getDrawable()->drawWithView(view, loc);
-
-        lights->drawWithView(view, loc);
-        light2->drawWithView(view, loc);
-
+      case 1:
+        drawDrawables(drawables, sizeof(drawables) / sizeof(IDraw*));
         break;
-      }
       case 2:
         glRasterPos2f(-1,-1);
         glPixelZoom((float) win_width / settings.width, (float) win_height / settings.height);
         glDrawPixels(settings.width, settings.height, GL_RGBA,
             GL_FLOAT, buffer);
         break;
-      case 3: {
-        glUseProgram(shader_program);
-        int loc = glGetUniformLocation(shader_program, "modelViewProjectionMatrix");
-        mat4 view = camera.getViewMatrix();
-
-        myRenderer->getScene().getDrawable()->drawWithView(view, loc);
-
-        lights->drawWithView(view, loc);
-        light2->drawWithView(view, loc);
-
-        glUseProgram(0);
-
-        BaseTracer* bt = dynamic_cast<BaseTracer*>(myRenderer->getTracer());
-        vec3* posbuff = bt->posbuff;
-        glDisable(GL_DEPTH_TEST);
-        glMatrixMode(GL_MODELVIEW);
-        glPushMatrix();
-        glLoadMatrixf(value_ptr(view));
-        glColor3f(0,1,0);
-        glBegin(GL_POINTS);
-        for(int x = 0; x<settings.width; ++x) {
-          for(int y = 0; y<settings.height; ++y) {
-            vec3 v = posbuff[x*settings.height+y];
-            float* c = buffer + (x*settings.height+y)*4;
-            glColor4f(c[0], c[1], c[2], c[4]);
-            glVertex3f(v.x,v.y,v.z);
-          }
-        }
-        glEnd();
-        glPopMatrix();
-
+      case 3:
+        drawDrawables(drawables, sizeof(drawables) / sizeof(IDraw*));
+        drawPoints();
+        break;
+      case 4:
+        drawPoints();
         break;
       }
-      case 4: {
-        glUseProgram(0);
-        mat4 view = camera.getViewMatrix();
 
-        BaseTracer* bt = dynamic_cast<BaseTracer*>(myRenderer->getTracer());
-        vec3* posbuff = bt->posbuff;
-        glMatrixMode(GL_MODELVIEW);
-        glPushMatrix();
-        glLoadMatrixf(value_ptr(view));
-        glColor3f(0,1,0);
-        glBegin(GL_POINTS);
-        for(int x = 0; x<settings.width; ++x) {
-          for(int y = 0; y<settings.height; ++y) {
-            vec3 v = posbuff[x*settings.height+y];
-            float* c = buffer + (x*settings.height+y)*4;
-            glColor4f(c[0], c[1], c[2], c[4]);
-            glVertex3f(v.x,v.y,v.z);
-          }
-        }
-        glEnd();
-        glPopMatrix();
-
-        break;
-      }
-      }
-
-      glUseProgram(0);
       CHECK_GL_ERROR();
 
       //Swap front and back rendering buffers
@@ -281,7 +203,7 @@ int main(int argc, char* argv[]) {
    ***************** */
   if (myRenderer->renderComplete() == 0) {
     raytracer::IExporter* exporter = new raytracer::PNGExporter;
-    exporter->exportImage(outputFileName, settings.width, settings.height, buffer);
+    exporter->exportImage(outputFileName.c_str(), settings.width, settings.height, buffer);
     delete exporter;
   }
   delete importer;
@@ -291,7 +213,84 @@ int main(int argc, char* argv[]) {
   exit(EXIT_SUCCESS);
 }
 
+void getSettings(int argc, char *argv[]) {
+  // Initial values.
+  settings.width = 150;
+  settings.height = 150;
+  settings.background_color[0] = 0;
+  settings.background_color[1] = 50.0f / 255.0f;
+  settings.background_color[2] = 50.0f / 255.0f;
+  settings.background_color[3] = 0;
+
+  // Declare the supported options.
+  po::options_description desc("Allowed options");
+  desc.add_options()("help,h", "produce help message")("no_opengl",
+      "Do not use OpenGL")("input-file,i", po::value<string>(), "Input file")(
+      "output-file,o", po::value<string>(), "Output file")("settings-file,s",
+      po::value<string>(), "Settings file");
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::notify(vm);
+  if (vm.count("help")) {
+    cout << desc << "\n";
+    exit(1);
+  }
+  if (vm.count("settings-file")) {
+    string line;
+    ifstream settings_stream(vm["settings-file"].as<string> ().c_str());
+    if (settings_stream.is_open()) {
+      while (settings_stream.good()) {
+        getline(settings_stream, line);
+        vector<string> strs;
+        boost::split(strs, line, boost::is_any_of(":")); // Line may show error in eclipse but it should compile anyhow.
+        string option = boost::trim_copy(strs[0]);
+        string value = boost::trim_copy(strs[1]);
+        cout << "Using setting: " << option
+             << "\t\twith value: " << value << endl;
+        stringstream ssvalue(value);
+        if (option == "width") {
+          ssvalue >> settings.width;
+        } else if (option == "height") {
+          ssvalue >> settings.height;
+        } else if (option == "opengl_version") {
+          ssvalue >> settings.opengl_version;
+        } else if (option == "background_color") {
+          //TODO Handle backgroudn color
+        } else if (option == "use_first_bounce") {
+          ssvalue >> settings.use_first_bounce;
+        } else if (option == "tracer") {
+          ssvalue >> settings.tracer;
+        } else {
+          cout << "Unknown option: " << option << endl;
+        }
+      }
+    }
+  }
+
+  if (vm.count("input-file")) {
+    inputFileName = vm["input-file"].as<string> ();
+  } else {
+    cout << "No input file! Use raytracer --help to see command options.";
+    exit(1);
+  }
+  if (vm.count("output-file")) {
+    outputFileName = vm["output-file"].as<string> ();
+  } else {
+    cout << "Saving file to default destination (out.png)." << endl;
+    outputFileName = "out.png";
+  }
+  if (vm.count("no_opengl")) {
+    cout << "Not using OpenGL" << endl;
+    settings.opengl_version = 0;
+  } else {
+    cout << "Using OpenGL.\n";
+  }
+}
+
 void initGL() {
+  if(settings.opengl_version == 2) {
+    return;
+  }
   glewInit();
   //startupGLDiagnostics();
   CHECK_GL_ERROR();
@@ -326,6 +325,50 @@ void initGL() {
   int texLoc = glGetUniformLocation(shader_program, "colortexture");
   // Set colortexture to 0, to associate it with texture unit 0
   glUniform1i(texLoc, 0);
+}
+
+
+void drawDrawables(IDraw **drawables, size_t n) {
+  mat4 view = camera.getViewMatrix();
+  if (settings.opengl_version >= 3) {
+    glUseProgram(shader_program);
+    int loc = glGetUniformLocation(shader_program, "modelViewProjectionMatrix");
+    for (size_t i = 0; i < n; ++i) {
+      drawables[i]->drawWithView(view, loc);
+    }
+    glUseProgram(0);
+  } else if (settings.opengl_version < 3) {
+    for (size_t i = 0; i < n; ++i) {
+      drawables[i]->drawWithGLView(view);
+    }
+  }
+}
+
+void drawPoints()
+{
+    mat4 view = camera.getViewMatrix();
+    BaseTracer *bt = dynamic_cast<BaseTracer*>(myRenderer->getTracer());
+    if(bt == 0) return; //failed to cast or no tracer
+    vec3 *posbuff = bt->posbuff;
+
+    glDisable(GL_DEPTH_TEST);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadMatrixf(value_ptr(view));
+    glColor3f(0, 1, 0);
+    glBegin(GL_POINTS);
+    for(int x = 0;x < settings.width;++x){
+        for(int y = 0;y < settings.height;++y){
+            vec3 v = posbuff[x * settings.height + y];
+            float *c = buffer + (x * settings.height + y) * 4;
+            glColor4f(c[0], c[1], c[2], c[4]);
+            glVertex3f(v.x, v.y, v.z);
+        }
+    }
+
+    glEnd();
+    glPopMatrix();
+    glEnable(GL_DEPTH_TEST);
 }
 
 void windowSize(int width, int height) {
@@ -397,6 +440,11 @@ void timedCallback() {
   if (glfwGetKey('6')) {
     renderMode = 6;
   }
+  if (glfwGetKey('E')) {
+    myRenderer->stopRendering();
+    myRenderer->loadCamera(camera);
+    myRenderer->asyncRender();
+  }
   if (glfwGetKey('R')) {
     myRenderer->stopRendering();
     myRenderer->loadCamera(camera);
@@ -446,5 +494,5 @@ void timedCallback() {
     glfwSleep(0.5);
   }
 
-  //cout << myRenderer->renderComplete() << "\n";
+
 }

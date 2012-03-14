@@ -52,6 +52,7 @@ void obj_set_material_defaults(obj_material *mtl)
 	mtl->shiny = 0;
 	mtl->refract_index = 1;
 	mtl->texture_filename[0] = '\0';
+	mtl->bump_filename[0] = '\0';
 }
 
 int obj_parse_vertex_index(int *vertex_index, int *texture_index, int *normal_index)
@@ -169,7 +170,12 @@ obj_vector* obj_parse_vector()
 	obj_vector *v = (obj_vector*)malloc(sizeof(obj_vector));
 	v->e[0] = atof( strtok(NULL, WHITESPACE));
 	v->e[1] = atof( strtok(NULL, WHITESPACE));
-	v->e[2] = atof( strtok(NULL, WHITESPACE));
+	try{
+	  v->e[2] = atof( strtok(NULL, WHITESPACE));
+	}
+	catch(int e){
+	  v->e[2] = 0.0f;
+	}
 	return v;
 }
 
@@ -303,6 +309,11 @@ int obj_parse_mtl_file(char *filename, list *material_list)
 		{
 			strncpy(current_mtl->texture_filename, strtok(NULL, " \t"), OBJ_FILENAME_LENGTH);
 		}
+		// bump map
+		else if( strequal(current_token, "map_Bump") && material_open)
+		{
+		  strncpy(current_mtl->bump_filename, strtok(NULL, " \t"), OBJ_FILENAME_LENGTH);
+		}
 		else
 		{
 			fprintf(stderr, "Unknown command '%s' in material file %s at line %i:\n\t%s\n",
@@ -317,7 +328,7 @@ int obj_parse_mtl_file(char *filename, list *material_list)
 
 }
 
-int obj_parse_obj_file(obj_growable_scene_data *growable_data, char *filename)
+int obj_parse_obj_file(obj_growable_scene_data *growable_data, const char *filename)
 {
 	FILE* obj_file_stream;
 	int current_material = -1; 
@@ -565,7 +576,7 @@ void obj_copy_to_out_storage(obj_scene_data *data_out, obj_growable_scene_data *
 	data_out->camera = growable_data->camera;
 }
 
-int parse_obj_scene(obj_scene_data *data_out, char *filename)
+int parse_obj_scene(obj_scene_data *data_out, const char *filename)
 {
 	obj_growable_scene_data growable_data;
 

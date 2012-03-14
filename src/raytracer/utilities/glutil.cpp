@@ -29,8 +29,9 @@
 #include <sstream>
 #include <iostream>
 #include <algorithm>
+#include <stdio.h>
 
-using std::vector; 
+using std::vector;
 //using namespace chag;
 //
 //

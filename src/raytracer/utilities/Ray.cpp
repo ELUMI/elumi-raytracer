@@ -32,16 +32,17 @@ Ray Ray::generateRay(vec3 start_position, vec3 end_position) {
 }
 
 Ray Ray::reflection(Ray ray, vec3 normal, vec3 intersection_point) {
-  vec3 r = ray.getDirection();
-
-  vec3 refl = -r + 2.0f * glm::normalize(normal) * ( glm::dot(r,  normal) );
+  vec3 l = ray.getDirection();
+  vec3 refl = glm::reflect(l, normal);
+  //vec3 refl = glm::normalize( -l + 2.0f * normal * ( glm::dot(l,  normal)) );
   return Ray(intersection_point, refl);
 }
 
 Ray Ray::refraction(Ray ray, vec3 n, vec3 intersection_point, float index) {
   vec3 i = ray.direction;
-  float cos = glm::dot(-n, i);
-  vec3 refr = index*i + (index*cos - sqrt( 1 - index*index * ( 1 -cos*cos) ) ) * n;
+//  float cos = glm::dot(-n, i);
+ // vec3 refr = glm::normalize(index*i + (index*cos - sqrt( 1 - index*index * ( 1 -cos*cos) ) ) * n);
+  vec3 refr = glm::refract(i,n,index);
 
   return Ray(intersection_point, refr);
 }

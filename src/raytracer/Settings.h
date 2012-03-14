@@ -20,20 +20,22 @@ struct Settings {
   Settings() {
     width = 640;
     height = 480;
-    use_opengl = true;
+    opengl_version = 3;
     background_color = vec4(0,0,0,1);
     use_first_bounce = false;
     test=0;
     debug_mode=0;
+    tracer = 2;
   }
 
   int width;
   int height;
-  bool use_opengl;
+  int opengl_version;
   bool use_first_bounce;
   vec4 background_color;
   float test;
   int debug_mode;
+  int tracer;
 };
 
 }

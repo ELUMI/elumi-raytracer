@@ -91,6 +91,7 @@ mat4 Camera::getViewportToModelMatrix(float w, float h) const {
       0.0f, 0.0f, 0.5f, 0.5f,
       0.0f, 0.0f, 0.0f, 1.0f));
 
+
   return inverse(viewport * getViewMatrix());
 }
 

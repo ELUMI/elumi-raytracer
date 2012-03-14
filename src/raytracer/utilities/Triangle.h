@@ -20,21 +20,24 @@ namespace raytracer{
 class Triangle {
 public:
 	Triangle();
-	Triangle(vector<vec3*> vertices,vector<vec3*> normals,vector<vec3*> texture, unsigned int material);
+	Triangle(vector<vec3*> vertices,vector<vec3*> normals,vector<vec3*> texCoords, unsigned int material);
 	virtual ~Triangle();
 
 
-	void set(vector<vec3*> _vertices,vector<vec3*> _normals,vector<vec3*> _texture, unsigned int material);
+	void set(vector<vec3*> _vertices,vector<vec3*> _normals,vector<vec3*> texCoords,
+	    unsigned int material);
 	const vector<vec3*>& getVertices();
 	const vector<vec3*>& getNormals();
 	const vector<vec3*>& getTextures();
 	unsigned int getMaterial();
+	unsigned int getTexture();
 
 private:
 	vector<vec3*> vertices;
 	vector<vec3*> normals;
-	vector<vec3*> textures;
+	vector<vec3*> texCoords;
 	unsigned int material;
+	unsigned int texture;
 };
 }
 #endif /* TRIANGLE_H_ */

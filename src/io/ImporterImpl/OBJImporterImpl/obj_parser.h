@@ -44,6 +44,7 @@ typedef struct obj_material
 {
 	char name[MATERIAL_NAME_SIZE];
 	char texture_filename[OBJ_FILENAME_LENGTH];
+	char bump_filename[OBJ_FILENAME_LENGTH];
 	double amb[3];
 	double diff[3];
 	double spec[3];
@@ -138,7 +139,7 @@ typedef struct obj_scene_data
 	obj_camera *camera;
 };
 
-int parse_obj_scene(obj_scene_data *data_out, char *filename);
+int parse_obj_scene(obj_scene_data *data_out, const char *filename);
 void delete_obj_data(obj_scene_data *data_out);
 
 #endif

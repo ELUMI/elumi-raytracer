@@ -65,6 +65,7 @@ void OmniLight::draw() {
   quadobj = gluNewQuadric();
   //glColor3f(1.0f,1.0f,1.0f); //colors does not work
   //glMaterialfv(GL_FRONT,GL_DIFFUSE,farraygrey);
+  glColor3f(color.r, color.g, color.b);
   gluSphere(quadobj, 0.5, 10,10);
   gluDeleteQuadric(quadobj);
 }
