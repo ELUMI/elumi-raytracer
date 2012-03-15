@@ -15,7 +15,8 @@ namespace raytracer {
 StandardTracer::StandardTracer(Scene* scene, Settings* settings)
 : BaseTracer(scene, settings)
 , MAX_RECURSION_DEPTH(10)
-, ATTENUATION_THRESHOLD( glm::pow(0.5f, 8.0f) * 2.0f ) {
+, ATTENUATION_THRESHOLD( glm::pow(0.5f, 8.0f) * 2.0f ) // difference for 8 bit colors times 2 threshold
+{
 
 }
 
@@ -43,8 +44,6 @@ vec4 StandardTracer::shade(Ray incoming_ray
     , float attenuation
     , unsigned short depth) {
 
-  //cout << "RECURSION_LEVEL=" << depth << ", ATTENUATION=" << attenuation << "/" << ATTENUATION_THRESHOLD << "\n";
-
   if (idata.material == IAccDataStruct::IntersectionData::NOT_FOUND) {
     // No intersection
     return settings->background_color;
@@ -53,7 +52,6 @@ vec4 StandardTracer::shade(Ray incoming_ray
 
   // Intersection!
 
-  //vec3 color      = vec3(0,0,0);
   vec3 ambient    = vec3(0,0,0);
   vec3 diffuse    = vec3(0,0,0);
   vec3 specular   = vec3(0,0,0);
@@ -166,21 +164,12 @@ vec4 StandardTracer::shade(Ray incoming_ray
 //      reflectance = fresnel_refl;
 
 
-      vec3 offset = refr_normal * 0.001f;
+      vec3 offset = refr_normal * 0.01f;
       vec3 refl_dir = glm::reflect(incoming_ray.getDirection(), refr_normal);
       Ray refl_ray = Ray(idata.interPoint + offset, glm::normalize(refl_dir));
-      refl_color = tracePrim(refl_ray, attenuation*/*fresnel_refl*/reflectance, depth+1) * /*fresnel_refl;*/ reflectance;
+      refl_color = tracePrim(refl_ray, attenuation*reflectance, depth+1) * reflectance;
 
-      if (refl_color == vec4(0,0,0,1) && depth==0) {
-              float dot = glm::dot(refr_normal, incoming_ray.getDirection());
-              cout << "FEL! refl: "<< refl_dir.x << ", "
-                                   << refl_dir.y << ", "
-                                   << refl_dir.z << ", "
-                        << "dir: " << incoming_ray.getDirection().x << ", "
-                                   << incoming_ray.getDirection().y << ", "
-                                   << incoming_ray.getDirection().z << "\n";
-//              cout << "dot(N,I)=" << dot << ", k=" << 1.0f - eta *eta * (1.0f - dot*dot) << " apa = " << refr_dir.x << "\n";
-            }
+      // SVART BEROR PÅ ATT DEN STUDSAR MOT SIG SJÄLV OCH ALLTID BLIR REFLECTIVE TILLS MAXDJUP
 
     }
 
@@ -191,7 +180,7 @@ vec4 StandardTracer::shade(Ray incoming_ray
       if(refraction_sign == -1.0f)
         eta = 1/eta;
 
-      vec3 offset = -refr_normal * 0.001f;
+      vec3 offset = -refr_normal * 0.01f;
       vec3 refr_dir = glm::refract(incoming_ray.getDirection(), refr_normal, eta);
       if (refr_dir == vec3(0,0,0)) {
         transmittance = 0.0f;
@@ -206,16 +195,12 @@ vec4 StandardTracer::shade(Ray incoming_ray
     }
   }
 
-  //cout << "Refl: " << reflectance << ", trans: " << transmittance << "\n";
-  // Summarize all color components
-  //color += (ambient + diffuse + specular) * (1-material->getReflection()) * material->getOpacity();
-  //vec4 out_color = vec4(color, material->getOpacity()) + refl_color + refr_color;
-
   // Mix the output colors
   vec4 color = vec4((ambient + diffuse + specular),1.0f) * (1-transmittance) + refr_color;
   color *= (1-reflectance);
   color += refl_color;
   color.a = 1.0f;
+
 
   return color;
 }

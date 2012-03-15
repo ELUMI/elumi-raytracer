@@ -91,7 +91,8 @@ int main(int argc, char* argv[]) {
   //RUM
   // Pos=1.09319,1.47483,-2.02129,; Dir=-0.402432,-0.537299,0.741187,; Up=0,1,0,
   //Pos=1.80622,1.6665,1.76089,; Dir=-0.603289,-0.544639,-0.58259,; Up=0,1,0,
-  camera.set(vec3(1.80622,1.6665,1.76089), vec3(-0.603289,-0.544639,-0.58259), vec3(0,1,0), 0.7845f, settings.width/settings.height);
+  // kub ball camera.set(vec3(1.80622,1.6665,1.76089), vec3(-0.603289,-0.544639,-0.58259), vec3(0,1,0), 0.7845f, settings.width/settings.height);
+  camera.set(vec3(0.688691,1.81879,-1.71517), vec3(0.401157,-0.165047,0.901017), vec3(0,1,0), 0.7845f, settings.width/settings.height);
   //camera.set(vec3(3.23387,0.61721,-0.0291648), vec3(-0.830073,0.492424,0.261721), vec3(0,1,0), 0.7845f, settings.width/settings.height);
   //camera.setPosition(vec3(4,0,0));
   //camera.setDirection(normalize(vec3(-1.0f, 0.0f, 0.0f)));
