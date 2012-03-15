@@ -102,10 +102,12 @@ void BaseTracer::traceImage(float* color_buffer) {
     }
   } else {
     // For every pixel
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for (size_t i=0; i<number_of_rays; ++i) {
+      //i=(nextvalue+=pattern.getblocksize());
+      //int j = pattern.getcoord(i);
       //#pragma omp task
-      #pragma omp flush (abort)
+      //#pragma omp flush (abort)
       if(!abort)
       {
         IAccDataStruct::IntersectionData intersection_data =
@@ -116,7 +118,7 @@ void BaseTracer::traceImage(float* color_buffer) {
         buffer[i*4 +2] = glm::min(1.0f, c.b);
         buffer[i*4 +3] = glm::min(1.0f, c.a);
 
-        #pragma omp atomic
+        //#pragma omp atomic
         --pixelsLeft;
       }
     }
