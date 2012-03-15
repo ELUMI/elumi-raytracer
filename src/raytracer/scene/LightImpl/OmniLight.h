@@ -32,6 +32,8 @@ public:
   void setIntensity(float intesity);
   void setColor(vec3 color);
 
+  float distanceToBlocker(IAccDataStruct* datastruct, vec3 point);
+
   void draw();
 private:
   vec3 m_position;

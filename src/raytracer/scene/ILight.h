@@ -12,6 +12,7 @@
 #include <GL/glfw.h>
 
 #include "../IDraw.h"
+#include "../IAccDataStruct.h"
 
 using namespace glm;
 
@@ -35,6 +36,10 @@ public:
 
   virtual void draw() = 0;
 
+  virtual float distanceToBlocker(IAccDataStruct* datastruct, vec3 point) = 0;
+  virtual bool isBlocked(IAccDataStruct* datastruct, vec3 point) {
+    return distanceToBlocker(datastruct, point) > 0.0001f;
+  }
 };
 
 }

@@ -6,6 +6,7 @@
  */
 
 #include "Renderer.h"
+#include "TracerImpl/DebugTracer.h"
 #include "TracerImpl/SimpleTracer.h"
 #include "TracerImpl/StandardTracer.h"
 #include <boost/thread.hpp>
@@ -18,7 +19,21 @@ namespace raytracer {
 Renderer::Renderer(Settings* settings)
   : m_scene(settings) {
   m_settings = settings;
-  m_tracer = new StandardTracer(&m_scene, settings);
+  switch (settings->tracer) {
+    case -1:
+      m_tracer = new DebugTracer(&m_scene, settings);
+      break;
+    case 0:
+      m_tracer = new BaseTracer(&m_scene, settings);
+      break;
+    case 1:
+      m_tracer = new SimpleTracer(&m_scene, settings);
+      break;
+    case 2:
+    default:
+      m_tracer = new StandardTracer(&m_scene, settings);
+      break;
+  }
   color_buffer = new float[m_settings->width * m_settings->height * 4];
   renderthread = 0;
 }

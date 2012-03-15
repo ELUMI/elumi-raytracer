@@ -26,7 +26,6 @@ StandardTracer::~StandardTracer() {
 
 
 void StandardTracer::traceImage(float* color_buffer) {
-  lights = &(scene->getLightVector());
   BaseTracer::traceImage(color_buffer);
 }
 
@@ -93,9 +92,7 @@ vec4 StandardTracer::shade(Ray incoming_ray
     ILight* light  = scene->getLightVector().at(i);
 
     if (light->getFalloffType() == ILight::NONE) {
-
       ambient += light->getColor();
-
     } else {
       /**** NON AMBIENT LIGHT, CALCULATE SHADOW RAYS ***/
 
@@ -108,9 +105,9 @@ vec4 StandardTracer::shade(Ray incoming_ray
       /**** IF IN SHADOW ****/
       if (light_idata.material != IAccDataStruct::IntersectionData::NOT_FOUND
           && (distance_between_light_and_first_hit + 0.0001f) < distance_to_light) {
+      //if(light->isBlocked(datastruct, idata.interPoint)) {
 
         //diffuse = vec3(1,0,0);
-
       } else {
 
         // Falloff intensity
