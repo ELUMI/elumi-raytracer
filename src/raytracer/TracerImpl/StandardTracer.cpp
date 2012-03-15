@@ -85,14 +85,11 @@ vec4 StandardTracer::shade(Ray incoming_ray,
   // For each light source in the scene
   for(unsigned int i=0; i<lights->size(); ++i) {
     ILight* light  = lights->at(i);
+
     Ray light_ray = Ray::generateRay(light->getPosition(), idata.interPoint);
-    IAccDataStruct::IntersectionData light_idata = datastruct->findClosestIntersection(light_ray);
-
     float distance_to_light = length(idata.interPoint - light->getPosition()); // 1
-    float distance_between_light_and_first_hit = length(light_idata.interPoint - light->getPosition()); // 2
 
-    if (//light_idata.material != IAccDataStruct::IntersectionData::NOT_FOUND
-         (distance_between_light_and_first_hit + 0.0001f) < distance_to_light) {
+    if (light->isBlocked(datastruct, idata.interPoint)) {
       // IN SHADOW!
       //diffuse = vec3(1,0,0);
     } else {

@@ -38,7 +38,7 @@ public:
     vec3 interPoint;
     vec3 normal;
     vec2 texcoord;
-    const static int NOT_FOUND = -1;
+    const static unsigned int NOT_FOUND = -1;
   };
 
 

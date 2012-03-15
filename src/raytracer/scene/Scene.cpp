@@ -34,13 +34,13 @@ void Scene::loadCamera(Camera camera) {
   m_camera = camera;
 }
 
-void Scene::loadLights(ILight* lights, int length, bool overwrite) {
-  for (int i=0; i<length; ++i) {
+void Scene::loadLights(ILight* lights, size_t length, bool overwrite) {
+  for (size_t i=0; i<length; ++i) {
     m_lights.push_back(&lights[i]);
   }
 }
 
-void Scene::loadMaterials(Material* materials, int length) {
+void Scene::loadMaterials(Material* materials, size_t length) {
   for (size_t i; i<length; ++i) {
     m_materials.push_back(&materials[i]);
   }

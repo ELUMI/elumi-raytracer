@@ -68,7 +68,7 @@ void BaseTracer::first_bounce() {
       vec4 pos = vp2m * vec4(x + 0.5, y + 0.5, depths[i], 1);
 
       //see comment in deferred.frag
-      unsigned int material = ceil(normals[i].w - 0.5); //alpha channel is noise, but this works!
+      unsigned int material = ceil(normals[i].w - 0.5); //alpha channel is noisy, but this works!
       assert(material == IAccDataStruct::IntersectionData::NOT_FOUND || material < scene->getMaterialVector().size());
 
       first_intersections[i] = IAccDataStruct::IntersectionData(material,
@@ -181,7 +181,15 @@ vec4 BaseTracer::trace(Ray ray, IAccDataStruct::IntersectionData idata) {
 }
 
 vec4 BaseTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata) {
-  return vec4(scene->getMaterialVector()[idata.material]->getDiffuse(), 1);
+  float light = 0;
+  for(size_t i = 0; i < lights->size(); ++i){
+    if(!lights->at(i)->isBlocked(datastruct, idata.interPoint)){
+      light++;
+    }
+  }
+  light /= lights->size();
+  vec3 color = scene->getMaterialVector()[idata.material]->getDiffuse();
+  return vec4(color * light, 1);
 }
 
 }

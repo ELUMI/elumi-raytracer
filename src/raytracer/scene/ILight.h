@@ -12,6 +12,7 @@
 #include <GL/glfw.h>
 
 #include "../IDraw.h"
+#include "../IAccDataStruct.h"
 
 using namespace glm;
 
@@ -30,6 +31,10 @@ public:
   virtual void setColor(vec3 color) = 0;
   virtual void setDistanceFalloff(FalloffType falloff_type) = 0;
 
+  virtual float distanceToBlocker(IAccDataStruct* datastruct, vec3 point) = 0;
+  virtual bool isBlocked(IAccDataStruct* datastruct, vec3 point) {
+    return distanceToBlocker(datastruct, point) > 0.0001f;
+  }
 };
 
 }
