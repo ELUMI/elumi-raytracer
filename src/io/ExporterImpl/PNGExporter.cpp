@@ -24,7 +24,7 @@ int PNGExporter::exportImage(const char* filename, int width, int height, float*
   FILE * fp;
   png_structp png_ptr = NULL;
   png_infop info_ptr = NULL;
-  size_t x, y;
+  int x, y;
   png_byte ** row_pointers = NULL;
   /* "status" contains the return value of this function. At first
      it is set to a value which means 'failure'. When the routine
@@ -73,10 +73,11 @@ int PNGExporter::exportImage(const char* filename, int width, int height, float*
   /* Initialize rows of PNG. */
 
   row_pointers = (png_byte **) png_malloc (png_ptr, height * sizeof (png_byte *));
+  //for (y = 0; y < height; ++y) {
   for (y = 0; y < height; ++y) {
     png_byte *row =
       (png_byte *) png_malloc (png_ptr, sizeof (unsigned char) * width * pixel_size);
-    row_pointers[y] = row;
+    row_pointers[height-1-y] = row;
     for (x = 0; x < width; ++x) {
       *row++ = 255*buffer[(y*width+x)*pixel_size];
       *row++ = 255*buffer[(y*width+x)*pixel_size+1];
