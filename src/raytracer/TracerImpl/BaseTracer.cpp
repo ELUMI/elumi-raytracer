@@ -159,7 +159,7 @@ int BaseTracer::spawnRays() {
   // Number of rays to spawn from camera
   int number_of_rays = width * height;
   // Initiate ray array
-  rays = new Ray[number_of_rays];
+  rays = new Ray[number_of_rays]; //TODO om man renderar många gånger i samma körning???
 
   Camera camera = scene->getCamera();
   vec3 camera_position = camera.getPosition();
@@ -198,7 +198,8 @@ vec4 BaseTracer::trace(Ray ray, IAccDataStruct::IntersectionData idata) {
 vec4 BaseTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata) {
   float light = 0;
   for(size_t i = 0; i < lights->size(); ++i){
-    if(!lights->at(i)->isBlocked(datastruct, idata.interPoint)){
+    //if(!lights->at(i)->isBlocked(datastruct, idata.interPoint)){
+    if (lights->at(i)->calcShadow(datastruct, idata.interPoint) < 1.0f) {
       light++;
     }
   }

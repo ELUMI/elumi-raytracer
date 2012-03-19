@@ -99,13 +99,12 @@ vec4 StandardTracer::shade(Ray incoming_ray
       Ray light_ray = Ray::generateRay(light->getPosition(), idata.interPoint);
       float distance_to_light = length(idata.interPoint - light->getPosition());
 
-      /**** IF IN SHADOW ****/
       //     if (light_idata.material != IAccDataStruct::IntersectionData::NOT_FOUND
       //         && (distance_between_light_and_first_hit + 0.0001f) < distance_to_light) {
-      if(light->isBlocked(datastruct, idata.interPoint)) {
-
-        //diffuse = vec3(1,0,0);
-      } else {
+      //if(light->isBlocked(datastruct, idata.interPoint)) {
+      float shadow = light->calcShadow(datastruct, idata.interPoint);
+      if (shadow < 1.0f) {
+        // NOT ENTIRELY IN SHADOW! SHADE!
 
         // Falloff intensity
         float intensity = light->getIntensity(distance_to_light);
