@@ -23,6 +23,7 @@ namespace raytracer {
 
 class Scene {
 public:
+  Scene();
 	Scene(Settings* settings);
 	virtual ~Scene();
 

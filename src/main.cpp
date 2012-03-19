@@ -12,7 +12,8 @@ namespace po = boost::program_options;
 #include "raytracer/scene/LightImpl/OmniLight.h"
 #include "raytracer/utilities/glutil.h"
 
-#include "pugixml.hpp"
+#include "raytracer/IXML.h"
+#include "raytracer/XMLImpl/XML.h"
 
 #include <iostream>
 #include <fstream>
@@ -85,14 +86,22 @@ int main(int argc, char* argv[]) {
   std::vector<raytracer::Texture*> textures   = importer->getTextures();
 
 
+  /* XML
+   *************/
+
+  raytracer::IXML* xml = new raytracer::XML();
+
+  Scene myScene = xml->importScene("tree.xml");
+
   /* RENDERER
    ***************** */
 
   camera.set(vec3(0,0,0), vec3(0,0,0), vec3(0,0,0), 0.7845f, settings.width/settings.height);
   camera.setPosition(vec3(0,10.0f,5.5f));
-  camera.setDirection(normalize(vec3(0.0f, -1.4f, -1.0f)));
+  camera.setDirection(normalize(vec3(0.0f, 1.4f, -1.0f)));
   camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
 
+  camera = myScene.getCamera();
 
   OmniLight* lights = new OmniLight(vec3(5, 7, 5.5f));
   lights->setIntensity(300);
@@ -122,7 +131,9 @@ int main(int argc, char* argv[]) {
     myRenderer->getScene().loadTextures(textures);
   }
 
-  myRenderer->loadLights(lights, 1, false);
+  myRenderer->loadScene(myScene);
+
+  //myRenderer->loadLights(lights, 1, false);
   //myRenderer->loadLights(light2, 1, false);
 //  myRenderer->loadLights(light3, 1, false);
 //  myRenderer->loadLights(light4, 1, false);

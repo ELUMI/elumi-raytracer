@@ -40,6 +40,10 @@ void Renderer::loadLights(ILight* lights, int length, bool overwrite) {
   m_scene.loadLights(lights,length,overwrite);
 }
 
+void Renderer::loadScene(Scene scene) {
+  m_scene = scene;
+}
+
 Scene& Renderer::getScene() {
   return m_scene;
 }

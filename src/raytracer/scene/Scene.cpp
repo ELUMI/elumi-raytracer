@@ -11,6 +11,12 @@
 
 namespace raytracer {
 
+Scene::Scene() : m_camera(), m_lights(), m_materials() {
+  m_acc_data_struct = new ArrayDataStruct();
+
+  m_settings = NULL;
+}
+
 Scene::Scene(Settings* settings)
   : m_camera(), m_lights(), m_materials() {
   m_acc_data_struct = new ArrayDataStruct();

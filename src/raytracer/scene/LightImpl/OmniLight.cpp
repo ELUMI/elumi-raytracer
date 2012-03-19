@@ -33,6 +33,10 @@ void OmniLight::setIntensity(float intensity) {
   m_intensity = intensity;
 }
 
+void OmniLight::setPosition(vec3 position) {
+  m_position = position;
+}
+
 float OmniLight::getIntensity(float distance) {
   switch (m_falloff_type) {
     case NONE:

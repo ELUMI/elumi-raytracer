@@ -26,7 +26,7 @@ public:
   float getIntensity(float distance);
   vec3 getColor() const;
 
-
+  void setPosition(vec3 position);
   void setDistanceFalloff(FalloffType falloff_type);
   void setIntensity(float intesity);
   void setColor(vec3 color);

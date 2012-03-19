@@ -20,7 +20,7 @@ struct Settings {
   Settings() {
     width = 640;
     height = 480;
-    opengl_version = 3;
+    opengl_version = 2;
     background_color = vec4(0,0,0,1);
     use_first_bounce = false;
     test=0;

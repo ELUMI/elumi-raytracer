@@ -67,7 +67,7 @@ vec4 StandardTracer::shade(Ray incoming_ray,
 
     if(true) {
       //tex_coords  = texture->getUVCoordinates(idata.interPoint,idata.e1,idata.e2);
-      tex_coords = texture->getUVCoordinates(idata.interPoint,ZAXIS);
+      tex_coords = texture->getUVCoordinates(idata.interPoint,YAXIS);
     } else { //We have texture coordinates
       tex_coords = idata.texcoord;
     }

@@ -33,6 +33,7 @@ public:
   void loadCamera(Camera& camera);
   void loadLights(ILight* lights, int length, bool overwrite=false);
   void loadSettings(Settings& settings);
+  void loadScene(Scene scene);
 
   float* getColorBuffer();
   void render();       // synchronic
