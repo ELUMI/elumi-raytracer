@@ -14,6 +14,8 @@ using namespace glm;
 
 namespace raytracer {
 
+enum Axis { XAXIS, YAXIS, ZAXIS };
+
 class Texture {
 public:
   enum TextureType { TEXTURE,HEIGHTMAP,NORMALMAP };
@@ -30,6 +32,7 @@ public:
 	vec3 getColorAt(vec2 coords);
 	vec3 getInterpolatedColor(vec2 coords);
 	vec2 getUVCoordinates(vec3 point, vec3 v1v0, vec3 v2v0);
+	vec2 getUVCoordinates(vec3 point, Axis axis);
 	void addMipmap();
 
 private:

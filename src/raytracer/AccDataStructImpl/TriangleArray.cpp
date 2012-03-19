@@ -22,8 +22,8 @@ TriangleArray::~TriangleArray() {
 }
 
 void TriangleArray::draw(){
-  for(int i; i<triangles.size(); ++i) {
-    glBegin(GL_TRIANGLES);
+  glBegin(GL_TRIANGLES);
+  for(int i=0; i<triangles.size(); ++i) {
       Material* mat = scene->getMaterialVector()[triangles[i]->getMaterial()];
       vec3 c = mat->getDiffuse();
       glColor3f(c.r, c.g, c.b);
@@ -32,8 +32,8 @@ void TriangleArray::draw(){
       glVertex3f(vs[0]->x, vs[0]->y, vs[0]->z);
       glVertex3f(vs[1]->x, vs[1]->y, vs[1]->z);
       glVertex3f(vs[2]->x, vs[2]->y, vs[2]->z);
-    glEnd();
   }
+  glEnd();
 
 }
 

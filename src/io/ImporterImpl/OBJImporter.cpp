@@ -91,14 +91,14 @@ void OBJImporter::loadFile(const char* filename){
         diff_map_index = textures.size()-1;
 
         //Mip maps
-        if(iluBuildMipmaps()) {
+        /*if(iluBuildMipmaps()) {
           for(int i = 0;ilActiveMipmap(i);i++) {
             w = ilGetInteger(IL_IMAGE_WIDTH);
             h = ilGetInteger(IL_IMAGE_HEIGHT);
             textures.push_back(new Texture(w,h,ilGetData()));
             textures.at(diff_map_index)->addMipmap();
           }
-        }
+        }*/
 
       } else {
         //Image not loaded (?)
@@ -136,7 +136,6 @@ void OBJImporter::loadFile(const char* filename){
 	// Start creating the triangles
 	for(int i=0; i<obj_data->faceCount; i++){
 		obj_face *face = obj_data->faceList[i];
-
 
 		vector<vec3*> _vertices;
 		vector<vec3*> _normals;

@@ -12,6 +12,8 @@ namespace po = boost::program_options;
 #include "raytracer/scene/LightImpl/OmniLight.h"
 #include "raytracer/utilities/glutil.h"
 
+#include "pugixml.hpp"
+
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
@@ -50,6 +52,7 @@ string inputFileName, outputFileName;
 int main(int argc, char* argv[]) {
   int running = GL_TRUE;
   getSettings(argc, argv);
+  cout << "OpenGL version: " << settings.opengl_version;
 
   if (settings.opengl_version) {
     win_width = settings.width*4;
@@ -88,28 +91,28 @@ int main(int argc, char* argv[]) {
   camera.set(vec3(0,0,0), vec3(0,0,0), vec3(0,0,0), 0.7845f, settings.width/settings.height);
   camera.setPosition(vec3(0,10.0f,5.5f));
   camera.setDirection(normalize(vec3(0.0f, -1.4f, -1.0f)));
-  camera.setUpVector(vec3(0.0f, -1.0f, 0.0f));
+  camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
 
 
-  OmniLight* lights = new OmniLight(vec3(4, 10, 5.5f));
-  lights->setIntensity(430);
+  OmniLight* lights = new OmniLight(vec3(5, 7, 5.5f));
+  lights->setIntensity(300);
   lights->setColor(vec3(1,1,1));
-  lights->setDistanceFalloff(LINEAR);
+  lights->setDistanceFalloff(QUADRATIC);
 
-  OmniLight* light2 = new OmniLight(vec3(3, 2, -5));
+  /*OmniLight* light2 = new OmniLight(vec3(3, 2, -5));
   light2->setIntensity(15);
-  light2->setColor(vec3(1,1,1));
+  light2->setColor(vec3(1, 1, 1));
   light2->setDistanceFalloff(QUADRATIC);
 
   OmniLight* light3 = new OmniLight(vec3(0, -5, 0));
-  light3->setIntensity(50);
-  light3->setColor(vec3(1,1,1));
+  light3->setIntensity(15);
+  light3->setColor(vec3(1, 1, 1));
   light3->setDistanceFalloff(QUADRATIC);
 
   OmniLight* light4 = new OmniLight(vec3(0, 5, 0));
   light4->setIntensity(15);
-  light4->setColor(vec3(1,1,1));
-  light4->setDistanceFalloff(QUADRATIC);
+  light4->setColor(vec3(1, 1, 1));
+  light4->setDistanceFalloff(QUADRATIC);*/
 
   myRenderer = new Renderer(&settings);
   myRenderer->loadCamera(camera);
@@ -120,7 +123,7 @@ int main(int argc, char* argv[]) {
   }
 
   myRenderer->loadLights(lights, 1, false);
-//  myRenderer->loadLights(light2, 1, false);
+  //myRenderer->loadLights(light2, 1, false);
 //  myRenderer->loadLights(light3, 1, false);
 //  myRenderer->loadLights(light4, 1, false);
 
@@ -166,7 +169,7 @@ int main(int argc, char* argv[]) {
       switch (renderMode) {
       case 1: {
         mat4 view = camera.getViewMatrix();
-        IDraw* drawables[] = { myRenderer->getScene().getDrawable(), lights, light2, light3, light4 };
+        IDraw* drawables[] = { myRenderer->getScene().getDrawable(), lights };
         if(settings.opengl_version >= 3) {
           glUseProgram(shader_program);
           int loc = glGetUniformLocation(shader_program, "modelViewProjectionMatrix");
@@ -175,7 +178,8 @@ int main(int argc, char* argv[]) {
           }
           glUseProgram(0);
         } else if (settings.opengl_version < 3) {
-          for(int i=0; i<sizeof(drawables); ++i) {
+          myRenderer->getScene().getDrawable()->drawWithGLView(view);
+          for(int i=0; i<sizeof(drawables)/sizeof(IDraw*); ++i) {
             drawables[i]->drawWithGLView(view);
           }
         }

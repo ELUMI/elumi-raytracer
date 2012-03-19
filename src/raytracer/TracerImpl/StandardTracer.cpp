@@ -65,8 +65,9 @@ vec4 StandardTracer::shade(Ray incoming_ray,
     Texture* texture = scene->getTextureAt(material->getDiffuseMap());
     int mipmap_levels = texture->getMipmapLevels();
 
-    if(idata.uvcoords.size() ==  0) {
-      tex_coords  = texture->getUVCoordinates(idata.interPoint,idata.e1,idata.e2);
+    if(true) {
+      //tex_coords  = texture->getUVCoordinates(idata.interPoint,idata.e1,idata.e2);
+      tex_coords = texture->getUVCoordinates(idata.interPoint,ZAXIS);
     } else { //We have texture coordinates
       tex_coords = idata.texcoord;
     }
@@ -87,7 +88,6 @@ vec4 StandardTracer::shade(Ray incoming_ray,
       //float dv = 1.0f/(float)mipmap_levels;
 
     } else {
-      cout << "x: " << tex_coords.x << " y: " << tex_coords.y << endl;
       texture_color = texture->getColorAt(tex_coords);
     }
 

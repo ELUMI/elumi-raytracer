@@ -9,6 +9,9 @@
 
 #include "Texture.h"
 
+#include <iostream>
+using namespace std;
+
 namespace raytracer {
 
 Texture::Texture() {
@@ -49,27 +52,48 @@ vec3 Texture::getColorAt(int x, int y) {
 
 vec2 Texture::getUVCoordinates(vec3 position, vec3 v1v0, vec3 v2v0) {
   vec2 coords = vec2(0,0);
-  vec3 e1 = normalize(v1v0);
+  vec3 e1 = v1v0;
   vec3 n = cross(v1v0,v2v0);
-  //vec3 e2 = normalize(cross(normal-position,e1));
   vec3 e2 = cross(n,e1);
   e2 = normalize(e2);
-  coords.x = length(dot(position,e1)*e1);
-  coords.y = length(dot(position,e2)*e2);
+
+  coords.x = length(dot(position,normalize(e1))*normalize(e1))/v1v0.length();
+  coords.y = length(dot(position,normalize(e2))*normalize(e2))/e2.length();
   return coords;
+}
+
+//Get UV-coordinates by dropping one axis
+vec2 Texture::getUVCoordinates(vec3 position, Axis axis) {
+  switch (axis) {
+    case XAXIS:
+      return vec2(position.y,position.z);
+      break;
+    case YAXIS:
+      return vec2(position.x,position.z);
+      break;
+    case ZAXIS:
+      return vec2(position.x,position.y);
+      break;
+    default:
+      return vec2(0,0);
+      break;
+  }
 }
 
 vec3 Texture::getColorAt(vec2 coords) {
   int x_coord,y_coord;
   if(coords.x < 0) {
-    coords.x = width-(int)abs((coords.x))%width;
+    x_coord = width+(int)(coords.x*(width))%width;
+  } else {
+    x_coord = (int)(coords.x*(width))%width;
   }
   if(coords.y < 0) {
-    coords.y = height-(int)
-        (abs(coords.y))%height;
+    y_coord = height+(int)(coords.y*(height))%height;
+  } else {
+    y_coord = (int)(coords.y*(height))%height;
   }
-  x_coord = (int)(coords.x*(width))%width;
-  y_coord = (int)(coords.y*(height))%height;
+  //x_coord = (int)(coords.x*(width))%width;
+  //y_coord = (int)(coords.y*(height))%height;
   return getColorAt(x_coord,y_coord);
 }
 

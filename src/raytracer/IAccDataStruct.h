@@ -35,7 +35,6 @@ public:
       IntersectionData::e2 = e2;
     };
 
-    vector<vec3*> uvcoords;
     unsigned int material,texture;
     vec3 interPoint;
     vec3 normal;
