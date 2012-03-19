@@ -91,7 +91,7 @@ void BaseTracer::tracePixel(size_t i, IAccDataStruct::IntersectionData intersect
 }
 
 void BaseTracer::traceImage(float* color_buffer) {
-  lights = &(scene->getLightVector());
+  lights = scene->getLightVector();
   buffer = color_buffer;
   pixelsLeft = settings->width * settings->height;
   abort = false;
@@ -199,7 +199,7 @@ vec4 BaseTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata)
   float light = 0;
   for(size_t i = 0; i < lights->size(); ++i){
     //if(!lights->at(i)->isBlocked(datastruct, idata.interPoint)){
-    if (lights->at(i)->calcShadow(datastruct, idata.interPoint) < 1.0f) {
+    if (lights->at(i)->calcLight(datastruct, idata.interPoint) > 0.0f) {
       light++;
     }
   }

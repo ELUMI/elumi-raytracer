@@ -36,7 +36,7 @@ public:
 	Camera& getCamera();
 	IAccDataStruct* getAccDataStruct();
 
-	std::vector<ILight*> getLightVector();
+	std::vector<ILight*>* getLightVector();
 	const std::vector<Material*>& getMaterialVector();
 
 	Texture* getTextureAt(int index);
@@ -48,7 +48,7 @@ public:
 private:
 	Camera m_camera;
 	IAccDataStruct* m_acc_data_struct;
-	std::vector<ILight*> m_lights;
+	std::vector<ILight*>* m_lights;
 	std::vector<Material*> m_materials;
   std::vector<Texture*> m_textures;
 	IDraw* m_drawable;

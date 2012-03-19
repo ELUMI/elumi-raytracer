@@ -45,13 +45,13 @@ vec4 DebugTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata
     return vec4(abs(idata.interPoint-idata2.interPoint)*10.0f,1);
   }
   case 9: {
-    ILight* light = scene->getLightVector().front();
+    ILight* light = scene->getLightVector()->front();
     Ray lightRay = Ray::generateRay(light->getPosition(), idata.interPoint);
     IAccDataStruct::IntersectionData idatal = scene->getAccDataStruct()->findClosestIntersection(lightRay);
     return vec4(abs(idata.interPoint-idatal.interPoint),1);
   }
   case 10: {
-    ILight* light = scene->getLightVector().front();
+    ILight* light = scene->getLightVector()->front();
     Ray lightRay = Ray::generateRay(light->getPosition(), idata.interPoint);
     IAccDataStruct::IntersectionData idatal = scene->getAccDataStruct()->findClosestIntersection(lightRay);
 
@@ -63,7 +63,7 @@ vec4 DebugTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata
 
   }
 
-  ILight* light = scene->getLightVector().front();
+  ILight* light = scene->getLightVector()->front();
   vec3 dir = normalize(idata.interPoint - light->getPosition());
   Ray lightRay = Ray(light->getPosition(), dir);
   IAccDataStruct::IntersectionData idatal = scene->getAccDataStruct()->findClosestIntersection(lightRay);

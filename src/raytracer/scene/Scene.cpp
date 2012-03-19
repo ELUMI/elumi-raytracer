@@ -12,12 +12,15 @@
 namespace raytracer {
 
 Scene::Scene(Settings* settings)
-  : m_camera(), m_lights(), m_materials() {
+  : m_camera(), m_materials() {
+  m_lights = new std::vector<ILight*>;
   m_acc_data_struct = new ArrayDataStruct();
   m_settings = settings;
 }
 
-Scene::~Scene() {}
+Scene::~Scene() {
+  delete m_lights;
+}
 
 void Scene::loadTriangles(vector<Triangle*> triangles, bool overwrite) {
   m_acc_data_struct->setData(triangles);
@@ -36,7 +39,7 @@ void Scene::loadCamera(Camera camera) {
 
 void Scene::loadLights(ILight** lights, size_t length, bool overwrite) {
   for (size_t i=0; i<length; ++i) {
-    m_lights.push_back(lights[i]);
+    m_lights->push_back(lights[i]);
   }
 }
 
@@ -53,7 +56,7 @@ void Scene::loadTextures(std::vector<raytracer::Texture*> textures) {
   m_textures = textures;
 }
 
-std::vector<ILight*> Scene::getLightVector() {
+std::vector<ILight*>* Scene::getLightVector() {
   return m_lights;
 }
 

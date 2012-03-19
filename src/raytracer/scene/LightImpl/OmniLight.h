@@ -34,7 +34,7 @@ public:
 
   void draw();
 
-  float calcShadow(IAccDataStruct* datastruct, vec3 point);
+  float calcLight(IAccDataStruct* datastruct, vec3 point);
 
 private:
   float distanceToBlocker(IAccDataStruct* datastruct, vec3 point);

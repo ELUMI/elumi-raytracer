@@ -29,7 +29,7 @@ public:
 
   virtual void draw();
 
-  float calcShadow(IAccDataStruct* datastruct, vec3 point);
+  float calcLight(IAccDataStruct* datastruct, vec3 point);
 
 private:
   virtual float distanceToBlocker(IAccDataStruct* datastruct, vec3 point);

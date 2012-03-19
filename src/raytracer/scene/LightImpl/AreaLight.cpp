@@ -66,7 +66,7 @@ void AreaLight::setPosition(vec3 position) {
   this->position = position;
 }
 
-float AreaLight::calcShadow(IAccDataStruct* datastruct, vec3 point) {
+float AreaLight::calcLight(IAccDataStruct* datastruct, vec3 point) {
   return -1.0f;
 }
 

@@ -88,8 +88,8 @@ vec4 StandardTracer::shade(Ray incoming_ray
   }
 
   /**** For each light source in the scene ****/
-  for(unsigned int i=0; i<scene->getLightVector().size(); ++i) {
-    ILight* light  = scene->getLightVector().at(i);
+  for(unsigned int i=0; i<lights->size(); ++i) {
+    ILight* light  = lights->at(i);
 
     if (light->getFalloffType() == ILight::NONE) {
       ambient += light->getColor();
@@ -102,8 +102,8 @@ vec4 StandardTracer::shade(Ray incoming_ray
       //     if (light_idata.material != IAccDataStruct::IntersectionData::NOT_FOUND
       //         && (distance_between_light_and_first_hit + 0.0001f) < distance_to_light) {
       //if(light->isBlocked(datastruct, idata.interPoint)) {
-      float shadow = light->calcShadow(datastruct, idata.interPoint);
-      if (shadow < 1.0f) {
+      float in_light = light->calcLight(datastruct, idata.interPoint);
+      if (in_light > 0.0f) {
         // NOT ENTIRELY IN SHADOW! SHADE!
 
         // Falloff intensity

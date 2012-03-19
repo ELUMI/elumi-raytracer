@@ -89,10 +89,10 @@ float OmniLight::distanceToBlocker(IAccDataStruct* datastruct, vec3 point){
   return distance_to_light - distance_between_light_and_first_hit;
 }
 
-float OmniLight::calcShadow(IAccDataStruct* datastruct, vec3 point) {
+float OmniLight::calcLight(IAccDataStruct* datastruct, vec3 point) {
   if (isBlocked(datastruct, point))
-    return 1.0f;
-  return 0.0f;
+    return 0.0f;
+  return 1.0f;
 }
 
 
