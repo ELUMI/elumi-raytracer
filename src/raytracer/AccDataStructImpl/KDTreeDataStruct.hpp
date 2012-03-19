@@ -35,24 +35,24 @@ private:
     KDNode():left(NULL),right(NULL),leaf(false){};
     void setLeft(KDNode* left){KDNode::left=left;}
     void setRight(KDNode* right){KDNode::right=right;}
+    void setLeaf(bool leaf){KDNode::leaf=leaf;}
+    void setAxis(int axis){KDNode::axis=axis;}
+    void setSplit(float split){KDNode::split=split;}
+    void setSize(size_t size){KDNode::size=size;}
+    void setTriangles(Triangle** triangles){KDNode::triangles=triangles;}
     KDNode* getLeft(){return KDNode::left;}
     KDNode* getRight(){return KDNode::right;}
+    size_t getSize(){return KDNode::size;}
+    Triangle** getTriangles(){return KDNode::triangles;}
     bool isLeaf(){return KDNode::leaf;}
-    void setLeaf(bool leaf){KDNode::leaf=leaf;}
-    void setStart(size_t start){KDNode::start=start;}
-    void setEnd(size_t end){KDNode::end=end;}
-    void setAxis(int axis){KDNode::axis=axis;}
-    size_t getStart(){return KDNode::start;}
-    size_t getEnd(){return KDNode::end;}
-    size_t getSize(){return KDNode::end-KDNode::start+1;}
+
     int getAxis(){return KDNode::axis;}
     float getSplit(){return KDNode::split;}
-    void setSplit(float split){KDNode::split=split;}
   private:
     KDNode* left;
     KDNode* right;
-    size_t start;
-    size_t end;
+    Triangle** triangles;
+    size_t size;
     int axis;
     float split;
     bool leaf;
@@ -68,7 +68,7 @@ private:
 
   KDNode* root;
   AABB* aabb;
-  Triangle*** triangles;
+  Triangle** triangles;
   vector<Triangle*> triangles_vec;
   size_t triangle_count;
   float lookUpTable[3];
