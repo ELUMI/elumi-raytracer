@@ -56,8 +56,8 @@ int main(int argc, char* argv[]) {
   cout << "OpenGL version: " << settings.opengl_version;
 
   if (settings.opengl_version) {
-    win_width = settings.width*4;
-    win_height = settings.height*4;
+    win_width = settings.width* (settings.height > 400 ? 1 : 4);
+    win_height = settings.height*(settings.height > 400 ? 1 : 4);
 
     glfwInit();
     //Open an OpenGl window
