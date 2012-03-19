@@ -26,6 +26,8 @@ struct Settings {
     test=0;
     debug_mode=0;
     tracer = 2;
+    max_recursion_depth = 10;
+    recursion_attenuation_threshold = 0.015625;
   }
 
   int width;
@@ -36,6 +38,8 @@ struct Settings {
   float test;
   int debug_mode;
   int tracer;
+  unsigned int max_recursion_depth;
+  float recursion_attenuation_threshold;
 };
 
 }

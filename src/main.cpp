@@ -53,7 +53,7 @@ string inputFileName, outputFileName;
 int main(int argc, char* argv[]) {
   int running = GL_TRUE;
   getSettings(argc, argv);
-  cout << "OpenGL version: " << settings.opengl_version;
+  cout << "OpenGL version: " << settings.opengl_version << "\n";
 
   if (settings.opengl_version) {
     win_width = settings.width* (settings.height > 400 ? 1 : 4);
@@ -89,30 +89,26 @@ int main(int argc, char* argv[]) {
   /* RENDERER
    ***************** */
 
-  camera.set(vec3(), vec3(), vec3(), 0.7845f, settings.width/settings.height);
-  camera.setPosition(vec3(4,0,0));
-  camera.setDirection(normalize(vec3(-1.0f, 0.0f, 0.0f)));
-  camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
+  camera.set(vec3(1.80622,1.6665,1.76089), vec3(-0.603289,-0.544639,-0.58259), vec3(0,1,0), 0.7845f, settings.width/settings.height);
 
-  OmniLight* lights = new OmniLight(vec3(-4, 2, 1));
-  lights->setIntensity(15);
-  lights->setColor(vec3(1,1,1));
-  lights->setDistanceFalloff(QUADRATIC);
 
-  OmniLight* light2 = new OmniLight(vec3(3, 2, -5));
-  light2->setIntensity(15);
-  light2->setColor(vec3(1, 1, 1));
-  light2->setDistanceFalloff(QUADRATIC);
+  const int NR_LIGHTS = 3;
+  ILight *lights[NR_LIGHTS];
 
-  OmniLight* light3 = new OmniLight(vec3(0, -5, 0));
-  light3->setIntensity(15);
-  light3->setColor(vec3(1, 1, 1));
-  light3->setDistanceFalloff(QUADRATIC);
+  lights[0] = new OmniLight();
+  lights[0]->setPosition(vec3(2,1,2));
+  lights[0]->setIntensity(3.0f);
+  lights[0]->setDistanceFalloff(ILight::QUADRATIC);
+  lights[1] = new OmniLight();
+  lights[1]->setPosition(vec3(0,2,0));
+  lights[1]->setColor(vec3(0.4f,0.4f,0.4f));
+  lights[1]->setDistanceFalloff(ILight::NONE);
+  lights[2] = new OmniLight();
+  lights[2]->setPosition(vec3(-2,0,-2));
+  lights[2]->setIntensity(3.0f);
+  lights[2]->setDistanceFalloff(ILight::QUADRATIC);
 
-  OmniLight* light4 = new OmniLight(vec3(0, 5, 0));
-  light4->setIntensity(15);
-  light4->setColor(vec3(1, 1, 1));
-  light4->setDistanceFalloff(QUADRATIC);
+
 
   myRenderer = new Renderer(&settings);
   myRenderer->loadCamera(camera);
@@ -122,10 +118,8 @@ int main(int argc, char* argv[]) {
     myRenderer->getScene().loadTextures(textures);
   }
 
-  myRenderer->loadLights(lights, 1, false);
-  myRenderer->loadLights(light2, 1, false);
-  myRenderer->loadLights(light3, 1, false);
-  myRenderer->loadLights(light4, 1, false);
+  myRenderer->loadLights(lights, NR_LIGHTS, false);
+
 
   buffer = myRenderer->getColorBuffer();
   for (int i = 0; i < settings.width * settings.height-3; i += 3) {
@@ -164,7 +158,11 @@ int main(int argc, char* argv[]) {
       glEnable(GL_DEPTH_TEST);
       glDisable(GL_CULL_FACE);
 
-      IDraw* drawables[] = { myRenderer->getScene().getDrawable(), lights, light2, light3, light4 };
+      IDraw* drawables[1+NR_LIGHTS];
+      drawables[0] = myRenderer->getScene().getDrawable();
+      for(int i=0; i<NR_LIGHTS; ++i)
+        drawables[1+i] = lights[i];
+
       switch (renderMode) {
       case 1:
         drawDrawables(drawables, sizeof(drawables) / sizeof(IDraw*));
@@ -226,8 +224,8 @@ void getSettings(int argc, char *argv[]) {
   po::options_description desc("Allowed options");
   desc.add_options()("help,h", "produce help message")("no_opengl",
       "Do not use OpenGL")("input-file,i", po::value<string>(), "Input file")(
-      "output-file,o", po::value<string>(), "Output file")("settings-file,s",
-      po::value<string>(), "Settings file");
+          "output-file,o", po::value<string>(), "Output file")("settings-file,s",
+              po::value<string>(), "Settings file");
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
   po::notify(vm);
@@ -246,7 +244,7 @@ void getSettings(int argc, char *argv[]) {
         string option = boost::trim_copy(strs[0]);
         string value = boost::trim_copy(strs[1]);
         cout << "Using setting: " << option
-             << "\t\twith value: " << value << endl;
+            << "\t\twith value: " << value << endl;
         stringstream ssvalue(value);
         if (option == "width") {
           ssvalue >> settings.width;
@@ -260,6 +258,10 @@ void getSettings(int argc, char *argv[]) {
           ssvalue >> settings.use_first_bounce;
         } else if (option == "tracer") {
           ssvalue >> settings.tracer;
+        } else if (option == "max_recursion_depth") {
+          ssvalue >> settings.max_recursion_depth;
+        } else if (option == "recursion_attenuation_threshold") {
+          ssvalue >> settings.recursion_attenuation_threshold;
         } else {
           cout << "Unknown option: " << option << endl;
         }
@@ -304,7 +306,7 @@ void initGL() {
   //************************************
   // The loadShaderProgram and linkShaderProgam functions are defined in glutil.cpp and
   // do exactly what we did in lab1 but are hidden for convenience
-  shader_program = loadShaderProgram("simple.vert", "simple.frag");
+  shader_program = loadShaderProgram("data/gl_shaders/simple.vert", "data/gl_shaders/simple.frag");
   glBindAttribLocation(shader_program, 0, "position");
   glBindAttribLocation(shader_program, 1, "color");
   glBindAttribLocation(shader_program, 2, "normal");

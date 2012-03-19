@@ -23,7 +23,7 @@ TriangleArray::~TriangleArray() {
 
 void TriangleArray::draw(){
   glBegin(GL_TRIANGLES);
-  for(int i=0; i<triangles.size(); ++i) {
+  for(size_t i=0; i<triangles.size(); ++i) {
       Material* mat = scene->getMaterialVector()[triangles[i]->getMaterial()];
       vec3 c = mat->getDiffuse();
       glColor3f(c.r, c.g, c.b);

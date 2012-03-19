@@ -57,7 +57,8 @@ vec2 Texture::getUVCoordinates(vec3 position, MappingType type) {
       if(y > abs(position.z)) {
         y = abs(position.z);
       }
-      coords = vec2(x,y);
+      //coords = vec2(x,y);
+      coords = vec2(abs(position.x),abs(position.z));
       break;
     default:
       break;

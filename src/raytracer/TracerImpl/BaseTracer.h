@@ -45,13 +45,14 @@ protected:
   Ray* rays;
 
   IAccDataStruct* datastruct;
-  const std::vector<ILight*>* lights;
+  std::vector<ILight*>* lights;
 
   bool abort;
   unsigned int pixelsLeft;
 
   DeferredProcesser* first_pass;
   IAccDataStruct::IntersectionData* first_intersections;
+
 private:
   virtual void tracePixel(size_t i, IAccDataStruct::IntersectionData intersection_data);
 };

@@ -31,7 +31,7 @@ public:
 
   void loadTriangles(vector<Triangle*> triangles, bool overwrite=false);
   void loadCamera(Camera& camera);
-  void loadLights(ILight* lights, int length, bool overwrite=false);
+  void loadLights(ILight** lights, int length, bool overwrite=false);
   void loadSettings(Settings& settings);
 
   float* getColorBuffer();

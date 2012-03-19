@@ -9,8 +9,8 @@
 #include <glm/gtc/matrix_transform.hpp> //translate, rotate, scale, perspective
 namespace raytracer {
 
-BaseTracer::BaseTracer(Scene* scene, Settings* settings) :
-  lights(&(scene->getLightVector())) {
+
+BaseTracer::BaseTracer(Scene* scene, Settings* settings) {
   this->scene = scene;
   this->settings = settings;
 
@@ -68,7 +68,7 @@ void BaseTracer::first_bounce() {
       vec4 pos = vp2m * vec4(x + 0.5, y + 0.5, depths[i], 1);
 
       //see comment in deferred.frag
-      unsigned int material = ceil(normals[i].w - 0.5); //alpha channel is noise, but this works!
+      unsigned int material = ceil(normals[i].w - 0.5); //alpha channel is noisy, but this works!
       assert(material == IAccDataStruct::IntersectionData::NOT_FOUND || material < scene->getMaterialVector().size());
 
       first_intersections[i] = IAccDataStruct::IntersectionData(material,
@@ -91,9 +91,24 @@ void BaseTracer::tracePixel(size_t i, IAccDataStruct::IntersectionData intersect
 }
 
 void BaseTracer::traceImage(float* color_buffer) {
+  lights = &(scene->getLightVector());
   buffer = color_buffer;
   pixelsLeft = settings->width * settings->height;
   abort = false;
+
+  cout << "camera.set(vec3("
+       << scene->getCamera().getPosition().x << ","
+       << scene->getCamera().getPosition().y << ","
+       << scene->getCamera().getPosition().z
+       << "), vec3("
+       << scene->getCamera().getDirection().x << ","
+       << scene->getCamera().getDirection().y << ","
+       << scene->getCamera().getDirection().z
+       << "), vec3("
+       << scene->getCamera().getUpVector().x << ","
+       << scene->getCamera().getUpVector().y << ","
+       << scene->getCamera().getUpVector().z
+       << "), 0.7845f, settings.width/settings.height);\n";
 
   int number_of_rays = spawnRays();
 
@@ -181,7 +196,15 @@ vec4 BaseTracer::trace(Ray ray, IAccDataStruct::IntersectionData idata) {
 }
 
 vec4 BaseTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata) {
-  return vec4(scene->getMaterialVector()[idata.material]->getDiffuse(), 1);
+  float light = 0;
+  for(size_t i = 0; i < lights->size(); ++i){
+    if(!lights->at(i)->isBlocked(datastruct, idata.interPoint)){
+      light++;
+    }
+  }
+  light /= lights->size();
+  vec3 color = scene->getMaterialVector()[idata.material]->getDiffuse();
+  return vec4(color * light, 1);
 }
 
 }

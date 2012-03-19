@@ -28,15 +28,15 @@ public:
 
 	void loadTriangles(vector<Triangle*> triangles, bool overwrite=false);
 	void loadCamera(Camera camera);
-	void loadLights(ILight* lights, int length, bool overwrite=false);
-	void loadMaterials(Material* materials, int length);
+	void loadLights(ILight** lights, size_t length, bool overwrite=false);
+	void loadMaterials(Material* materials, size_t length);
 	void loadMaterials(std::vector<raytracer::Material*> materials);
 	void loadTextures(std::vector<raytracer::Texture*> textures);
 
 	Camera& getCamera();
 	IAccDataStruct* getAccDataStruct();
 
-	const std::vector<ILight*>& getLightVector();
+	std::vector<ILight*> getLightVector();
 	const std::vector<Material*>& getMaterialVector();
 
 	Texture* getTextureAt(int index);

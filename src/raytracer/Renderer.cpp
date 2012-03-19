@@ -51,7 +51,7 @@ void Renderer::loadCamera(Camera& camera) {
   m_scene.loadCamera(camera);
 }
 
-void Renderer::loadLights(ILight* lights, int length, bool overwrite) {
+void Renderer::loadLights(ILight** lights, int length, bool overwrite) {
   m_scene.loadLights(lights,length,overwrite);
 }
 
