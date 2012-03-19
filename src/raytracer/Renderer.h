@@ -17,6 +17,7 @@
 #include <boost/thread.hpp>
 #include "glm/glm.hpp"
 
+
 using namespace glm;
 
 namespace raytracer {

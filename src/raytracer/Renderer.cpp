@@ -19,6 +19,7 @@ namespace raytracer {
 Renderer::Renderer(Settings* settings)
   : m_scene(settings) {
   m_settings = settings;
+
   switch (settings->tracer) {
     case -1:
       m_tracer = new DebugTracer(&m_scene, settings);

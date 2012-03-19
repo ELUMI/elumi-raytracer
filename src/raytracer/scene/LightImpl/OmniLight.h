@@ -35,6 +35,7 @@ public:
   void draw();
 
   float calcLight(IAccDataStruct* datastruct, vec3 point);
+  float calcLight(IAccDataStruct* datastruct, vec3 point, vec3 custom_light_pos);
 
 private:
   float distanceToBlocker(IAccDataStruct* datastruct, vec3 point);

@@ -34,7 +34,7 @@ AreaLight::AreaLight(vec3 position, vec3 axis1, vec3 axis2, unsigned int sample1
   intensity = 1.0f;
   color = vec3(1,1,1);
 
-  light_sources = new OmniLight[sample1*sample2];
+  light_sources = new OmniLight[samples];
   setPosition(position);
   setDistanceFalloff(falloff_type);
 
@@ -100,8 +100,8 @@ void AreaLight::setPosition(vec3 position) {
   this->position = position;
 
   vec3 top_left = position - 0.5f*axis1 - 0.5f*axis2;
-  vec3 delta1 = axis1 * (1.0f/sample1);
-  vec3 delta2 = axis2 * (1.0f/sample2);
+  delta1 = axis1 * (1.0f/sample1);
+  delta2 = axis2 * (1.0f/sample2);
 
   OmniLight* light = light_sources;
   for (unsigned int x=0; x<sample1; ++x) {
@@ -118,7 +118,11 @@ float AreaLight::calcLight(IAccDataStruct* datastruct, vec3 point) {
 
   OmniLight* light = light_sources;
   for (unsigned int i=0; i<samples; ++i,light++) {
-    in_light += light->calcLight(datastruct,point) / samples;
+    // TODO Fullösning? Ändrar på positionen på intersection point istället för själva subljus-positionerna i area light. Svårt att komma åt dem härifrån.
+    vec3 rand_point = point + rand.gen_random_float(0.0f, 1.0f) * delta1 + rand.gen_random_float(0.0f, 1.0f) * delta2;
+    //light->setPosition(light_pos + rand.gen_random_float(0.0f, 1.0f) * delta1 + rand.gen_random_float(0.0f, 1.0f) * delta2);
+    in_light += light->calcLight(datastruct,rand_point) / samples;
+    //light->setPosition(light_pos);
   }
 
   return in_light;

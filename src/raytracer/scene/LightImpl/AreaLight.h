@@ -10,6 +10,7 @@
 
 #include "../ILight.h"
 #include "OmniLight.h"
+#include "../../utilities/Random.h"
 
 namespace raytracer {
 
@@ -35,6 +36,7 @@ public:
 private:
   vec3 position;
   vec3 axis1, axis2;
+  vec3 delta1, delta2;
   unsigned int sample1, sample2;
   unsigned int samples;
 
@@ -43,6 +45,7 @@ private:
   FalloffType falloff_type;
 
   OmniLight* light_sources;
+  Random rand;
 };
 
 }
