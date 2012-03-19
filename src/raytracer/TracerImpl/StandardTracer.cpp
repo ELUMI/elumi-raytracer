@@ -96,9 +96,6 @@ vec4 StandardTracer::shade(Ray incoming_ray
     } else {
       /**** NON AMBIENT LIGHT, CALCULATE SHADOW RAYS ***/
 
-      Ray light_ray = Ray::generateRay(light->getPosition(), idata.interPoint);
-      float distance_to_light = length(idata.interPoint - light->getPosition());
-
       //     if (light_idata.material != IAccDataStruct::IntersectionData::NOT_FOUND
       //         && (distance_between_light_and_first_hit + 0.0001f) < distance_to_light) {
       //if(light->isBlocked(datastruct, idata.interPoint)) {
@@ -106,11 +103,15 @@ vec4 StandardTracer::shade(Ray incoming_ray
       if (in_light > 0.0f) {
         // NOT ENTIRELY IN SHADOW! SHADE!
 
-        // Falloff intensity
-        float intensity = light->getIntensity(distance_to_light);
+        Ray light_ray = Ray::generateRay(light->getPosition(), idata.interPoint);
+//        float distance_to_light = length(idata.interPoint - light->getPosition());
+//
+//        // Falloff intensity
+//        float intensity = light->getIntensity(distance_to_light);
+//in_light = intensity;
 
         //Diffuse
-        diffuse += intensity
+        diffuse += in_light
             * clamp(glm::dot(-light_ray.getDirection(), normal))
         * light->getColor();
 
@@ -122,12 +123,12 @@ vec4 StandardTracer::shade(Ray incoming_ray
 
         //Specular
         vec3 h = normalize(-incoming_ray.getDirection() - light_ray.getDirection());
-        specular += intensity
+        specular += in_light
             * glm::pow( clamp( glm::dot(normal, h) ), material->getShininess() )
         * material->getSpecular()
         * light->getColor();
 
-      } // end diffuse specular
+      } // end in light
     } // end non abmient
   } // for each light
 

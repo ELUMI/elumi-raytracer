@@ -10,14 +10,50 @@
 namespace raytracer {
 
 AreaLight::AreaLight() {
+  position = vec3(0,0,0);
+  axis1 = vec3(1.0f, 0.0f, 0.0f);
+  axis2 = vec3(0.0f, 0.0f, 1.0f);
+  sample1 = sample2 = 3;
+
+  light_sources = new OmniLight[sample1*sample2];
+
+  falloff_type = QUADRATIC;
+  intensity = 1.0f;
+  color = vec3(1,1,1);
+}
+
+AreaLight::AreaLight(vec3 position, vec3 axis1, vec3 axis2, unsigned int sample1, unsigned int sample2) {
+  this->position = position;
+  this->axis1 = axis1;
+  this->axis2 = axis2;
+  this->sample1 = sample1;
+  this->sample2 = sample2;
+
+  falloff_type = QUADRATIC;
+  intensity = 1.0f;
+  color = vec3(1,1,1);
+
+  light_sources = new OmniLight[sample1*sample2];
+  vec3 top_left = position - 0.5f*axis1 - 0.5f*axis2;
+  vec3 delta1 = axis1 * (1.0f/sample1);
+  vec3 delta2 = axis2 * (1.0f/sample2);
+
+  for (unsigned int x=0; x<sample1; ++x) {
+    for (unsigned int y=0; y<sample2; ++y) {
+
+      vec3 sample_pos = top_left + (float)x*delta1 + (float)y*delta2;
+      light_sources->setPosition(sample_pos);
+      light_sources->setDistanceFalloff(falloff_type);
+    }
+  }
 
 }
 
 AreaLight::~AreaLight() {
-
+  delete light_sources;
 }
 
-ILight::FalloffType AreaLight::getFalloffType() {
+ILight::FalloffType AreaLight::getFalloffType() const {
   return falloff_type;
 }
 
@@ -30,11 +66,6 @@ vec3 AreaLight::getPosition() {
 }
 
 float AreaLight::getIntensity(float distance) {
-  //TODO
-  return 1.0f;
-}
-
-float AreaLight::distanceToBlocker(IAccDataStruct *datastruct, vec3 point) {
   //TODO
   return 1.0f;
 }
@@ -67,7 +98,17 @@ void AreaLight::setPosition(vec3 position) {
 }
 
 float AreaLight::calcLight(IAccDataStruct* datastruct, vec3 point) {
-  return -1.0f;
+  float light = 0.0f;
+
+  for (unsigned int x=0; x<sample1; ++x) {
+    for (unsigned int y=0; y<sample2; ++y) {
+
+
+
+    }
+  }
+
+  return light;
 }
 
 }

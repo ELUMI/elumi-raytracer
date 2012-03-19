@@ -11,6 +11,7 @@ namespace po = boost::program_options;
 #include "raytracer/TracerImpl/BaseTracer.h"
 #include "raytracer/scene/ILight.h"
 #include "raytracer/scene/LightImpl/OmniLight.h"
+#include "raytracer/scene/LightImpl/AreaLight.h"
 #include "raytracer/utilities/glutil.h"
 
 #include <iostream>
@@ -89,24 +90,16 @@ int main(int argc, char* argv[]) {
   /* RENDERER
    ***************** */
 
-  camera.set(vec3(1.80622,1.6665,1.76089), vec3(-0.603289,-0.544639,-0.58259), vec3(0,1,0), 0.7845f, settings.width/settings.height);
+  camera.set(vec3(4.16428,5.74311,-7.83016), vec3(-0.421697,-0.5373,0.730398), vec3(0,1,0), 0.7845f, settings.width/settings.height);
 
 
-  const int NR_LIGHTS = 3;
+  const int NR_LIGHTS = 1;
   ILight *lights[NR_LIGHTS];
 
   lights[0] = new OmniLight();
-  lights[0]->setPosition(vec3(2,1,2));
-  lights[0]->setIntensity(3.0f);
-  lights[0]->setDistanceFalloff(ILight::QUADRATIC);
-  lights[1] = new OmniLight();
-  lights[1]->setPosition(vec3(0,2,0));
-  lights[1]->setColor(vec3(0.4f,0.4f,0.4f));
-  lights[1]->setDistanceFalloff(ILight::NONE);
-  lights[2] = new OmniLight();
-  lights[2]->setPosition(vec3(-2,0,-2));
-  lights[2]->setIntensity(3.0f);
-  lights[2]->setDistanceFalloff(ILight::QUADRATIC);
+  lights[0]->setPosition(vec3(0,4,4));
+  lights[0]->setIntensity(5.0f);
+  lights[0]->setDistanceFalloff(ILight::LINEAR);
 
 
 

@@ -9,35 +9,40 @@
 #define AREALIGHT_H_
 
 #include "../ILight.h"
+#include "OmniLight.h"
 
 namespace raytracer {
 
 class AreaLight: public raytracer::ILight {
 public:
   AreaLight();
+  AreaLight(vec3 position, vec3 axis1, vec3 axis2, unsigned int sample1, unsigned int sample2);
   virtual ~AreaLight();
 
-  virtual vec3 getPosition();
-  virtual float getIntensity(float distance);
-  virtual vec3 getColor() const;
-  virtual FalloffType getFalloffType();
+  vec3 getPosition();
+  float getIntensity(float distance);
+  vec3 getColor() const;
+  FalloffType getFalloffType() const;
 
-  virtual void setPosition(vec3 position);
-  virtual void setIntensity(float intensity);
-  virtual void setColor(vec3 color);
-  virtual void setDistanceFalloff(FalloffType falloff_type);
+  void setPosition(vec3 position);
+  void setIntensity(float intensity);
+  void setColor(vec3 color);
+  void setDistanceFalloff(FalloffType falloff_type);
 
   virtual void draw();
 
   float calcLight(IAccDataStruct* datastruct, vec3 point);
 
 private:
-  virtual float distanceToBlocker(IAccDataStruct* datastruct, vec3 point);
-
   vec3 position;
+  vec3 axis1, axis2;
+  unsigned int sample1, sample2;
+
   float intensity;
   vec3 color;
   FalloffType falloff_type;
+
+  OmniLight* light_sources;
 };
 
 }
