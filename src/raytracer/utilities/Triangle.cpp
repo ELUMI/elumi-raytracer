@@ -44,14 +44,11 @@ void Triangle::set(vector<vec3*> vertices, vector<vec3*> normals, vector<vec3*> 
 	max[0] = (*vertices[0])[0]; max[1] = (*vertices[0])[1]; max[3] = (*vertices[0])[2];
 	for(size_t j=1;j<3;j++){
 	  for(size_t i=1;i<3;i++){
-	    float _min = (*vertices[j])[i];
-	    if(min[i]<_min)
-	      min[i] = _min;
-	  }
-	  for(size_t i=0;i<3;i++){
-	    float _max = (*vertices[j])[i];
-	    if(max[i]<_max)
-	      max[i] = _max;
+	    float _value = (*vertices[j])[i];
+	    if(_value<min[i])
+	      min[i] = _value;
+      if(_value>max[i])
+        max[i] = _value;
 	  }
 	}
 }

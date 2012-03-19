@@ -55,51 +55,33 @@ IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(
     min_stack.pop();
     max_stack.pop();
 
+    int axis = 0;
     while(!node->isLeaf()){
-      int axis = node->getAxis();
+      axis = node->getAxis();
       float t = (node->getSplit()-ray->getPosition()[axis]) / ray->getDirection()[axis];
-      vec3 p = ray->getDirection()*t;
-      float split = glm::distance(ray->getPosition(),p);
+      float dir_t = ray->getDirection()[axis]*t;
+      //vec3 p = ray->getPosition()+ray->getDirection()*t;
+      float split = t;
 
       if(t<0||split>=max){
-        node = (ray->getPosition()[axis] < p[axis] ?
-                      node->getLeft() : node->getRight());
+        node = (0 < dir_t ? // ray.pos[axis] < ray.pos[axis] + ray.dir*t
+            node->getLeft() : node->getRight());
       }
       else if(split<=min){
-        node = (ray->getPosition()[axis] > p[axis] ?
-                      node->getLeft() : node->getRight());
+        node = (0 > dir_t?
+            node->getLeft() : node->getRight());
       }
       else{
-        KDNode* first = (ray->getPosition()[axis] < p[axis] ?
+        KDNode* first = (0 < dir_t ?
             node->getLeft() : node->getRight());
-        KDNode* second = (
-            first == node->getLeft() ? node->getRight() : node->getLeft());
+        KDNode* second =(0 >= dir_t ?
+            node->getLeft() : node->getRight());
         node_stack.push(second);
         min_stack.push(split);
         max_stack.push(max);
         node = first;
         max = split;
       }
-
-//      KDNode* first = (
-//          ray->getPosition()[axis] < p[axis] ?
-//              node->getLeft() : node->getRight());
-//      KDNode* second = (
-//          first == node->getLeft() ? node->getRight() : node->getLeft());
-//
-//      if(split >= max || split < 0){
-//        node = first;
-//      }
-//      else if (split <= min){
-//        node = second;
-//      }
-//      else{
-//        node_stack.push(second);
-//        min_stack.push(split);
-//        max_stack.push(max);
-//        node = first;
-//        max = split;
-//      }
     }
     vec3 o = ray->getPosition();
     vec3 d = ray->getDirection();
@@ -108,9 +90,9 @@ IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(
     vec3 closest_pos;
     float closest_dist;
     float closest_t = numeric_limits<float>::infinity( );
+    int parent_axis = axis;
     for(size_t i=0;i<node->getSize();i++){
-      int axis = node->getAxis();
-      Triangle* cur_triangle = triangles[axis][node->getStart()+i];
+      Triangle* cur_triangle = triangles[parent_axis][node->getStart()+i];
       const vector<vec3*> vertices = cur_triangle->getVertices();
       vec3 v0 = *(vertices[0]);
       vec3 v1 = *(vertices[1]);
@@ -161,8 +143,8 @@ IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(
           a1 * *(closest_tri->getTextures()[1]) +
           a2 * *(closest_tri->getTextures()[2]);
 
-     // if(closest_dist<max)
-      return IntersectionData(closest_tri->getMaterial(), closest_pos, glm::normalize(inter_normal), vec2(inter_tex));
+//      if(closest_dist<max)
+        return IntersectionData(closest_tri->getMaterial(), closest_pos, glm::normalize(inter_normal), vec2(inter_tex));
     }
   }
   return hit;
@@ -235,8 +217,8 @@ void KDTreeDataStruct::constructTreeStack(){
   stack<int> depth_node;
 
   start_node.push(0);
+  end_node.push(triangle_count-1);
   depth_node.push(0);
-  end_node.push(triangle_count);
 
   stack< KDNode* > node_stack;
   root = new KDNode();
@@ -247,9 +229,9 @@ void KDTreeDataStruct::constructTreeStack(){
     int axis = depth%3;
     Triangle** triangles = KDTreeDataStruct::triangles[axis];
 
-    size_t start = start_node.top();
-    size_t end = end_node.top();
-    size_t size = end-start;
+    int start = start_node.top();
+    int end = end_node.top();
+    int size = end-start+1; // + 1 since start begins at 0
     start_node.pop();
     end_node.pop();
     depth_node.pop();
@@ -258,7 +240,7 @@ void KDTreeDataStruct::constructTreeStack(){
     node_stack.pop();
 
     // TODO: Should make size and depth check values so they can be set from a easier location. TODO: test different values for size and depth
-    if(size<=8 || depth>20){
+    if(size<=4 || depth>20){
       node->setStart(start);
       node->setEnd(end);
       axis-=1;
@@ -269,16 +251,12 @@ void KDTreeDataStruct::constructTreeStack(){
     }
     else{
 
-      //Pick median triangle and just select one of the points with the axis
-      float median = triangles[(int)(size/2)-1+size%2]->getBarycenter(axis);
-
-      // Sort with max vertice of each triangle, so we will always get all triangles on right node correct
-      // but some of the triangles on the right plane may also be on the left plane so need to check for those
-      // This approach will make the tree a little unbalanced but it's pretty fast
-      // (can sort with middle instead to make it balanced)
-      int left_intersect=size/2+size%2;
+      //Pick median triangle and just select the barycenter, or mean of the two in the middle.
+      float median = (triangles[start+size/2-1+size%2]->getBarycenter(axis)+triangles[start+size/2]->getBarycenter(axis))/2;
+      // Count the triangles on both sides
+      int left_intersect=start+size/2+size%2;
       size_t left_extra=0;
-      while(left_intersect<size){
+      while(left_intersect<=end){
         float min_triangle = triangles[left_intersect]->getMin(axis);
         if(min_triangle<=median){
           left_extra++;
@@ -286,9 +264,9 @@ void KDTreeDataStruct::constructTreeStack(){
         }
         else break;
       }
-      int right_intersect=size/2-1+size%2;
+      int right_intersect=start+size/2-1;
       size_t right_extra=0;
-      while(right_intersect>=0){
+      while(right_intersect>=start){
         float max_triangle = triangles[right_intersect]->getMax(axis);
         if(max_triangle>=median){
           right_extra++;
@@ -308,12 +286,12 @@ void KDTreeDataStruct::constructTreeStack(){
 
       // Start position for the right and left node
       // Traverse the left node first, so add the right start point first
-      start_node.push(start+size/2+size%2-right_extra);
+      start_node.push(start+size/2-right_extra);
       start_node.push(start);
 
       // End position for the right end left node
       end_node.push(end);
-      end_node.push(start+size/2+size%2+left_extra);
+      end_node.push(start+size/2+left_extra-(1-size%2));
 
       // Push both children to the stack, make sure to put left on bottom to traverse fist
       node_stack.push(right);
@@ -342,9 +320,9 @@ void KDTreeDataStruct::setData(Triangle** triangles,size_t size,AABB* aabb){
       KDTreeDataStruct::triangles[n][t]= triangles[t];
     }
     quickSort(KDTreeDataStruct::triangles[n],0,size-1,n);
-    for(size_t t=0;t<size;t++){
-      cout << KDTreeDataStruct::triangles[n][t]->getBarycenter(n) << endl;
-    }
+//    for(size_t t=0;t<size;t++){
+//      cout << KDTreeDataStruct::triangles[n][t]->getBarycenter(n) << endl;
+//    }
   }
   KDTreeDataStruct::triangle_count = size;
   KDTreeDataStruct::aabb=aabb;

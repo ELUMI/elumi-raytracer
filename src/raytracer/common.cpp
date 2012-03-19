@@ -35,36 +35,30 @@ bool AABB::intersect(Ray ray,float& min,float& max){
     return false;
   }
 
-  min = glm::distance(distance_min,distance_min);
-  max = glm::distance(distance_max,distance_max);
   // No intersection
   if(max < min ){
     return false;
   }
+
   return true;
 }
 void AABB::createLines(){
-    lines.push_back(Line(pos,vec3(pos.x+size.x,pos.y,pos.z)));
-    lines.push_back(Line(pos,vec3(pos.x,pos.y+size.y,pos.z)));
-    lines.push_back(Line(pos,vec3(pos.x,pos.y,pos.z+size.z)));
+    lines.push_back(Line(pos,pos+vec3(size.x,0,0)));
+    lines.push_back(Line(pos,pos+vec3(0,size.y,0)));
+    lines.push_back(Line(pos,pos+vec3(0,0,+size.z)));
 
-    lines.push_back(Line(vec3(pos.x+size.x,pos.y,pos.z),vec3(pos.x+size.x,pos.y+size.y,pos.z)));
-    lines.push_back(Line(vec3(pos.x+size.x,pos.y,pos.z),vec3(pos.x+size.x,pos.y,pos.z+size.z)));
+    lines.push_back(Line(pos+vec3(size.x,0,0),pos+vec3(size.x,size.y,0)));
+    lines.push_back(Line(pos+vec3(size.x,0,0),pos+vec3(size.x,0,size.z)));
 
-    lines.push_back(Line(vec3(pos.x,pos.y+size.y,pos.z),vec3(pos.x+size.x,pos.y+size.y,pos.z)));
-    lines.push_back(Line(vec3(pos.x,pos.y+size.y,pos.z),vec3(pos.x,pos.y+size.y,pos.z+size.z)));
-//
+    lines.push_back(Line(pos+vec3(0,size.y,0),pos+vec3(size.x,size.y,0)));
+    lines.push_back(Line(pos+vec3(0,+size.y,0),pos+vec3(0,size.y,size.z)));
+
     lines.push_back(Line(vec3(pos.x,pos.y,pos.z+size.z),vec3(pos.x+size.x,pos.y,pos.z+size.z)));
     lines.push_back(Line(vec3(pos.x,pos.y,pos.z+size.z),vec3(pos.x,pos.y+size.y,pos.z+size.z)));
-//
-//
+
     lines.push_back(Line(pos+size,pos+size-vec3(size.x,0,0)));
     lines.push_back(Line(pos+size,pos+size-vec3(0,size.y,0)));
     lines.push_back(Line(pos+size,pos+size-vec3(0,0,size.z)));
 
-//    for(int i=0;i<lines.size();i++){
-//      cout << lines[i].getStart().x<< ","<<lines[i].getStart().y << ","<<lines[i].getStart().z << " | "
-//      <<lines[i].getEnd().x<< ","<<lines[i].getEnd().y << ","<<lines[i].getEnd().z << endl;
-//    }
 }
 }

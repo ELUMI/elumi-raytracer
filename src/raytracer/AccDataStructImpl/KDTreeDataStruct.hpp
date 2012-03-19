@@ -44,7 +44,7 @@ private:
     void setAxis(int axis){KDNode::axis=axis;}
     size_t getStart(){return KDNode::start;}
     size_t getEnd(){return KDNode::end;}
-    size_t getSize(){return KDNode::end-KDNode::start;}
+    size_t getSize(){return KDNode::end-KDNode::start+1;}
     int getAxis(){return KDNode::axis;}
     float getSplit(){return KDNode::split;}
     void setSplit(float split){KDNode::split=split;}
