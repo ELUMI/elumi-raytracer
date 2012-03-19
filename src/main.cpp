@@ -90,16 +90,17 @@ int main(int argc, char* argv[]) {
   /* RENDERER
    ***************** */
 
-  camera.set(vec3(4.16428,5.74311,-7.83016), vec3(-0.421697,-0.5373,0.730398), vec3(0,1,0), 0.7845f, settings.width/settings.height);
+  camera.set(vec3(-0.188101,-0.20999,5.48248), vec3(0.0261443,-0.0523363,-0.998287), vec3(0,1,0), 0.7845f, settings.width/settings.height);
 
 
   const int NR_LIGHTS = 1;
   ILight *lights[NR_LIGHTS];
 
-  lights[0] = new OmniLight();
-  lights[0]->setPosition(vec3(0,4,4));
-  lights[0]->setIntensity(5.0f);
-  lights[0]->setDistanceFalloff(ILight::LINEAR);
+  lights[0] = new AreaLight(vec3(0,3,1), vec3(3.0f,0.0f,0.0f), vec3(0.0f,0.0f,3.0f), 4, 4);
+  lights[0]->setColor(vec3(1,1,1));
+  lights[0]->setPosition(vec3(0,3,0.5f));
+  lights[0]->setIntensity(15.0f);
+  lights[0]->setDistanceFalloff(ILight::QUADRATIC);
 
 
 

@@ -38,8 +38,9 @@ public:
 
 private:
   float distanceToBlocker(IAccDataStruct* datastruct, vec3 point);
-  float distanceToLight(IAccDataStruct* datastruct, vec3 point);
-
+  bool isBlocked(IAccDataStruct* datastruct, vec3 point) {
+    return distanceToBlocker(datastruct, point) > 0.0001f;
+  }
 
   vec3 m_position;
   float m_intensity;

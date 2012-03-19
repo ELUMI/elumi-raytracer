@@ -15,7 +15,6 @@ namespace raytracer {
 
 class AreaLight: public raytracer::ILight {
 public:
-  AreaLight();
   AreaLight(vec3 position, vec3 axis1, vec3 axis2, unsigned int sample1, unsigned int sample2);
   virtual ~AreaLight();
 
@@ -37,6 +36,7 @@ private:
   vec3 position;
   vec3 axis1, axis2;
   unsigned int sample1, sample2;
+  unsigned int samples;
 
   float intensity;
   vec3 color;

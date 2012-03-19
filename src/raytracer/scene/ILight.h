@@ -37,13 +37,6 @@ public:
   virtual void draw() = 0;
 
   virtual float calcLight(IAccDataStruct* datastruct, vec3 point) = 0;
-
-//protected:
-//  virtual float distanceToBlocker(IAccDataStruct* datastruct, vec3 point) = 0; // NÄR BEHÖVS DEN?
-//  virtual float distanceToLight(IAccDataStruct* datastruct, vec3 point) = 0;
-//  virtual bool isBlocked(IAccDataStruct* datastruct, vec3 point) {
-//    return distanceToBlocker(datastruct, point) > 0.0001f;
-//  }
 };
 
 }

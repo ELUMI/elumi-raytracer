@@ -89,21 +89,11 @@ float OmniLight::distanceToBlocker(IAccDataStruct* datastruct, vec3 point){
   return distance_to_light - distance_between_light_and_first_hit;
 }
 
-float OmniLight::distanceToLight(IAccDataStruct* datastruct, vec3 point){
-  Ray light_ray = Ray::generateRay(m_position, point);
-  IAccDataStruct::IntersectionData light_idata = datastruct->findClosestIntersection(light_ray);
-
-  float distance_to_light = length(point - getPosition());
-  return distance_to_light;
-}
 
 float OmniLight::calcLight(IAccDataStruct* datastruct, vec3 point) {
-  float distance = distanceToLight(datastruct, point);
-  if (distance > 0.0001f)
-  {
-    return getIntensity(distance);
-  }
-  return 0.0f;
+  if (isBlocked(datastruct, point))
+    return 0.0f;
+  return getIntensity( length(point - getPosition()) );
 }
 
 
