@@ -23,6 +23,14 @@ Renderer::Renderer(Settings* settings)
   renderthread = 0;
 }
 
+Renderer::Renderer(Settings* settings, Scene scene) {
+  m_settings = settings;
+  m_scene = scene;
+  m_tracer = new StandardTracer(&m_scene, settings);
+  color_buffer = new float[m_settings->width * m_settings->height * 4];
+  renderthread = 0;
+}
+
 Renderer::~Renderer() {
   delete m_tracer;
   delete [] color_buffer;

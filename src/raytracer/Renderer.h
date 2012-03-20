@@ -24,6 +24,7 @@ namespace raytracer {
 class Renderer {
 public:
   Renderer(Settings* settings);
+  Renderer(Settings* settings, Scene scene);
   virtual ~Renderer();
   
   Scene& getScene();

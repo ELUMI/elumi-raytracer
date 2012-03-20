@@ -52,15 +52,31 @@ void Scene::loadMaterials(Material* materials, int length) {
   }
 }
 
-void Scene::loadMaterials(std::vector<raytracer::Material*> materials) {
-  m_materials = materials;
+void Scene::loadMaterials(std::vector<raytracer::Material*> materials, bool overwrite) {
+  if(overwrite)
+    m_materials = materials;
+  else {
+    for(int i = 0; i < materials.size();i++) {
+      m_materials.push_back(materials.at(i));
+    }
+  }
 }
-void Scene::loadTextures(std::vector<raytracer::Texture*> textures) {
-  m_textures = textures;
+void Scene::loadTextures(std::vector<raytracer::Texture*> textures, bool overwrite) {
+  if(overwrite)
+    m_textures = textures;
+  else {
+    for(int i = 0; i < textures.size();i++) {
+      m_textures.push_back(textures.at(i));
+    }
+  }
 }
 
 const std::vector<ILight*>& Scene::getLightVector() {
   return m_lights;
+}
+
+const std::vector<Texture*>& Scene::getTextures() {
+  return m_textures;
 }
 
 const std::vector<Material*>& Scene::getMaterialVector() {

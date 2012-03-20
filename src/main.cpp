@@ -75,17 +75,6 @@ int main(int argc, char* argv[]) {
   } else {
     cout << "Not using OpenGL" << endl;
   }
-
-  /* IMPORTER
-   ***************** */
-
-  raytracer::IImporter* importer = new raytracer::OBJImporter();
-  importer->loadFile(inputFileName.c_str());
-  std::vector<raytracer::Triangle*> triangles = importer->getTriangleList();
-  std::vector<raytracer::Material*> materials = importer->getMaterialList();
-  std::vector<raytracer::Texture*> textures   = importer->getTextures();
-
-
   /* XML
    *************/
 
@@ -95,43 +84,13 @@ int main(int argc, char* argv[]) {
 
   /* RENDERER
    ***************** */
-
-  camera.set(vec3(0,0,0), vec3(0,0,0), vec3(0,0,0), 0.7845f, settings.width/settings.height);
-  camera.setPosition(vec3(0,10.0f,5.5f));
-  camera.setDirection(normalize(vec3(0.0f, 1.4f, -1.0f)));
-  camera.setUpVector(vec3(0.0f, 1.0f, 0.0f));
-
-  camera = myScene.getCamera();
-
   OmniLight* lights = new OmniLight(vec3(5, 7, 5.5f));
   lights->setIntensity(300);
   lights->setColor(vec3(1,1,1));
   lights->setDistanceFalloff(QUADRATIC);
 
-  /*OmniLight* light2 = new OmniLight(vec3(3, 2, -5));
-  light2->setIntensity(15);
-  light2->setColor(vec3(1, 1, 1));
-  light2->setDistanceFalloff(QUADRATIC);
-
-  OmniLight* light3 = new OmniLight(vec3(0, -5, 0));
-  light3->setIntensity(15);
-  light3->setColor(vec3(1, 1, 1));
-  light3->setDistanceFalloff(QUADRATIC);
-
-  OmniLight* light4 = new OmniLight(vec3(0, 5, 0));
-  light4->setIntensity(15);
-  light4->setColor(vec3(1, 1, 1));
-  light4->setDistanceFalloff(QUADRATIC);*/
-
-  myRenderer = new Renderer(&settings);
-  myRenderer->loadCamera(camera);
-  if (!triangles.empty()) {
-    myRenderer->getScene().loadMaterials(materials); //load materials BEFORE triangles!
-    myRenderer->loadTriangles(triangles);
-    myRenderer->getScene().loadTextures(textures);
-  }
-
-  myRenderer->loadScene(myScene);
+  myRenderer = new Renderer(&settings, myScene);
+  myRenderer->loadCamera(myScene.getCamera()  );
 
   //myRenderer->loadLights(lights, 1, false);
   //myRenderer->loadLights(light2, 1, false);
@@ -226,7 +185,6 @@ int main(int argc, char* argv[]) {
     exporter->exportImage(outputFileName.c_str(), settings.width, settings.height, buffer);
     delete exporter;
   }
-  delete importer;
   delete myRenderer;
   std::cout << std::endl << "end of PROGRAM" << std::endl;
 

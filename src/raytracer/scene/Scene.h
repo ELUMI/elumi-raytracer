@@ -31,14 +31,15 @@ public:
 	void loadCamera(Camera camera);
 	void loadLights(ILight* lights, int length, bool overwrite=false);
 	void loadMaterials(Material* materials, int length);
-	void loadMaterials(std::vector<raytracer::Material*> materials);
-	void loadTextures(std::vector<raytracer::Texture*> textures);
+	void loadMaterials(std::vector<raytracer::Material*> materials,bool overwrite=false);
+	void loadTextures(std::vector<raytracer::Texture*> textures, bool overwrite=false);
 
 	Camera& getCamera();
 	IAccDataStruct* getAccDataStruct();
 
 	const std::vector<ILight*>& getLightVector();
 	const std::vector<Material*>& getMaterialVector();
+	const std::vector<Texture*>& getTextures();
 
 	Texture* getTextureAt(int index);
 

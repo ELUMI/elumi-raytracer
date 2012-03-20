@@ -47,6 +47,8 @@ void OBJImporter::loadFile(const char* filename){
 		cout << "Couldn't find file '" << filename << "'. Errmsg:" << e << endl;
 	}
 
+	int materialOffset = materials.size();
+
 	for(int i=0; i<obj_data->materialCount; i++){
 		obj_material *material = obj_data->materialList[i];
 
@@ -114,7 +116,6 @@ void OBJImporter::loadFile(const char* filename){
       ilLoadImage(_bump_map.c_str());
 
       if(ilGetError() == IL_NO_ERROR) {
-        cout << "Image loaded" << endl;
         ILuint w,h;
 
         w = ilGetInteger(IL_IMAGE_WIDTH);
@@ -125,7 +126,7 @@ void OBJImporter::loadFile(const char* filename){
         image++;
       } else {
         //Image not loaded (?)
-        cout << "Image not loaded" << endl;
+        cout << "Bumpmap not loaded" << endl;
       }
     }
 
@@ -156,7 +157,7 @@ void OBJImporter::loadFile(const char* filename){
 			  _texCoords.push_back(new vec3(_text->e[0],_text->e[1],_text->e[2]));
 			else _texCoords.push_back(new vec3(0,0,0));
 		}
-		unsigned int _material = face->material_index;
+		unsigned int _material = face->material_index+materialOffset;
 		OBJImporter::triangles.push_back(new Triangle(_vertices,_normals,_texCoords,_material));
 
 		// More than one triangle for each face?
