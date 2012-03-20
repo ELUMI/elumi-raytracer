@@ -28,6 +28,7 @@ public:
   virtual float getIntensity(float distance) = 0;
   virtual vec3 getColor() const = 0;
   virtual FalloffType getFalloffType() const {return NONE;}
+  virtual float getPower() { vec3 c = getColor(); return (c.r+c.g+c.b)/3; }
 
   virtual void setPosition(vec3 position) = 0;
   virtual void setIntensity(float intensity) = 0;
@@ -40,6 +41,7 @@ public:
   virtual bool isBlocked(IAccDataStruct* datastruct, vec3 point) {
     return distanceToBlocker(datastruct, point) > 0.0001f;
   }
+  virtual void getRays(Ray* rays, size_t n) = 0;
 };
 
 }

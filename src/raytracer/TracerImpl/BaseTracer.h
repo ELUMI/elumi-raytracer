@@ -53,6 +53,7 @@ protected:
   DeferredProcesser* first_pass;
   IAccDataStruct::IntersectionData* first_intersections;
 
+  virtual void initTracing();
 private:
   virtual void tracePixel(size_t i, IAccDataStruct::IntersectionData intersection_data);
 };

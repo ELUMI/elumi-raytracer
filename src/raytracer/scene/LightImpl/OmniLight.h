@@ -34,6 +34,8 @@ public:
 
   float distanceToBlocker(IAccDataStruct* datastruct, vec3 point);
 
+  void getRays(Ray* rays, size_t n);
+
   void draw();
 private:
   vec3 m_position;
