@@ -275,7 +275,7 @@ void initGL() {
   if (!glBindFragDataLocation) {
     glBindFragDataLocation = glBindFragDataLocationEXT;
   }
-
+  //
   //                      Create Shaders
   //************************************
   // The loadShaderProgram and linkShaderProgam functions are defined in glutil.cpp and
