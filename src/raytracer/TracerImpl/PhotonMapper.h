@@ -13,10 +13,10 @@
 namespace raytracer {
 
 struct Photon {
-  vec3 incident_direction; //pointing away from position, by convention
+  vec3 direction; //pointing away from position, by convention
   vec3 position;
   vec3 normal;
-  vec4 incident_power; //color
+  vec4 power; //color
 };
 
 class PhotonMapper: public BaseTracer {
@@ -28,7 +28,7 @@ private:
   Photon* photons;
   void getPhotons();
   void storeInMap(Photon p);
-  void bounce(Photon& p);
+  bool bounce(Photon& p);
   vec4 shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata);
   Photon* gather(size_t& g, float& r, vec3 point);
   void initTracing();

@@ -23,34 +23,45 @@ void PhotonMapper::storeInMap(Photon p){
 }
 
 
-void PhotonMapper::bounce(Photon& p) {
-  Ray ray(p.position, -p.incident_direction);
+bool PhotonMapper::bounce(Photon& p) {
+  Ray ray(p.position, -p.direction);
   IAccDataStruct::IntersectionData idata = datastruct->findClosestIntersection(ray);
   p.position = idata.interPoint;
   p.normal = idata.normal;
+  if(idata.material == idata.NOT_FOUND){
+    return false;
+  }
 
   storeInMap(p);
-
 
   float absorbtion, reflection, refraction;
   vec3 outgoing;
 
+  assert(absorbtion+reflection+refraction==1.0f);
+
   //russian roulette
   float rand = drand48();
   if(rand < absorbtion) {
-    p.incident_power.a = 0.0f;
+    return false;
   } if (rand < reflection) {
     //set outgoing
   } else if (rand < refraction) {
     //set outgoing
   }
 
-  p.incident_direction = -outgoing;
-  p.incident_power.a *= 0.5; //todo calc
+  p.direction = -outgoing;
+  vec3 color = scene->getMaterialVector()[idata.material]->getDiffuse();
+  p.power *= vec4(color,p.power.a * 0.5); //0.5 is todo
+
+  if(p.power.a < settings->recursion_attenuation_threshold)
+    return false;
+
+  return true;
 }
 
 void PhotonMapper::getPhotons() {
   size_t n = 1024; //NUMBER_OF_PHOTONS;
+  size_t max_recursion_depth = settings->max_recursion_depth;
   float totalpower = 0;
   for(size_t i; i<lights->size(); ++i){
     totalpower += lights->at(i)->getPower();
@@ -59,7 +70,7 @@ void PhotonMapper::getPhotons() {
   float power = totalpower / n;
   for(size_t i=0; i<lights->size(); ++i){
     ILight* light = lights->at(i);
-    size_t m = n * light->getPower() / totalpower;
+    size_t m = n * light->getPower() / totalpower; //photons per light
     Ray* rays = new Ray[m];
     light->getRays(rays, m);
 
@@ -67,14 +78,12 @@ void PhotonMapper::getPhotons() {
       Ray ray = rays[i];
 
       Photon p;
-      p.incident_power = vec4(light->getColor(), power);
-      p.incident_direction = -ray.getDirection();
+      p.power = vec4(light->getColor(), power);
+      p.direction = -ray.getDirection();
       p.position = ray.getPosition();
 
-      for(size_t k=0; k<3; ++k) {
-        bounce(p);
-
-        if(p.incident_power.a < 0.001)
+      for(size_t k=0; k<max_recursion_depth; ++k) {
+        if(!bounce(p))
           break;
       }
     }
@@ -97,10 +106,6 @@ float brdf(vec3 point, vec3 idir, vec3 odir){
 
 }
 
-float inline kernel(vec3 d, float r){
-  return 1/(M_PI*r*r);
-}
-
 vec4 PhotonMapper::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata){
   vec4 l = vec4(0);
 
@@ -110,10 +115,10 @@ vec4 PhotonMapper::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idat
   Photon* photons = gather(g, r, idata.interPoint);
   for(size_t i=0; i<g; ++g){
     Photon p = photons[i];
-    float b = brdf(idata.interPoint, p.incident_direction, incoming_ray.getDirection());
-    float k = kernel(p.position - idata.interPoint, r);
-    float a = glm::max(0.0f, glm::dot(p.incident_direction, idata.normal));
-    l += b * p.incident_power * a * k;
+    float b = brdf(idata.interPoint, p.direction, incoming_ray.getDirection());
+    float k = 1/(M_PI*r*r); //filter kernel
+    float a = glm::max(0.0f, glm::dot(p.direction, idata.normal));
+    l += b * p.power * a * k;
   }
 }
 
