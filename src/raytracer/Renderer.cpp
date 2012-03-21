@@ -9,6 +9,12 @@
 #include "TracerImpl/DebugTracer.h"
 #include "TracerImpl/SimpleTracer.h"
 #include "TracerImpl/StandardTracer.h"
+
+#include "IPostEffect.h"
+#include "PostEffectImpl/ReinhardOperator.h"
+#include "PostEffectImpl/ClampOperator.h"
+#include "PostEffectImpl/GammaEncode.h"
+
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
 
@@ -91,7 +97,16 @@ void Renderer::stopRendering() {
 void Renderer::render() {
   m_tracer->traceImage(color_buffer);
 
-  // POST FXS!
+  int length = m_settings->width * m_settings->height * 4;
+
+  ReinhardOperator reinhard = ReinhardOperator();
+  GammaEncode gamma = GammaEncode();
+  ClampOperator clamp = ClampOperator();
+
+  reinhard.run(color_buffer,length);
+  //gamma.run(color_buffer,length);
+  clamp.run(color_buffer,length);
+
 }
 
 unsigned int Renderer::renderComplete() {

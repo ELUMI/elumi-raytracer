@@ -84,10 +84,10 @@ void BaseTracer::first_bounce() {
 void BaseTracer::tracePixel(size_t i, IAccDataStruct::IntersectionData intersection_data) {
   posbuff[i] = intersection_data.interPoint; //put this before so trace can overwrite it
   vec4 c = trace(rays[i], intersection_data);
-  buffer[i * 4] = glm::min(1.0f, c.r);
-  buffer[i * 4 + 1] = glm::min(1.0f, c.g);
-  buffer[i * 4 + 2] = glm::min(1.0f, c.b);
-  buffer[i * 4 + 3] = glm::min(1.0f, c.a);
+  buffer[i * 4] = c.r;
+  buffer[i * 4 + 1] = c.g;
+  buffer[i * 4 + 2] = c.b;
+  buffer[i * 4 + 3] = c.a;
 }
 
 void BaseTracer::traceImage(float* color_buffer) {
@@ -120,7 +120,6 @@ void BaseTracer::traceImage(float* color_buffer) {
       #pragma omp flush (abort)
       if (!abort) {
         tracePixel(i, first_intersections[i]);
-
         #pragma omp atomic
         --pixelsLeft;
       }
@@ -135,7 +134,6 @@ void BaseTracer::traceImage(float* color_buffer) {
         IAccDataStruct::IntersectionData intersection_data =
             scene->getAccDataStruct()->findClosestIntersection(rays[i]);
         tracePixel(i, intersection_data);
-
         #pragma omp atomic
         --pixelsLeft;
       }

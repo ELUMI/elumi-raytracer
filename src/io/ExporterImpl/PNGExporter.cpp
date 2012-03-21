@@ -34,7 +34,7 @@ int PNGExporter::exportImage(const char* filename, int width, int height, float*
   /* The following number is set by trial and error only. I cannot
      see where it it is documented in the libpng manual.
   */
-  int pixel_size = 4;  //RGPA
+  int pixel_size = 4;  //RGBA
   int depth = 8;
 
   fp = fopen (filename, "wb");

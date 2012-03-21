@@ -14,6 +14,7 @@ namespace po = boost::program_options;
 #include "raytracer/scene/LightImpl/AreaLight.h"
 #include "raytracer/utilities/glutil.h"
 
+
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
@@ -56,6 +57,7 @@ int main(int argc, char* argv[]) {
   getSettings(argc, argv);
   cout << "OpenGL version: " << settings.opengl_version << "\n";
 
+
   if (settings.opengl_version) {
     win_width = settings.width*4;
     win_height = settings.height*4;
@@ -97,11 +99,10 @@ int main(int argc, char* argv[]) {
 
   lights[0] = new AreaLight(vec3(0,0,0), vec3(1.0f,0.0f,0.0f), vec3(0.0f,0.0f,1.0f), 4, 4);
   lights[0]->setColor(vec3(1,1,1));
-  lights[0]->setPosition(vec3(0,3,1.5f));
+  lights[0]->setPosition(vec3(0,3,0.5f));
   lights[0]->setIntensity(15.0f);
 
   lights[0]->setDistanceFalloff(ILight::QUADRATIC);
-
 
   myRenderer = new Renderer(&settings);
   myRenderer->loadCamera(camera);
