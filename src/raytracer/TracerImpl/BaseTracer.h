@@ -13,6 +13,7 @@
 #include "../Settings.h"
 #include "../utilities/Ray.h"
 #include "../utilities/DeferredProcesser.h"
+#include "../IRenderPattern.h"
 
 namespace raytracer {
 
@@ -51,6 +52,14 @@ protected:
 
   DeferredProcesser* first_pass;
   IAccDataStruct::IntersectionData* first_intersections;
+
+private:
+  void traceImageThread();
+
+  IRenderPattern* pattern;
+  int nr_batches;
+  int next_batch;
+
 };
 
 }
