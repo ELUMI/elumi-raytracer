@@ -90,24 +90,17 @@ int main(int argc, char* argv[]) {
   /* RENDERER
    ***************** */
 
-  // 3ballz, 200x100
   camera.set(vec3(-0.188101,-0.20999,5.48248), vec3(0.0261443,-0.0523363,-0.998287), vec3(0,1,0), 0.7845f, settings.width/settings.height);
-
-  //camera.set(vec3(-8.85991,12.7723,5.60759), vec3(0.516233,-0.71934,-0.464816), vec3(0,1,0), 0.7845f, settings.width/settings.height);
 
   const int NR_LIGHTS = 1;
   ILight *lights[NR_LIGHTS];
 
-  lights[0] = new AreaLight(vec3(0,3,1), vec3(3.0f,0.0f,0.0f), vec3(0.0f,0.0f,3.0f), 8, 8);
+  lights[0] = new AreaLight(vec3(0,0,0), vec3(1.0f,0.0f,0.0f), vec3(0.0f,0.0f,1.0f), 4, 4);
   lights[0]->setColor(vec3(1,1,1));
-//  lights[0]->setPosition(vec3(2,4,2));
- // lights[0]->setIntensity(15.0f);
-// 3ballz
-  lights[0]->setPosition(vec3(0,3,0.5f));
+  lights[0]->setPosition(vec3(0,3,1.5f));
   lights[0]->setIntensity(15.0f);
 
   lights[0]->setDistanceFalloff(ILight::QUADRATIC);
-
 
 
   myRenderer = new Renderer(&settings);
@@ -117,10 +110,6 @@ int main(int argc, char* argv[]) {
     myRenderer->loadTriangles(triangles);
     myRenderer->getScene().loadTextures(textures);
   }
-
-//  Random a;
-//  for(int i=0; i<10; i++)
-//    cout <<a.gen_random_float(0.0f, 1.0f) << ", ";
 
   myRenderer->loadLights(lights, NR_LIGHTS, false);
 

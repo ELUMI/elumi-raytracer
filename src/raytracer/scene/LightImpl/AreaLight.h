@@ -16,6 +16,7 @@ namespace raytracer {
 
 class AreaLight: public raytracer::ILight {
 public:
+  AreaLight();
   AreaLight(vec3 position, vec3 axis1, vec3 axis2, unsigned int sample1, unsigned int sample2);
   virtual ~AreaLight();
 
@@ -31,7 +32,7 @@ public:
 
   virtual void draw();
 
-  float calcLight(IAccDataStruct* datastruct, vec3 point);
+  float calcLight(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f));
 
 private:
   vec3 position;

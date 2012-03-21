@@ -9,18 +9,20 @@
 
 namespace raytracer {
 
-//AreaLight::AreaLight() {
-//  position = vec3(0,0,0);
-//  axis1 = vec3(1.0f, 0.0f, 0.0f);
-//  axis2 = vec3(0.0f, 0.0f, 1.0f);
-//  sample1 = sample2 = 3;
-//
-//  light_sources = new OmniLight[sample1*sample2];
-//
-//  falloff_type = QUADRATIC;
-//  intensity = 1.0f;
-//  color = vec3(1,1,1);
-//}
+AreaLight::AreaLight() {
+  axis1 = vec3(1.0f, 0.0f, 0.0f);
+  axis2 = vec3(0.0f, 0.0f, 1.0f);
+  sample1 = sample2 = 3;
+  samples = sample1*sample2;
+
+  falloff_type = QUADRATIC;
+  intensity = 1.0f;
+  color = vec3(1,1,1);
+
+  light_sources = new OmniLight[sample1*sample2];
+  setPosition(vec3(0,0,0));
+  setDistanceFalloff(falloff_type);
+}
 
 AreaLight::AreaLight(vec3 position, vec3 axis1, vec3 axis2, unsigned int sample1, unsigned int sample2) {
   this->position = position;
@@ -29,6 +31,8 @@ AreaLight::AreaLight(vec3 position, vec3 axis1, vec3 axis2, unsigned int sample1
   this->sample1 = sample1;
   this->sample2 = sample2;
   samples = sample1*sample2;
+  delta1 = vec3(0.0f,0.0f,0.0f);
+  delta2 = vec3(0.0f,0.0f,0.0f);
 
   falloff_type = QUADRATIC;
   intensity = 1.0f;
@@ -113,16 +117,13 @@ void AreaLight::setPosition(vec3 position) {
   }
 }
 
-float AreaLight::calcLight(IAccDataStruct* datastruct, vec3 point) {
+float AreaLight::calcLight(IAccDataStruct* datastruct, vec3 point, vec3 HEJ) {
   float in_light = 0.0f;
 
   OmniLight* light = light_sources;
   for (unsigned int i=0; i<samples; ++i,light++) {
-    // TODO Fullösning? Ändrar på positionen på intersection point istället för själva subljus-positionerna i area light. Svårt att komma åt dem härifrån.
-    vec3 rand_point = point + rand.gen_random_float(0.0f, 1.0f) * delta1 + rand.gen_random_float(0.0f, 1.0f) * delta2;
-    //light->setPosition(light_pos + rand.gen_random_float(0.0f, 1.0f) * delta1 + rand.gen_random_float(0.0f, 1.0f) * delta2);
-    in_light += light->calcLight(datastruct,rand_point) / samples;
-    //light->setPosition(light_pos);
+    vec3 offset = rand.gen_random_float(0.0f, 1.0f) * delta1 + rand.gen_random_float(0.0f, 1.0f) * delta2;
+    in_light += light->calcLight(datastruct,point,offset) / samples;
   }
 
   return in_light;

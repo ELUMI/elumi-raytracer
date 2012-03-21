@@ -36,7 +36,7 @@ public:
 
   virtual void draw() = 0;
 
-  virtual float calcLight(IAccDataStruct* datastruct, vec3 point) = 0;
+  virtual float calcLight(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f)) = 0;
 };
 
 }

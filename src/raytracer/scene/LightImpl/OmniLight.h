@@ -34,13 +34,12 @@ public:
 
   void draw();
 
-  float calcLight(IAccDataStruct* datastruct, vec3 point);
-  float calcLight(IAccDataStruct* datastruct, vec3 point, vec3 custom_light_pos);
+  float calcLight(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f));
 
 private:
-  float distanceToBlocker(IAccDataStruct* datastruct, vec3 point);
-  bool isBlocked(IAccDataStruct* datastruct, vec3 point) {
-    return distanceToBlocker(datastruct, point) > 0.0001f;
+  float distanceToBlocker(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f));
+  bool isBlocked(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f)) {
+    return distanceToBlocker(datastruct, point, offset) > 0.0001f;
   }
 
   vec3 m_position;
