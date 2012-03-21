@@ -8,6 +8,7 @@
 #include "Heightmap.h"
 
 using namespace glm;
+using namespace std;
 
 namespace raytracer {
 
@@ -30,9 +31,12 @@ Heightmap::~Heightmap() {}
 Triangle Heightmap::getTriangle(Ray ray, vec3 intersection_point) {
   //Musgrave algorithm
   //Naive. Drop y axis
-  vec2 ip = vec2(intersection_point.x,intersection_point.z) - vec2(position.x,position.z);
+  vec3 ip = intersection_point - position;
 
-  vec3 direction = ray.getDirection() - position;
+  ip = vec3(ip.x,ip.z,ip.y);
+
+  vec3 direction = normalize(ray.getDirection() - position);
+  direction = vec3(direction.x,direction.z,direction.y);
 
   vec3 diff = normalize(vec3(direction.x,direction.z,direction.y));
 
@@ -45,24 +49,66 @@ Triangle Heightmap::getTriangle(Ray ray, vec3 intersection_point) {
 
     float d = diff.x / diff.y;
 
+    int step_x = ceil(diff.x);
+    int step_y = ceil(diff.y);
+
     for(int y = current_cell.y; x < width && x >= 0 &&
         y < height && y >= 0;) {
 
-      float near_z = current_cell.y*d;
+      vec3 vz = ip+(1/real_height)*y*diff;
+      vec3 vf = ip+(1/real_height)*(y+step_y)*diff;
 
-      int new_x = x+ceil(d);
+      float near_z, far_z;
 
-      float far_z = new_x*d;
-
+      near_z = vz.z;
+      far_z = vf.z;
       if(glm::min(near_z,far_z) <= glm::min(
-          glm::min(data[width*y+x],data[width*y+x+1]),
-              glm::min(data[width*(y+1)+x],data[width*(y+1)+x+1]))) {
+          glm::min(data[width*y+x],data[width*y+x+step_x]),
+              glm::min(data[width*(y+step_y)+x],data[width*(y+step_y)+x+step_x]))) {
         //Intersection
+        //Vertices
+        vec3 v0,v1,v2,v3;
+
+        v0 = vec3(current_cell.x*real_width,current_cell.y+real_height,data[width*y+x]);
+        v0 = v0 + position;
+
+        v1 = vec3(current_cell.x+step_x*
+            real_width,current_cell.y+real_height,data[width*y+(x+step_x)]);
+        v1 = v1 + position;
+
+        v2 = vec3(current_cell.x*real_width,current_cell.y+step_y
+            +real_height,data[width*(y+step_y)+x]);
+        v2 = v2 + position;
+
+        v3 = vec3(current_cell.x+step_x*real_width,current_cell.y+
+            step_y+real_height,data[width*(y+step_y)+x+step_x]);
+        v3 = v3 + position;
+
+        vector<vec3*> vertices;
+
+        vertices.push_back(&v0);
+        vertices.push_back(&v1);
+        vertices.push_back(&v2);
+
+        vec3 normal = vec3(cross(v1-v0,v2-v0));
+
+        vector<vec3*> normals;
+
+        normals.push_back(&normal);
+        normals.push_back(&normal);
+        normals.push_back(&normal);
+
+        vector<vec3*> tex_coords;
+
+        tex_coords.push_back(new vec3(0,0,0));
+
+        Triangle near_triangle = Triangle(vertices,normals,tex_coords,0);
+
         return Triangle();
       }
 
-      x = new_x;
-      y=ceil(diff.y);
+      x = step_x;
+      y = step_y;
 
       current_cell.x = x;
       current_cell.y = y;

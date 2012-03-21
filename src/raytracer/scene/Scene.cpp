@@ -8,18 +8,21 @@
 #include "Scene.h"
 #include "../AccDataStructImpl/ArrayDataStruct.h"
 #include "../AccDataStructImpl/TriangleArray.h"
+#include "../AccDataStructImpl/TestHeightMapDataStruct.h"
 
 namespace raytracer {
 
 Scene::Scene() : m_camera(), m_lights(), m_materials() {
-  m_acc_data_struct = new ArrayDataStruct();
+  //m_acc_data_struct = new ArrayDataStruct();
+  m_acc_data_struct = new TestHeightMapDataStruct();
 
   m_settings = NULL;
 }
 
 Scene::Scene(Settings* settings)
   : m_camera(), m_lights(), m_materials() {
-  m_acc_data_struct = new ArrayDataStruct();
+  //m_acc_data_struct = new ArrayDataStruct();
+  m_acc_data_struct = new TestHeightMapDataStruct();
   m_settings = settings;
 }
 
