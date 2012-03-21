@@ -95,7 +95,7 @@ float OmniLight::distanceToBlocker(IAccDataStruct* datastruct, vec3 point, vec3 
 float OmniLight::calcLight(IAccDataStruct* datastruct, vec3 point, vec3 offset) {
   if (isBlocked(datastruct, point, offset))
     return 0.0f;
-  return getIntensity( length(point - (m_position+offset)) );
+  return getIntensity( length(point - (m_position)) );
 }
 
 

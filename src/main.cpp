@@ -92,15 +92,15 @@ int main(int argc, char* argv[]) {
   /* RENDERER
    ***************** */
 
-  camera.set(vec3(-0.188101,-0.20999,5.48248), vec3(0.0261443,-0.0523363,-0.998287), vec3(0,1,0), 0.7845f, settings.width/settings.height);
+  camera.set(vec3(0.0353481,0.738262,-2.61175), vec3(0.00872248,0.0174527,0.99981), vec3(0,1,0), 0.7845f, settings.width/settings.height);
 
   const int NR_LIGHTS = 1;
   ILight *lights[NR_LIGHTS];
 
-  lights[0] = new AreaLight(vec3(0,0,0), vec3(1.0f,0.0f,0.0f), vec3(0.0f,0.0f,1.0f), 4, 4);
+  lights[0] = new AreaLight(vec3(0,0,0), vec3(0.5f,0.0f,0.0f), vec3(0.0f,0.0f,0.5f), 4, 4);
   lights[0]->setColor(vec3(1,1,1));
-  lights[0]->setPosition(vec3(0,3,0.5f));
-  lights[0]->setIntensity(15.0f);
+  lights[0]->setPosition(vec3(-0.05,1.5,-0.1));
+  lights[0]->setIntensity(2.0f);
 
   lights[0]->setDistanceFalloff(ILight::QUADRATIC);
 
@@ -207,11 +207,9 @@ int main(int argc, char* argv[]) {
 
 void getSettings(int argc, char *argv[]) {
   // Initial values.
-  settings.width = 150;
-  settings.height = 150;
   settings.background_color[0] = 0;
-  settings.background_color[1] = 50.0f / 255.0f;
-  settings.background_color[2] = 50.0f / 255.0f;
+  settings.background_color[1] = 0;
+  settings.background_color[2] = 0;
   settings.background_color[3] = 0;
 
   // Declare the supported options.
