@@ -1,0 +1,19 @@
+<Object fileName="data/scenes/cubeplane.obj"/>
+<Settings fileName="settings"></Settings>
+<Camera>
+<Position x="0" y="5.0.f" z="5.5"/>
+<Direction x="0" y="0" z="-1"/>
+<Normal x="0" y="1" z="0"/>
+</Camera>
+<Light type="PointLight" intensity="100" falloff="Quadratic">
+<Position x="5" y="7" z="5.5"/>
+<Color r="1" g="1" b="1"/>
+</Light>
+<Light type="PointLight" intensity="100" falloff="Quadratic">
+<Position x="-5" y="7" z="-5.5"/>
+<Color r="0.5" g="0" b="0.5"/>
+</Light>
+<Light type="PointLight" intensity="200" falloff="Quadratic">
+<Position x="15" y="7" z="10.5"/>
+<Color r="0" g="1" b="0"/>
+</Light>

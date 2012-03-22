@@ -22,9 +22,7 @@ Triangle::Triangle(vector<vec3*> vertices, vector<vec3*> normals, vector<vec3*> 
 }
 
 Triangle::~Triangle() {
-	Triangle::vertices.clear();
-	Triangle::normals.clear();
-	Triangle::texCoords.clear();
+  //TODO ta bort alla verts etc.
 	//delete(Triangle::material); //TODO: Add delete in scene
 }
 

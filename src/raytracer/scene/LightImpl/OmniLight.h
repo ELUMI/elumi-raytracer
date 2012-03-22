@@ -32,10 +32,18 @@ public:
   void setIntensity(float intesity);
   void setColor(vec3 color);
 
-  float distanceToBlocker(IAccDataStruct* datastruct, vec3 point);
+  void getRays(Ray* rays, size_t n);
 
   void draw();
+
+  float calcLight(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f));
+
 private:
+  float distanceToBlocker(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f));
+  bool isBlocked(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f)) {
+    return distanceToBlocker(datastruct, point, offset) > 0.0001f;
+  }
+
   vec3 m_position;
   float m_intensity;
   vec3 color;

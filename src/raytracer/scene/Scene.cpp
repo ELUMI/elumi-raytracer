@@ -6,24 +6,26 @@
  */
 
 #include "Scene.h"
+#include "../AccDataStructImpl/VertexArrayDataStruct.h"
 #include "../AccDataStructImpl/ArrayDataStruct.h"
 #include "../AccDataStructImpl/TriangleArray.h"
-#include "../AccDataStructImpl/TestHeightMapDataStruct.h"
 
 namespace raytracer {
 
+
 Scene::Scene(Settings* settings)
-  : m_camera(), m_lights(), m_materials() {
-  m_acc_data_struct = new ArrayDataStruct();
-  //m_acc_data_struct = new TestHeightMapDataStruct();
+  : m_camera(), m_materials() {
   m_lights = new std::vector<ILight*>;
+  m_acc_data_struct = new ArrayDataStruct();
   m_settings = settings;
 }
 
-Scene::Scene() {}
 
 Scene::~Scene() {
+  // TODO AAAAASMYCKET SKRÄPHANTERING FRÅN ALLTING!!!!
+  delete m_lights;
   delete m_settings;
+  delete m_acc_data_struct;
 }
 
 void Scene::loadTriangles(vector<Triangle*> triangles, bool overwrite) {
@@ -64,6 +66,10 @@ void Scene::loadTextures(std::vector<raytracer::Texture*> textures) {
   }
 }
 
+void Scene::setSettings(Settings* settings) {
+  m_settings = settings;
+}
+
 std::vector<ILight*>* Scene::getLightVector() {
   return m_lights;
 }
@@ -90,6 +96,10 @@ IAccDataStruct* Scene::getAccDataStruct() {
 
 IDraw* Scene::getDrawable(){
   return m_drawable;
+}
+
+Settings* Scene::getSettings() {
+  return m_settings;
 }
 
 }

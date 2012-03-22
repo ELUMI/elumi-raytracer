@@ -17,7 +17,7 @@ namespace raytracer {
 class IXML {
 public:
   virtual ~IXML()= 0;
-  virtual Scene importScene(const char* fileName) = 0;
+  virtual Scene* importScene(const char* fileName) = 0;
   virtual void exportScene(Scene scene, const char* fileName) = 0;
 };
 }

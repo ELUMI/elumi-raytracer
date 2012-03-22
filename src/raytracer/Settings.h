@@ -20,13 +20,13 @@ struct Settings {
   Settings() {
     width = 640;
     height = 480;
-    opengl_version = 2;
-    background_color = vec4(0,0,0,1);
+    opengl_version = 3;
+    background_color = vec4(0,0,0,0);
     use_first_bounce = false;
     test=0;
     debug_mode=0;
     tracer = 2;
-    max_recursion_depth = 10;
+    max_recursion_depth = 5;
     recursion_attenuation_threshold = 0.015625;
   }
 

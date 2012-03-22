@@ -23,7 +23,7 @@ ArrayDataStruct::ArrayDataStruct(int size) {
   triangles.reserve(size);
 }
 ArrayDataStruct::~ArrayDataStruct() {
-
+// TODO loopa igenom hela vecotn och delete varje triangel
 }
 
 IAccDataStruct::IntersectionData 

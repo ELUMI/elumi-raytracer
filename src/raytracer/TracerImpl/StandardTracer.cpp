@@ -13,8 +13,8 @@
 namespace raytracer {
 
 // TODO rapport ändra threshold jämförelsebilder
-StandardTracer::StandardTracer(Scene* scene, Settings* settings)
-: BaseTracer(scene, settings)
+StandardTracer::StandardTracer(Scene* scene)
+: BaseTracer(scene)
 , MAX_RECURSION_DEPTH(settings->max_recursion_depth)
 , ATTENUATION_THRESHOLD(settings->recursion_attenuation_threshold) {
 
@@ -108,29 +108,30 @@ vec4 StandardTracer::shade(Ray incoming_ray
   }
 
   /**** For each light source in the scene ****/
-  for(unsigned int i=0; i<scene->getLightVector()->size(); ++i) {
-    ILight* light  = scene->getLightVector()->at(i);
+  for(unsigned int i=0; i<lights->size(); ++i) {
+    ILight* light  = lights->at(i);
 
     if (light->getFalloffType() == ILight::NONE) {
       ambient += light->getColor();
     } else {
       /**** NON AMBIENT LIGHT, CALCULATE SHADOW RAYS ***/
 
-      Ray light_ray = Ray::generateRay(light->getPosition(), idata.interPoint);
-      float distance_to_light = length(idata.interPoint - light->getPosition());
-
-      /**** IF IN SHADOW ****/
       //     if (light_idata.material != IAccDataStruct::IntersectionData::NOT_FOUND
       //         && (distance_between_light_and_first_hit + 0.0001f) < distance_to_light) {
-      if(light->isBlocked(datastruct, idata.interPoint)) {
+      //if(light->isBlocked(datastruct, idata.interPoint)) {
+      float in_light = light->calcLight(datastruct, idata.interPoint);
+      if (in_light > 0.0f) {
+        // NOT ENTIRELY IN SHADOW! SHADE!
+        Ray light_ray = Ray::generateRay(light->getPosition(), idata.interPoint);
+//        float distance_to_light = length(idata.interPoint - light->getPosition());
+//
+//        // Falloff intensity
+//        float intensity = light->getIntensity(distance_to_light);
+//in_light = intensity;
 
-      } else {
-
-        // Falloff intensity
-        float intensity = light->getIntensity(distance_to_light);
 
         //Diffuse
-        diffuse += intensity
+        diffuse += in_light
             * clamp(glm::dot(-light_ray.getDirection(), normal))
         * light->getColor();
 
@@ -142,12 +143,12 @@ vec4 StandardTracer::shade(Ray incoming_ray
 
         //Specular
         vec3 h = normalize(-incoming_ray.getDirection() - light_ray.getDirection());
-        specular += intensity
+        specular += in_light
             * glm::pow( clamp( glm::dot(normal, h) ), material->getShininess() )
         * material->getSpecular()
         * light->getColor();
 
-      } // end diffuse specular
+      } // end in light
     } // end non abmient
   } // for each light
 

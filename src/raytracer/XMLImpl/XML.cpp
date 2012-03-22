@@ -21,7 +21,7 @@ XML::XML() {
 
 IXML::~IXML() {}
 
-Scene XML::importScene(const char* fileName) {
+Scene* XML::importScene(const char* fileName) {
 
   xml_document doc;
   pugi::xml_parse_result result = doc.load_file(fileName);
@@ -35,7 +35,7 @@ Scene XML::importScene(const char* fileName) {
 
   Settings* settings = new Settings();
 
-  Scene scene = Scene(settings);
+  Scene* scene = new Scene(settings);
 
   //Load objects
   for (pugi::xml_node obj = doc.child("Object"); obj; obj = obj.next_sibling("Object"))
@@ -47,9 +47,9 @@ Scene XML::importScene(const char* fileName) {
     std::vector<raytracer::Texture*> textures   = importer->getTextures();
 
     if (!triangles.empty()) {
-      scene.loadMaterials(materials); //load materials BEFORE triangles!
-      scene.loadTriangles(triangles);
-      scene.loadTextures(textures);
+      scene->loadMaterials(materials); //load materials BEFORE triangles!
+      scene->loadTriangles(triangles);
+      scene->loadTextures(textures);
     }
   }
   //Load lights
@@ -89,7 +89,7 @@ Scene XML::importScene(const char* fileName) {
 
       ILight* array[] = {newLight};
 
-      scene.loadLights(array,1);
+      scene->loadLights(array,1);
     }
   }
   //Load camera
@@ -111,7 +111,7 @@ Scene XML::importScene(const char* fileName) {
     cam.setPosition(pos);
     cam.setUpVector(norm);
 
-    scene.loadCamera(cam);
+    scene->loadCamera(cam);
   }
 
   return scene;

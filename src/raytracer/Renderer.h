@@ -17,24 +17,24 @@
 #include <boost/thread.hpp>
 #include "glm/glm.hpp"
 
+
 using namespace glm;
 
 namespace raytracer {
 
 class Renderer {
 public:
-  Renderer(Settings* settings);
-  Renderer(Settings* settings, Scene scene);
+  Renderer(Scene* scene);
   virtual ~Renderer();
   
-  Scene& getScene();
+  Scene* getScene();
   ITracer* getTracer();
 
   void loadTriangles(vector<Triangle*> triangles, bool overwrite=false);
   void loadCamera(Camera& camera);
   void loadLights(ILight** lights, int length, bool overwrite=false);
-  void loadSettings(Settings& settings);
-  void loadScene(Scene scene);
+  void setSettings(Settings* settings);
+  void loadScene(Scene* scene);
 
   float* getColorBuffer();
   void render();       // synchronic
@@ -48,8 +48,9 @@ public:
   
 private:
   void init();
-  Scene m_scene;
-  Settings* m_settings;
+  Scene* m_scene;
+  //Settings* m_settings;
+  int buffer_length;
   ITracer* m_tracer;
 
   float* color_buffer;

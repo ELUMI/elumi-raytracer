@@ -8,7 +8,7 @@
 #ifndef XML_H_
 #define XML_H_
 
-#include "pugixml.hpp"
+#include "pugixml/pugixml.hpp"
 #include "../IXML.h"
 #include "../scene/Camera.h"
 #include "../Settings.h"
@@ -24,7 +24,7 @@ class XML : public IXML {
 public:
   XML();
 
-  Scene importScene(const char* fileName);
+  Scene* importScene(const char* fileName);
   void exportScene(Scene scene, const char* fileName);
 };
 

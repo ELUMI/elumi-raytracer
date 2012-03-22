@@ -36,7 +36,7 @@ OBJImporter::~OBJImporter(){
 void OBJImporter::loadFile(const char* filename){
 
   ilInit();
-  iluInit();
+  //iluInit();
 
 	obj_loader *obj_data = new obj_loader();
 

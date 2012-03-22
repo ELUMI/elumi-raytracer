@@ -23,7 +23,7 @@ inline float clamp(float x)
 
 class BaseTracer: public raytracer::ITracer {
 public:
-  BaseTracer(Scene* scene, Settings* settings);
+  BaseTracer(Scene* scene);
 
   virtual ~BaseTracer();
 
@@ -53,6 +53,7 @@ protected:
   DeferredProcesser* first_pass;
   IAccDataStruct::IntersectionData* first_intersections;
 
+  virtual void initTracing();
 private:
   virtual void tracePixel(size_t i, IAccDataStruct::IntersectionData intersection_data);
 };

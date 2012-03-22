@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "../IAccDataStruct.h"
-#include "../AccDataStructImpl/VertexArrayDataStruct.h"
 //#include "../utilities/Triangle.h" // AccData inkluderar förmodligen denna
 #include "Material.h"
 #include "Texture.h"
@@ -23,7 +22,6 @@ namespace raytracer {
 
 class Scene {
 public:
-  Scene();
 	Scene(Settings* settings);
 	virtual ~Scene();
 
@@ -33,10 +31,12 @@ public:
 	void loadMaterials(Material* materials, size_t length);
 	void loadMaterials(std::vector<raytracer::Material*> materials);
 	void loadTextures(std::vector<raytracer::Texture*> textures);
+	void setSettings(Settings* settings);
 
 	Camera& getCamera();
 	IAccDataStruct* getAccDataStruct();
 
+	Settings* getSettings();
 	std::vector<ILight*>* getLightVector();
 	const std::vector<Material*>& getMaterialVector();
 	const std::vector<Texture*>& getTextures();

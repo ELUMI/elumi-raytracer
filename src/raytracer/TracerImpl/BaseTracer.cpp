@@ -10,14 +10,14 @@
 namespace raytracer {
 
 
-BaseTracer::BaseTracer(Scene* scene, Settings* settings) {
+BaseTracer::BaseTracer(Scene* scene) {
   this->scene = scene;
-  this->settings = settings;
 
   datastruct = scene->getAccDataStruct();
 
   first_pass = 0;
   first_intersections = 0;
+  settings = scene->getSettings();
 
   posbuff = new vec3[settings->width * settings->height];
 
@@ -84,58 +84,56 @@ void BaseTracer::first_bounce() {
 void BaseTracer::tracePixel(size_t i, IAccDataStruct::IntersectionData intersection_data) {
   posbuff[i] = intersection_data.interPoint; //put this before so trace can overwrite it
   vec4 c = trace(rays[i], intersection_data);
-  buffer[i * 4] = glm::min(1.0f, c.r);
-  buffer[i * 4 + 1] = glm::min(1.0f, c.g);
-  buffer[i * 4 + 2] = glm::min(1.0f, c.b);
-  buffer[i * 4 + 3] = glm::min(1.0f, c.a);
+  buffer[i * 4] = c.r;
+  buffer[i * 4 + 1] = c.g;
+  buffer[i * 4 + 2] = c.b;
+  buffer[i * 4 + 3] = c.a;
 }
 
-void BaseTracer::traceImage(float* color_buffer) {
+void BaseTracer::initTracing()
+{
   lights = scene->getLightVector();
-  buffer = color_buffer;
   pixelsLeft = settings->width * settings->height;
   abort = false;
-
-  cout << "camera.set(vec3("
-       << scene->getCamera().getPosition().x << ","
-       << scene->getCamera().getPosition().y << ","
-       << scene->getCamera().getPosition().z
-       << "), vec3("
-       << scene->getCamera().getDirection().x << ","
-       << scene->getCamera().getDirection().y << ","
-       << scene->getCamera().getDirection().z
-       << "), vec3("
-       << scene->getCamera().getUpVector().x << ","
-       << scene->getCamera().getUpVector().y << ","
-       << scene->getCamera().getUpVector().z
+  cout << "camera.set(vec3(" << scene->getCamera().getPosition().x
+       << "," << scene->getCamera().getPosition().y
+       << "," << scene->getCamera().getPosition().z
+       << "), vec3(" << scene->getCamera().getDirection().x
+       << "," << scene->getCamera().getDirection().y
+       << "," << scene->getCamera().getDirection().z
+       << "), vec3(" << scene->getCamera().getUpVector().x
+       << "," << scene->getCamera().getUpVector().y
+       << "," << scene->getCamera().getUpVector().z
        << "), 0.7845f, settings.width/settings.height);\n";
+}
 
+void BaseTracer::traceImage(float *color_buffer)
+{
+  buffer = color_buffer;
+  initTracing();
   int number_of_rays = spawnRays();
 
-  if (settings->use_first_bounce) {
+  if(settings->use_first_bounce){
     // For every pixel
     #pragma omp parallel for
-    for (int i = 0; i < number_of_rays; ++i) { //i must be signed according to openmp
-      //#pragma omp task
-      #pragma omp flush (abort)
-      if (!abort) {
+    for(int i = 0;i < number_of_rays;++i){
+      //i must be signed according to openmp
+      if(!abort){
         tracePixel(i, first_intersections[i]);
-
         #pragma omp atomic
         --pixelsLeft;
       }
     }
-  } else {
+
+  }
+  else{
     // For every pixel
     #pragma omp parallel for
-    for (int i = 0; i < number_of_rays; ++i) { //i must be signed according to openmp
-      //#pragma omp task
-      #pragma omp flush (abort)
-      if (!abort) {
-        IAccDataStruct::IntersectionData intersection_data =
-            scene->getAccDataStruct()->findClosestIntersection(rays[i]);
+    for(int i = 0;i < number_of_rays;++i){
+      //i must be signed according to openmp
+      if(!abort){
+        IAccDataStruct::IntersectionData intersection_data = scene->getAccDataStruct()->findClosestIntersection(rays[i]);
         tracePixel(i, intersection_data);
-
         #pragma omp atomic
         --pixelsLeft;
       }
@@ -159,7 +157,7 @@ int BaseTracer::spawnRays() {
   // Number of rays to spawn from camera
   int number_of_rays = width * height;
   // Initiate ray array
-  rays = new Ray[number_of_rays];
+  rays = new Ray[number_of_rays]; //TODO om man renderar många gånger i samma körning???
 
   Camera camera = scene->getCamera();
   vec3 camera_position = camera.getPosition();
@@ -198,7 +196,8 @@ vec4 BaseTracer::trace(Ray ray, IAccDataStruct::IntersectionData idata) {
 vec4 BaseTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata) {
   float light = 0;
   for(size_t i = 0; i < lights->size(); ++i){
-    if(!lights->at(i)->isBlocked(datastruct, idata.interPoint)){
+    //if(!lights->at(i)->isBlocked(datastruct, idata.interPoint)){
+    if (lights->at(i)->calcLight(datastruct, idata.interPoint) > 0.0f) {
       light++;
     }
   }

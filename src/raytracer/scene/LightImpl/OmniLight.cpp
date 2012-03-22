@@ -41,12 +41,14 @@ void OmniLight::setPosition(vec3 position) {
 float OmniLight::getIntensity(float distance) {
   switch (m_falloff_type) {
     case NONE:
-      return 1.0f;
+      return m_intensity;
       break;
     case LINEAR:
-      return glm::min((1/distance)*m_intensity,1.0f);
+      //return min((1/distance)*m_intensity,1.0f);
+      return (1.0f/distance) * m_intensity;
     case QUADRATIC:
-      return glm::min((1/(distance*distance))*m_intensity,1.0f);
+      // return min((1/(distance*distance))*m_intensity,1.0f);
+      return (1.0f/(distance*distance)) * m_intensity;
     default:
       return 1.0f;
       break;
@@ -79,14 +81,36 @@ void OmniLight::draw() {
   gluDeleteQuadric(quadobj);
 }
 
-float OmniLight::distanceToBlocker(IAccDataStruct* datastruct, vec3 point){
-  Ray light_ray = Ray::generateRay(m_position, point);
+float OmniLight::distanceToBlocker(IAccDataStruct* datastruct, vec3 point, vec3 offset){
+  Ray light_ray = Ray::generateRay(m_position+offset, point);
   IAccDataStruct::IntersectionData light_idata = datastruct->findClosestIntersection(light_ray);
 
-  float distance_to_light = length(point - getPosition()); // 1
-  float distance_between_light_and_first_hit = length(light_idata.interPoint - m_position); // 2
+  float distance_to_light = length(point - (m_position+offset));
+  float distance_between_light_and_first_hit = length(light_idata.interPoint - (m_position+offset));
 
   return distance_to_light - distance_between_light_and_first_hit;
+}
+
+void OmniLight::getRays(Ray* rays, size_t n){
+  srand48(0);
+
+  for(size_t i = 0; i<n; ++i){
+    float x, y, z, w, t;
+    z = 2.0 * drand48() - 1.0;
+    t = 2.0 * M_PI * drand48();
+    w = sqrt( 1 - z*z );
+    x = w * cos( t );
+    y = w * sin( t );
+
+    rays[i] = Ray(m_position, vec3(x,y,z));
+  }
+}
+
+
+float OmniLight::calcLight(IAccDataStruct* datastruct, vec3 point, vec3 offset) {
+  if (isBlocked(datastruct, point, offset))
+    return 0.0f;
+  return getIntensity( length(point - (m_position)) );
 }
 
 

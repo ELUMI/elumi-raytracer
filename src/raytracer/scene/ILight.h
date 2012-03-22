@@ -25,9 +25,10 @@ public:
 
   virtual ~ILight() {};
   virtual vec3 getPosition() = 0;
-  virtual float getIntensity(float distance) = 0;
+  virtual float getIntensity(float distance) = 0; //TODO make this protected
   virtual vec3 getColor() const = 0;
   virtual FalloffType getFalloffType() const {return NONE;}
+  virtual float getPower() { vec3 c = getColor(); return (c.r+c.g+c.b)/3; }
 
   virtual void setPosition(vec3 position) = 0;
   virtual void setIntensity(float intensity) = 0;
@@ -36,10 +37,8 @@ public:
 
   virtual void draw() = 0;
 
-  virtual float distanceToBlocker(IAccDataStruct* datastruct, vec3 point) = 0;
-  virtual bool isBlocked(IAccDataStruct* datastruct, vec3 point) {
-    return distanceToBlocker(datastruct, point) > 0.0001f;
-  }
+  virtual float calcLight(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f)) = 0;
+  virtual void getRays(Ray* rays, size_t n) = 0;
 };
 
 }

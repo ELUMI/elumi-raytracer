@@ -9,7 +9,7 @@
 
 namespace raytracer {
 
-DebugTracer::DebugTracer(Scene* scene, Settings* settings) : BaseTracer(scene, settings) {
+DebugTracer::DebugTracer(Scene* scene) : BaseTracer(scene) {
   // TODO Auto-generated constructor stub
 
 }
