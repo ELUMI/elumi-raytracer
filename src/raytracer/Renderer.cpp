@@ -23,50 +23,56 @@ using namespace std;
 
 namespace raytracer {
 
-Renderer::Renderer(Settings* settings)
-  : m_scene(settings), abort(false) {
-  m_settings = settings;
-
-  switch (settings->tracer) {
-    case -1:
-      m_tracer = new DebugTracer(&m_scene, settings);
-      break;
-    case 0:
-      m_tracer = new BaseTracer(&m_scene, settings);
-      break;
-    case 1:
-      m_tracer = new SimpleTracer(&m_scene, settings);
-      break;
-    case 2:
-    default:
-      m_tracer = new StandardTracer(&m_scene, settings);
-      break;
-    case 3:
-      m_tracer = new PhotonMapper(&m_scene, settings);
-      break;
-  }
-  color_buffer = new float[m_settings->width * m_settings->height * 4];
-  renderthread = 0;
+Renderer::Renderer(Scene* scene) {
+  m_scene = scene;
+  abort = false;
+  init();
 }
 
 Renderer::~Renderer() {
+  delete m_scene;
   delete m_tracer;
   delete [] color_buffer;
 }
 
+void Renderer::init() {
+  switch (m_scene->getSettings()->tracer) {
+  case -1:
+    m_tracer = new DebugTracer(m_scene);
+    break;
+  case 0:
+    m_tracer = new BaseTracer(m_scene);
+    break;
+  case 1:
+    m_tracer = new SimpleTracer(m_scene);
+    break;
+  case 2:
+  default:
+    m_tracer = new StandardTracer(m_scene);
+    break;
+  }
+  buffer_length = m_scene->getSettings()->width * m_scene->getSettings()->height * 4;
+  color_buffer = new float[buffer_length];
+  renderthread = 0;
+}
+
 void Renderer::loadTriangles(vector<Triangle*> triangles, bool overwrite) {
-  m_scene.loadTriangles(triangles, overwrite);
+  m_scene->loadTriangles(triangles, overwrite);
 }
 
 void Renderer::loadCamera(Camera& camera) {
-  m_scene.loadCamera(camera);
+  m_scene->loadCamera(camera);
 }
 
 void Renderer::loadLights(ILight** lights, int length, bool overwrite) {
-  m_scene.loadLights(lights,length,overwrite);
+  m_scene->loadLights(lights,length,overwrite);
 }
 
-Scene& Renderer::getScene() {
+void Renderer::loadScene(Scene* scene) {
+  m_scene = scene;
+}
+
+Scene* Renderer::getScene() {
   return m_scene;
 }
 
@@ -75,7 +81,11 @@ ITracer* Renderer::getTracer() {
 }
 
 float* Renderer::getColorBuffer() {
-	return color_buffer;
+  return color_buffer;
+}
+
+void Renderer::setSettings(Settings* settings) {
+  m_scene->setSettings(settings);
 }
 
 void Renderer::asyncRender() {
@@ -106,20 +116,18 @@ void Renderer::render() {
   if(abort)
     return;
 
-  int length = m_settings->width * m_settings->height * 4;
+  ReinhardOperator reinhard = ReinhardOperator();
+  GammaEncode gamma = GammaEncode();
+  ClampOperator clamp = ClampOperator();
 
-//  ReinhardOperator reinhard = ReinhardOperator();
-//  GammaEncode gamma = GammaEncode();
-//  ClampOperator clamp = ClampOperator();
-//
-//  reinhard.run(color_buffer,length);
-//  //gamma.run(color_buffer,length);
-//  clamp.run(color_buffer,length);
+  reinhard.run(color_buffer,buffer_length);
+  //gamma.run(color_buffer,buffer_length);
+  clamp.run(color_buffer,buffer_length);
 
 }
 
 unsigned int Renderer::renderComplete() {
-	return m_tracer->getPixelsLeft();
+  return m_tracer->getPixelsLeft();
 }
 
 }

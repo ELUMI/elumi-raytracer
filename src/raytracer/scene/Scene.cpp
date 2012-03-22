@@ -6,10 +6,12 @@
  */
 
 #include "Scene.h"
+#include "../AccDataStructImpl/VertexArrayDataStruct.h"
 #include "../AccDataStructImpl/ArrayDataStruct.h"
 #include "../AccDataStructImpl/TriangleArray.h"
 
 namespace raytracer {
+
 
 Scene::Scene(Settings* settings)
   : m_camera(), m_materials() {
@@ -18,8 +20,12 @@ Scene::Scene(Settings* settings)
   m_settings = settings;
 }
 
+
 Scene::~Scene() {
+  // TODO AAAAASMYCKET SKRÄPHANTERING FRÅN ALLTING!!!!
   delete m_lights;
+  delete m_settings;
+  delete m_acc_data_struct;
 }
 
 void Scene::loadTriangles(vector<Triangle*> triangles, bool overwrite) {
@@ -52,12 +58,24 @@ void Scene::loadMaterials(Material* materials, size_t length) {
 void Scene::loadMaterials(std::vector<raytracer::Material*> materials) {
   m_materials = materials;
 }
+
+
 void Scene::loadTextures(std::vector<raytracer::Texture*> textures) {
-  m_textures = textures;
+  for(int i = 0; i < textures.size();i++) {
+    m_textures.push_back(textures.at(i));
+  }
+}
+
+void Scene::setSettings(Settings* settings) {
+  m_settings = settings;
 }
 
 std::vector<ILight*>* Scene::getLightVector() {
   return m_lights;
+}
+
+const std::vector<Texture*>& Scene::getTextures() {
+  return m_textures;
 }
 
 const std::vector<Material*>& Scene::getMaterialVector() {
@@ -78,6 +96,10 @@ IAccDataStruct* Scene::getAccDataStruct() {
 
 IDraw* Scene::getDrawable(){
   return m_drawable;
+}
+
+Settings* Scene::getSettings() {
+  return m_settings;
 }
 
 }

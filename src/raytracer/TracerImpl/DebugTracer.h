@@ -14,7 +14,7 @@ namespace raytracer {
 
 class DebugTracer: public BaseTracer {
 public:
-  DebugTracer(Scene* scene, Settings* settings);
+  DebugTracer(Scene* scene);
   virtual ~DebugTracer();
 
   vec4 shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata);

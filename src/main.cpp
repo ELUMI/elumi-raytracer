@@ -16,6 +16,9 @@ namespace po = boost::program_options;
 #include "raytracer/utilities/glutil.h"
 #include "raytracer/utilities/Random.h"
 
+#include "raytracer/IXML.h"
+#include "raytracer/XMLImpl/XML.h"
+
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
@@ -30,7 +33,7 @@ namespace po = boost::program_options;
 using namespace std;
 using namespace raytracer;
 
-raytracer::Settings settings;
+Settings* settings;
 float* buffer;
 
 GLuint shader_program;
@@ -57,70 +60,55 @@ string inputFileName, outputFileName;
 int main(int argc, char* argv[]) {
   init_generator();
   int running = GL_TRUE;
-  getSettings(argc, argv);
-  cout << "OpenGL version: " << settings.opengl_version << "\n";
 
+  settings = new Settings();
 
-  if (settings.opengl_version) {
-    win_width = settings.width* (settings.height > 400 ? 1 : 4);
-    win_height = settings.height*(settings.height > 400 ? 1 : 4);
+  if (settings->opengl_version) {
+      win_width = settings->width* (settings->height > 400 ? 1 : 4);
+      win_height = settings->height*(settings->height > 400 ? 1 : 4);
 
-    glfwInit();
-    //Open an OpenGl window
-    if (!glfwOpenWindow(win_width, win_height, 0, 0, 0, 0, 0, 0,
-        GLFW_WINDOW)) {
-      cerr << "Failed to open window";
-      glfwTerminate();
-      exit(EXIT_FAILURE);
+      glfwInit();
+      //Open an OpenGl window
+      if (!glfwOpenWindow(win_width, win_height, 0, 0, 0, 0, 0, 0,
+          GLFW_WINDOW)) {
+        cerr << "Failed to open window";
+        glfwTerminate();
+        exit(EXIT_FAILURE);
+      }
+      initGL();
+      CHECK_GL_ERROR();
+
+      glfwSetMouseButtonCallback(mouse);
+      glfwSetMousePosCallback(mouseMove);
+    } else {
+      cout << "Not using OpenGL" << endl;
     }
-    initGL();
-    CHECK_GL_ERROR();
 
-    glfwSetMouseButtonCallback(mouse);
-    glfwSetMousePosCallback(mouseMove);
-  } else {
-    cout << "Not using OpenGL" << endl;
-  }
+  raytracer::IXML* xml = new raytracer::XML();
+  Scene* myScene = xml->importScene("tree.xml");
+  settings = myScene->getSettings();
 
-  /* IMPORTER
-   ***************** */
 
-  raytracer::IImporter* importer = new raytracer::OBJImporter();
-  importer->loadFile(inputFileName.c_str());
-  std::vector<raytracer::Triangle*> triangles = importer->getTriangleList();
-  std::vector<raytracer::Material*> materials = importer->getMaterialList();
-  std::vector<raytracer::Texture*> textures   = importer->getTextures();
+
+  //getSettings(argc, argv);
+  cout << "OpenGL version: " << settings->opengl_version << "\n";
+
+  /* XML
+   *************/
+
+
+
 
 
   /* RENDERER
    ***************** */
 
-  camera.set(vec3(-0.526775,-1.33687,7.86784), vec3(0.0516207,0.165048,-0.984934), vec3(0,1,0), 0.7845f, settings.width/settings.height);
 
-  const int NR_LIGHTS = 1;
-
-  ILight *lights[NR_LIGHTS];
-
-  lights[0] = new AreaLight(vec3(0,0,0), vec3(0.5f,0.0f,0.0f), vec3(0.0f,0.0f,0.5f), 4, 4);
-  //lights[0] = new OmniLight(vec3(0,0,0));
-  lights[0]->setColor(vec3(1,1,1));
-  lights[0]->setPosition(vec3(-0.05,1.5,-0.1));
-  lights[0]->setIntensity(2.0f);
-  lights[0]->setDistanceFalloff(ILight::QUADRATIC);
-
-  myRenderer = new Renderer(&settings);
-  myRenderer->loadCamera(camera);
-  if (!triangles.empty()) {
-    myRenderer->getScene().loadMaterials(materials); //load materials BEFORE triangles!
-    myRenderer->loadTriangles(triangles);
-    myRenderer->getScene().loadTextures(textures);
-  }
-
-  myRenderer->loadLights(lights, NR_LIGHTS, false);
-
+  myRenderer = new Renderer(myScene);
+  camera = myScene->getCamera();
 
   buffer = myRenderer->getColorBuffer();
-  for (int i = 0; i < settings.width * settings.height-3; i += 3) {
+  for (int i = 0; i < settings->width * settings->height-3; i += 3) {
     buffer[i * 4 + 0] = 1;
     buffer[i * 4 + 1] = 0;
     buffer[i * 4 + 2] = 1;
@@ -135,7 +123,7 @@ int main(int argc, char* argv[]) {
     buffer[i * 4 + 11] = 1;
   }
 
-  if (!settings.opengl_version) {
+  if (!settings->opengl_version) {
     myRenderer->render();
   } else {
     myRenderer->asyncRender();
@@ -150,16 +138,17 @@ int main(int argc, char* argv[]) {
       //OpenGl rendering goes here...d
       glViewport(0, 0, win_width, win_height);
 
-      glClearColor(settings.background_color.x, settings.background_color.y,
-          settings.background_color.z, settings.background_color.a);
+      glClearColor(settings->background_color.x, settings->background_color.y,
+          settings->background_color.z, settings->background_color.a);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       glEnable(GL_DEPTH_TEST);
       glDisable(GL_CULL_FACE);
 
-      IDraw* drawables[1+NR_LIGHTS];
-      drawables[0] = myRenderer->getScene().getDrawable();
-      for(int i=0; i<NR_LIGHTS; ++i)
-        drawables[1+i] = lights[i];
+      int light_size = myRenderer->getScene()->getLightVector()->size();
+      IDraw* drawables[1+light_size];
+      drawables[0] = myRenderer->getScene()->getDrawable();
+      for(int i=0; i<light_size; ++i)
+        drawables[1+i] = myScene->getLightVector()->at(i);
 
       switch (renderMode) {
       case 1:
@@ -167,8 +156,8 @@ int main(int argc, char* argv[]) {
         break;
       case 2:
         glRasterPos2f(-1,-1);
-        glPixelZoom((float) win_width / settings.width, (float) win_height / settings.height);
-        glDrawPixels(settings.width, settings.height, GL_RGBA,
+        glPixelZoom((float) win_width / settings->width, (float) win_height / settings->height);
+        glDrawPixels(settings->width, settings->height, GL_RGBA,
             GL_FLOAT, buffer);
         break;
       case 3:
@@ -211,10 +200,9 @@ int main(int argc, char* argv[]) {
    ***************** */
   if (myRenderer->renderComplete() == 0) {
     raytracer::IExporter* exporter = new raytracer::PNGExporter;
-    exporter->exportImage(outputFileName.c_str(), settings.width, settings.height, buffer);
+    exporter->exportImage(outputFileName.c_str(), settings->width, settings->height, buffer);
     delete exporter;
   }
-  delete importer;
   delete myRenderer;
   std::cout << std::endl << "end of PROGRAM" << std::endl;
 
@@ -223,10 +211,10 @@ int main(int argc, char* argv[]) {
 
 void getSettings(int argc, char *argv[]) {
   // Initial values.
-  settings.background_color[0] = 0;
-  settings.background_color[1] = 0;
-  settings.background_color[2] = 0;
-  settings.background_color[3] = 0;
+  settings->background_color[0] = 0;
+  settings->background_color[1] = 0;
+  settings->background_color[2] = 0;
+  settings->background_color[3] = 0;
 
   // Declare the supported options.
   po::options_description desc("Allowed options");
@@ -255,21 +243,21 @@ void getSettings(int argc, char *argv[]) {
             << "\t\twith value: " << value << endl;
         stringstream ssvalue(value);
         if (option == "width") {
-          ssvalue >> settings.width;
+          ssvalue >> settings->width;
         } else if (option == "height") {
-          ssvalue >> settings.height;
+          ssvalue >> settings->height;
         } else if (option == "opengl_version") {
-          ssvalue >> settings.opengl_version;
+          ssvalue >> settings->opengl_version;
         } else if (option == "background_color") {
           //TODO Handle backgroudn color
         } else if (option == "use_first_bounce") {
-          ssvalue >> settings.use_first_bounce;
+          ssvalue >> settings->use_first_bounce;
         } else if (option == "tracer") {
-          ssvalue >> settings.tracer;
+          ssvalue >> settings->tracer;
         } else if (option == "max_recursion_depth") {
-          ssvalue >> settings.max_recursion_depth;
+          ssvalue >> settings->max_recursion_depth;
         } else if (option == "recursion_attenuation_threshold") {
-          ssvalue >> settings.recursion_attenuation_threshold;
+          ssvalue >> settings->recursion_attenuation_threshold;
         } else {
           cout << "Unknown option: " << option << endl;
         }
@@ -291,14 +279,14 @@ void getSettings(int argc, char *argv[]) {
   }
   if (vm.count("no_opengl")) {
     cout << "Not using OpenGL" << endl;
-    settings.opengl_version = 0;
+    settings->opengl_version = 0;
   } else {
     cout << "Using OpenGL.\n";
   }
 }
 
 void initGL() {
-  if(settings.opengl_version == 2) {
+  if(settings->opengl_version == 2) {
     return;
   }
   glewInit();
@@ -309,7 +297,7 @@ void initGL() {
   if (!glBindFragDataLocation) {
     glBindFragDataLocation = glBindFragDataLocationEXT;
   }
-
+  //
   //                      Create Shaders
   //************************************
   // The loadShaderProgram and linkShaderProgam functions are defined in glutil.cpp and
@@ -343,14 +331,14 @@ void initGL() {
 
 void drawDrawables(IDraw **drawables, size_t n) {
   mat4 view = camera.getViewMatrix();
-  if (settings.opengl_version >= 3) {
+  if (settings->opengl_version >= 3) {
     glUseProgram(shader_program);
     int loc = glGetUniformLocation(shader_program, "modelViewProjectionMatrix");
     for (size_t i = 0; i < n; ++i) {
       drawables[i]->drawWithView(view, loc);
     }
     glUseProgram(0);
-  } else if (settings.opengl_version < 3) {
+  } else if (settings->opengl_version < 3) {
     for (size_t i = 0; i < n; ++i) {
       drawables[i]->drawWithGLView(view);
     }
@@ -371,10 +359,10 @@ void drawPoints()
   glColor3f(0, 1, 0);
 
   glBegin(GL_POINTS);
-  for(int x = 0;x < settings.width;++x){
-    for(int y = 0;y < settings.height;++y){
-      vec3 v = posbuff[x * settings.height + y];
-      float *c = buffer + (x * settings.height + y) * 4;
+  for(int x = 0;x < settings->width;++x){
+    for(int y = 0;y < settings->height;++y){
+      vec3 v = posbuff[x * settings->height + y];
+      float *c = buffer + (x * settings->height + y) * 4;
       glColor4f(c[0], c[1], c[2], c[4]);
       glVertex3f(v.x, v.y, v.z);
     }
@@ -501,38 +489,38 @@ void timedCallback() {
   }
   if (glfwGetKey('F')) {
     myRenderer->stopRendering();
-    settings.use_first_bounce = true;
+    settings->use_first_bounce = true;
     myRenderer->asyncRender();
   }
   if (glfwGetKey('G')) {
     myRenderer->stopRendering();
-    settings.use_first_bounce = false;
+    settings->use_first_bounce = false;
     myRenderer->asyncRender();
   }
   if (glfwGetKey(GLFW_KEY_KP_ADD)) {
     myRenderer->stopRendering();
-    settings.test += speed/100;
+    settings->test += speed/100;
     myRenderer->asyncRender();
-    cout << settings.test << "\n";
+    cout << settings->test << "\n";
   }
   if (glfwGetKey(GLFW_KEY_KP_SUBTRACT)) {
     myRenderer->stopRendering();
-    settings.test -= speed/100;
+    settings->test -= speed/100;
     myRenderer->asyncRender();
-    cout << settings.test << "\n";
+    cout << settings->test << "\n";
   }
   if (glfwGetKey(GLFW_KEY_KP_MULTIPLY)) {
     myRenderer->stopRendering();
-    settings.debug_mode += 1;
+    settings->debug_mode += 1;
     myRenderer->asyncRender();
-    cout << settings.debug_mode << "\n";
+    cout << settings->debug_mode << "\n";
     glfwSleep(0.5);
   }
   if (glfwGetKey(GLFW_KEY_KP_DIVIDE)) {
     myRenderer->stopRendering();
-    settings.debug_mode -= 1;
+    settings->debug_mode -= 1;
     myRenderer->asyncRender();
-    cout << settings.debug_mode << "\n";
+    cout << settings->debug_mode << "\n";
     glfwSleep(0.5);
   }
 

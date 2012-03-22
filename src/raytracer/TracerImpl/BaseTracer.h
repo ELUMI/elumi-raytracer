@@ -23,7 +23,7 @@ inline float clamp(float x)
 
 class BaseTracer: public raytracer::ITracer {
 public:
-  BaseTracer(Scene* scene, Settings* settings);
+  BaseTracer(Scene* scene);
 
   virtual ~BaseTracer();
 

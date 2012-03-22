@@ -23,7 +23,7 @@ ArrayDataStruct::ArrayDataStruct(int size) {
   triangles.reserve(size);
 }
 ArrayDataStruct::~ArrayDataStruct() {
-
+// TODO loopa igenom hela vecotn och delete varje triangel
 }
 
 IAccDataStruct::IntersectionData 
@@ -70,7 +70,7 @@ ArrayDataStruct::findClosestIntersection(Ray ray) {
   }
 
   if(closest_t == numeric_limits<float>::infinity( )) {
-    return IntersectionData(IntersectionData::NOT_FOUND, vec3(), vec3(), vec2());
+    return IntersectionData(IntersectionData::NOT_FOUND, vec3(), vec3(), vec2(),vec3(),vec3());
   }
 
   vec3 v1v0 = *(closest_tri->getVertices()[1]) - *(closest_tri->getVertices()[0]);
@@ -92,7 +92,19 @@ ArrayDataStruct::findClosestIntersection(Ray ray) {
                       a1 * *(closest_tri->getTextures()[1]) +
                       a2 * *(closest_tri->getTextures()[2]);
 
-  return IntersectionData(closest_tri->getMaterial(), closest_pos, glm::normalize(inter_normal), vec2(inter_tex));
+  vec3 v1 = v1v0;
+  vec3 v2 = v2v1;
+
+  if(v1.length() > v2.length()) {
+    v1 = v2v1;
+    v1 = v1v0;
+  }
+  if(v2.length() > v2v0.length()) {
+    v2 = v2v0;
+  }
+
+  return IntersectionData(closest_tri->getMaterial(), closest_pos, glm::normalize(inter_normal), vec2(inter_tex),
+      v1,v2);
 }
 
 void ArrayDataStruct::setData(std::vector<Triangle*> new_triangles) {

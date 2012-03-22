@@ -16,7 +16,7 @@ namespace raytracer {
 
 //ITracer::~ITracer() {}
 
-SimpleTracer::SimpleTracer(Scene* scene, Settings* settings) : BaseTracer(scene, settings) {
+SimpleTracer::SimpleTracer(Scene* scene) : BaseTracer(scene) {
 }
 
 SimpleTracer::~SimpleTracer() {

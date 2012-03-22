@@ -1,6 +1,6 @@
-width:200
-height:200
-opengl_version:3
+width:300
+height:300
+opengl_version:2
 use_first_bounce:0
 tracer:3
 max_recursion_depth:10

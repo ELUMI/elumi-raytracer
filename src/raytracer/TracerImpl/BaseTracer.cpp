@@ -10,14 +10,14 @@
 namespace raytracer {
 
 
-BaseTracer::BaseTracer(Scene* scene, Settings* settings) {
+BaseTracer::BaseTracer(Scene* scene) {
   this->scene = scene;
-  this->settings = settings;
 
   datastruct = scene->getAccDataStruct();
 
   first_pass = 0;
   first_intersections = 0;
+  settings = scene->getSettings();
 
   posbuff = new vec3[settings->width * settings->height];
 
@@ -72,7 +72,7 @@ void BaseTracer::first_bounce() {
       assert(material == IAccDataStruct::IntersectionData::NOT_FOUND || material < scene->getMaterialVector().size());
 
       first_intersections[i] = IAccDataStruct::IntersectionData(material,
-          vec3(pos) / pos.w, vec3(normals[i]), texcoords[i]);
+          vec3(pos) / pos.w, vec3(normals[i]), texcoords[i],vec3(),vec3());
     }
   }
 
@@ -89,7 +89,6 @@ void BaseTracer::tracePixel(size_t i, IAccDataStruct::IntersectionData intersect
   buffer[i * 4 + 2] = c.b;
   buffer[i * 4 + 3] = c.a;
 }
-
 
 void BaseTracer::initTracing()
 {

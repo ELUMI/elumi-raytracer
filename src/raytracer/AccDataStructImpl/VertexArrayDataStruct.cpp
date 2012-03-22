@@ -51,9 +51,9 @@ VertexArrayDataStruct::VertexArrayDataStruct(Scene* scene, std::vector<Triangle*
     m_material.push_back(float(material_index));
 
     vec3 c = materials[material_index]->getDiffuse();
-    m_colors.push_back(vec3(c.r, c.g, c.b));
-    m_colors.push_back(vec3(c.r, c.g, c.b));
-    m_colors.push_back(vec3(c.r, c.g, c.b));
+    m_colors.push_back(c);
+    m_colors.push_back(c);
+    m_colors.push_back(c);
   }
 
   glGenBuffers(1, &positionBuffer);

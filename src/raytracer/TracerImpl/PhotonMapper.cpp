@@ -10,8 +10,8 @@
 
 namespace raytracer {
 
-PhotonMapper::PhotonMapper(Scene* scene, Settings* settings)
-: BaseTracer(scene, settings) {
+PhotonMapper::PhotonMapper(Scene* scene)
+: BaseTracer(scene) {
   radius = 1;
   photonmap = new HashPM(radius, 1024);
 

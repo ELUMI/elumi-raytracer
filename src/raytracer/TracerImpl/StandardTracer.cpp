@@ -13,8 +13,8 @@
 namespace raytracer {
 
 // TODO rapport ändra threshold jämförelsebilder
-StandardTracer::StandardTracer(Scene* scene, Settings* settings)
-: BaseTracer(scene, settings)
+StandardTracer::StandardTracer(Scene* scene)
+: BaseTracer(scene)
 , MAX_RECURSION_DEPTH(settings->max_recursion_depth)
 , ATTENUATION_THRESHOLD(settings->recursion_attenuation_threshold) {
 
@@ -64,24 +64,44 @@ vec4 StandardTracer::shade(Ray incoming_ray
   vec3 normal = idata.normal;
   vec2 tex_coords = vec2(0,0);
 
-  if(material->getTexture() != -1) {
+  if(material->getDiffuseMap() != -1) {
 
-    Texture* texture = scene->getTextureAt(material->getTexture());
+    Texture* texture = scene->getTextureAt(material->getDiffuseMap());
+    int mipmap_levels = texture->getMipmapLevels();
 
-    //Planar mapping
-    if(idata.uvcoords.size() ==  0) {
-      tex_coords  = texture->getUVCoordinates(idata.interPoint,PLANAR);
-      texture_color = texture->getColorAt(tex_coords);
+    if(true) {
+      //tex_coords  = texture->getUVCoordinates(idata.interPoint,idata.e1,idata.e2);
+      tex_coords = texture->getUVCoordinates(idata.interPoint,YAXIS);
     } else { //We have texture coordinates
-      texture_color = texture->getColorAt(idata.texcoord);
       tex_coords = idata.texcoord;
     }
+
+    if(false) {
+
+      float d = 0;
+
+      if(d > 0) {
+        Texture* mmp_bottom = scene->getTextureAt(material->getDiffuseMap()+(int)d);
+        Texture* mmp_top = scene->getTextureAt(material->getDiffuseMap()+(int)d+1);
+
+        texture_color = ( (1.0f-d-floor(d))*mmp_bottom->getColorAt(tex_coords) + d-floor(d)*mmp_top->getInterpolatedColor(tex_coords) );
+      } else {
+        texture_color = texture->getColorAt(tex_coords);
+      }
+
+      //float dv = 1.0f/(float)mipmap_levels;
+
+    } else {
+      texture_color = texture->getColorAt(tex_coords);
+    }
+
   }
 
   /**** Bump mapping ****/
   if(material->getBumpMap() != -1) {
     Texture* bumpmap = scene->getTextureAt(material->getBumpMap());
-    bump_normal = bumpmap->getColorAt(tex_coords);
+    vec2 coords  = bumpmap->getUVCoordinates(idata.interPoint,idata.e1,idata.e2);
+    bump_normal = bumpmap->getColorAt(coords);
     bump_normal = normalize(faceforward(bump_normal,incoming_ray.getDirection(),normal));
 
     normal = normalize(normal+bump_normal);
@@ -102,7 +122,6 @@ vec4 StandardTracer::shade(Ray incoming_ray
       float in_light = light->calcLight(datastruct, idata.interPoint);
       if (in_light > 0.0f) {
         // NOT ENTIRELY IN SHADOW! SHADE!
-
         Ray light_ray = Ray::generateRay(light->getPosition(), idata.interPoint);
 //        float distance_to_light = length(idata.interPoint - light->getPosition());
 //
@@ -110,12 +129,13 @@ vec4 StandardTracer::shade(Ray incoming_ray
 //        float intensity = light->getIntensity(distance_to_light);
 //in_light = intensity;
 
+
         //Diffuse
         diffuse += in_light
             * clamp(glm::dot(-light_ray.getDirection(), normal))
         * light->getColor();
 
-        if(material->getTexture() == -1) {
+        if(material->getDiffuseMap() == -1) {
           diffuse *= material->getDiffuse();
         } else {
           diffuse *= texture_color;

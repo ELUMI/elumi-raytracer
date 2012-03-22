@@ -15,7 +15,7 @@ namespace raytracer {
 
 class PhotonMapper: public BaseTracer {
 public:
-  PhotonMapper(Scene* scene, Settings* settings);
+  PhotonMapper(Scene* scene);
   virtual ~PhotonMapper();
 
   IPhotonMap* photonmap;
