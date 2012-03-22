@@ -15,6 +15,8 @@
 #include "../utilities/DeferredProcesser.h"
 #include "../IRenderPattern.h"
 
+#include <boost/thread/mutex.hpp>
+
 namespace raytracer {
 
 inline float clamp(float x)
@@ -54,11 +56,12 @@ protected:
   IAccDataStruct::IntersectionData* first_intersections;
 
 private:
-  void traceImageThread();
+  void traceImageThread(int id);
 
   IRenderPattern* pattern;
   int nr_batches;
   int next_batch;
+  boost::mutex pattern_mutex;
 
 };
 

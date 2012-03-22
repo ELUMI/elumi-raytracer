@@ -12,6 +12,7 @@
 
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
+#include <boost/thread/mutex.hpp>
 
 #include "../RenderPatternImpl/LinePattern.h"
 
@@ -119,14 +120,15 @@ void BaseTracer::traceImage(float* color_buffer) {
     int nr_threads = boost::thread::hardware_concurrency();
     boost::thread threads[nr_threads];
     for(int i = 0; i < nr_threads; ++i) {
-      threads[i] = new boost::thread(
-          boost::bind(&BaseTracer::traceImageThread, this));
+      threads[i] = boost::thread(
+          boost::bind(&BaseTracer::traceImageThread, this, i));
     }
 
     for(int i = 0; i < nr_threads; ++i) {
       threads[i].join();
     }
 
+    cout << "Threads done!" << endl;
 
     delete pattern;
 
@@ -134,7 +136,38 @@ void BaseTracer::traceImage(float* color_buffer) {
 
 }
 
-void BaseTracer::traceImageThread() {
+void BaseTracer::traceImageThread(int id) {
+
+  int my_batch = 0;
+  pattern_mutex.lock();
+  my_batch = next_batch++;
+  pattern_mutex.unlock();
+
+  while(my_batch < nr_batches) {
+    cout << "Thread: " << id << " on batch: " << my_batch << endl;
+
+    int length;
+    int* batch = pattern->getBatch(my_batch, &length);
+
+    for (size_t i = 0; i < length; ++i) {
+      if (!abort) {
+        IAccDataStruct::IntersectionData intersection_data =
+            scene->getAccDataStruct()->findClosestIntersection(rays[batch[i]]);
+        vec4 c = trace(rays[batch[i]], intersection_data);
+
+        buffer[batch[i] * 4] = glm::min(1.0f, c.r);
+        buffer[batch[i] * 4 + 1] = glm::min(1.0f, c.g);
+        buffer[batch[i] * 4 + 2] = glm::min(1.0f, c.b);
+        buffer[batch[i] * 4 + 3] = glm::min(1.0f, c.a);
+        //--pixelsLeft;
+      }
+    }
+
+    pattern_mutex.lock();
+    my_batch = next_batch++;
+    pattern_mutex.unlock();
+  }
+
 
   /*
   for (int j = 0; j < nr_batches; ++j) {
