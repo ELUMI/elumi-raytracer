@@ -9,15 +9,9 @@
 #define PHOTONMAPPER_H_
 
 #include "BaseTracer.h"
+#include "../IPhotonMap.h"
 
 namespace raytracer {
-
-struct Photon {
-  vec3 direction; //pointing away from position, by convention
-  vec3 position;
-  vec3 normal;
-  vec4 power; //color
-};
 
 class PhotonMapper: public BaseTracer {
 public:
