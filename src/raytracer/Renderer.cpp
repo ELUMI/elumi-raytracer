@@ -15,6 +15,7 @@
 #include "PostEffectImpl/ClampOperator.h"
 #include "PostEffectImpl/GammaEncode.h"
 
+#include "TracerImpl/PhotonMapper.h"
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
 
@@ -39,6 +40,9 @@ Renderer::Renderer(Settings* settings)
     case 2:
     default:
       m_tracer = new StandardTracer(&m_scene, settings);
+      break;
+    case 3:
+      m_tracer = new PhotonMapper(&m_scene, settings);
       break;
   }
   color_buffer = new float[m_settings->width * m_settings->height * 4];

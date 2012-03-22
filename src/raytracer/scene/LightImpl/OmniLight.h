@@ -32,6 +32,8 @@ public:
   void setIntensity(float intesity);
   void setColor(vec3 color);
 
+  void getRays(Ray* rays, size_t n);
+
   void draw();
 
   float calcLight(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f));

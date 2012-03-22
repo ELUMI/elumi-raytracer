@@ -90,49 +90,50 @@ void BaseTracer::tracePixel(size_t i, IAccDataStruct::IntersectionData intersect
   buffer[i * 4 + 3] = c.a;
 }
 
-void BaseTracer::traceImage(float* color_buffer) {
+
+void BaseTracer::initTracing()
+{
   lights = scene->getLightVector();
-  buffer = color_buffer;
   pixelsLeft = settings->width * settings->height;
   abort = false;
-
-  cout << "camera.set(vec3("
-       << scene->getCamera().getPosition().x << ","
-       << scene->getCamera().getPosition().y << ","
-       << scene->getCamera().getPosition().z
-       << "), vec3("
-       << scene->getCamera().getDirection().x << ","
-       << scene->getCamera().getDirection().y << ","
-       << scene->getCamera().getDirection().z
-       << "), vec3("
-       << scene->getCamera().getUpVector().x << ","
-       << scene->getCamera().getUpVector().y << ","
-       << scene->getCamera().getUpVector().z
+  cout << "camera.set(vec3(" << scene->getCamera().getPosition().x
+       << "," << scene->getCamera().getPosition().y
+       << "," << scene->getCamera().getPosition().z
+       << "), vec3(" << scene->getCamera().getDirection().x
+       << "," << scene->getCamera().getDirection().y
+       << "," << scene->getCamera().getDirection().z
+       << "), vec3(" << scene->getCamera().getUpVector().x
+       << "," << scene->getCamera().getUpVector().y
+       << "," << scene->getCamera().getUpVector().z
        << "), 0.7845f, settings.width/settings.height);\n";
+}
 
+void BaseTracer::traceImage(float *color_buffer)
+{
+  buffer = color_buffer;
+  initTracing();
   int number_of_rays = spawnRays();
 
-  if (settings->use_first_bounce) {
+  if(settings->use_first_bounce){
     // For every pixel
     #pragma omp parallel for
-    for (int i = 0; i < number_of_rays; ++i) { //i must be signed according to openmp
-      //#pragma omp task
-      #pragma omp flush (abort)
-      if (!abort) {
+    for(int i = 0;i < number_of_rays;++i){
+      //i must be signed according to openmp
+      if(!abort){
         tracePixel(i, first_intersections[i]);
         #pragma omp atomic
         --pixelsLeft;
       }
     }
-  } else {
+
+  }
+  else{
     // For every pixel
     #pragma omp parallel for
-    for (int i = 0; i < number_of_rays; ++i) { //i must be signed according to openmp
-      //#pragma omp task
-      #pragma omp flush (abort)
-      if (!abort) {
-        IAccDataStruct::IntersectionData intersection_data =
-            scene->getAccDataStruct()->findClosestIntersection(rays[i]);
+    for(int i = 0;i < number_of_rays;++i){
+      //i must be signed according to openmp
+      if(!abort){
+        IAccDataStruct::IntersectionData intersection_data = scene->getAccDataStruct()->findClosestIntersection(rays[i]);
         tracePixel(i, intersection_data);
         #pragma omp atomic
         --pixelsLeft;

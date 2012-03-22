@@ -30,6 +30,9 @@ public:
   void setColor(vec3 color);
   void setDistanceFalloff(FalloffType falloff_type);
 
+  void getRays(Ray* rays, size_t n);
+
+
   virtual void draw();
 
   float calcLight(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f));

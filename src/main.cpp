@@ -53,14 +53,15 @@ unsigned int win_width, win_height;
 string inputFileName, outputFileName;
 
 int main(int argc, char* argv[]) {
+  srand48(0);
   int running = GL_TRUE;
   getSettings(argc, argv);
   cout << "OpenGL version: " << settings.opengl_version << "\n";
 
 
   if (settings.opengl_version) {
-    win_width = settings.width*4;
-    win_height = settings.height*4;
+    win_width = settings.width* (settings.height > 400 ? 1 : 4);
+    win_height = settings.height*(settings.height > 400 ? 1 : 4);
 
     glfwInit();
     //Open an OpenGl window
@@ -95,13 +96,13 @@ int main(int argc, char* argv[]) {
   camera.set(vec3(0.0353481,0.738262,-2.61175), vec3(0.00872248,0.0174527,0.99981), vec3(0,1,0), 0.7845f, settings.width/settings.height);
 
   const int NR_LIGHTS = 1;
+
   ILight *lights[NR_LIGHTS];
 
   lights[0] = new AreaLight(vec3(0,0,0), vec3(0.5f,0.0f,0.0f), vec3(0.0f,0.0f,0.5f), 4, 4);
   lights[0]->setColor(vec3(1,1,1));
   lights[0]->setPosition(vec3(-0.05,1.5,-0.1));
   lights[0]->setIntensity(2.0f);
-
   lights[0]->setDistanceFalloff(ILight::QUADRATIC);
 
   myRenderer = new Renderer(&settings);
