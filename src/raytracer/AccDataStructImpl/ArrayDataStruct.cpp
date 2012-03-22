@@ -37,7 +37,7 @@ ArrayDataStruct::findClosestIntersection(Ray ray) {
 
   float closest_t = numeric_limits<float>::infinity( );
 
-  for(int i = 0; i < triangles.size(); i++) {
+  for(size_t i = 0; i < triangles.size(); i++) {
     Triangle* cur_triangle = triangles.at(i);
     const vector<vec3*> vertices = cur_triangle->getVertices();
     vec3 v0 = *(vertices[0]);

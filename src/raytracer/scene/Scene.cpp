@@ -12,21 +12,19 @@
 
 namespace raytracer {
 
-Scene::Scene() : m_camera(), m_lights(), m_materials() {
-  //m_acc_data_struct = new ArrayDataStruct();
-  m_acc_data_struct = new TestHeightMapDataStruct();
-
-  m_settings = NULL;
-}
-
 Scene::Scene(Settings* settings)
   : m_camera(), m_lights(), m_materials() {
-  //m_acc_data_struct = new ArrayDataStruct();
-  m_acc_data_struct = new TestHeightMapDataStruct();
+  m_acc_data_struct = new ArrayDataStruct();
+  //m_acc_data_struct = new TestHeightMapDataStruct();
+  m_lights = new std::vector<ILight*>;
   m_settings = settings;
 }
 
-Scene::~Scene() {}
+Scene::Scene() {}
+
+Scene::~Scene() {
+  delete m_settings;
+}
 
 void Scene::loadTriangles(vector<Triangle*> triangles, bool overwrite) {
   m_acc_data_struct->setData(triangles);
@@ -43,38 +41,30 @@ void Scene::loadCamera(Camera camera) {
   m_camera = camera;
 }
 
-void Scene::loadLights(ILight* lights, int length, bool overwrite) {
-  for (int i=0; i<length; ++i) {
-    m_lights.push_back(&lights[i]);
+void Scene::loadLights(ILight** lights, size_t length, bool overwrite) {
+  for (size_t i=0; i<length; ++i) {
+    m_lights->push_back(lights[i]);
   }
 }
 
-void Scene::loadMaterials(Material* materials, int length) {
+void Scene::loadMaterials(Material* materials, size_t length) {
   for (size_t i; i<length; ++i) {
     m_materials.push_back(&materials[i]);
   }
 }
 
-void Scene::loadMaterials(std::vector<raytracer::Material*> materials, bool overwrite) {
-  if(overwrite)
-    m_materials = materials;
-  else {
-    for(int i = 0; i < materials.size();i++) {
-      m_materials.push_back(materials.at(i));
-    }
-  }
+void Scene::loadMaterials(std::vector<raytracer::Material*> materials) {
+  m_materials = materials;
 }
-void Scene::loadTextures(std::vector<raytracer::Texture*> textures, bool overwrite) {
-  if(overwrite)
-    m_textures = textures;
-  else {
-    for(int i = 0; i < textures.size();i++) {
-      m_textures.push_back(textures.at(i));
-    }
+
+
+void Scene::loadTextures(std::vector<raytracer::Texture*> textures) {
+  for(int i = 0; i < textures.size();i++) {
+    m_textures.push_back(textures.at(i));
   }
 }
 
-const std::vector<ILight*>& Scene::getLightVector() {
+std::vector<ILight*>* Scene::getLightVector() {
   return m_lights;
 }
 

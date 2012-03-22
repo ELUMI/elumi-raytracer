@@ -34,6 +34,7 @@ public:
   void         stopTracing();
   unsigned int getPixelsLeft();
 
+  vec3* posbuff;
 protected:
   virtual vec4 trace(Ray ray, IAccDataStruct::IntersectionData idata);
   virtual vec4 shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata);
@@ -44,13 +45,16 @@ protected:
   Ray* rays;
 
   IAccDataStruct* datastruct;
-  const std::vector<ILight*>* lights;
+  std::vector<ILight*>* lights;
 
   bool abort;
   unsigned int pixelsLeft;
 
   DeferredProcesser* first_pass;
   IAccDataStruct::IntersectionData* first_intersections;
+
+private:
+  virtual void tracePixel(size_t i, IAccDataStruct::IntersectionData intersection_data);
 };
 
 }

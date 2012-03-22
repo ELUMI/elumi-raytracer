@@ -23,12 +23,19 @@ IXML::~IXML() {}
 
 Scene XML::importScene(const char* fileName) {
 
-  Settings settings;
-
-  Scene scene = Scene(&settings);
-
   xml_document doc;
   pugi::xml_parse_result result = doc.load_file(fileName);
+
+  //Load settings. If any...
+  xml_node xml_settings = doc.child("Settings");
+
+  if(xml_settings) {
+    const char* xml_file = xml_settings.attribute("fileName").value();
+  }
+
+  Settings* settings = new Settings();
+
+  Scene scene = Scene(settings);
 
   //Load objects
   for (pugi::xml_node obj = doc.child("Object"); obj; obj = obj.next_sibling("Object"))
@@ -40,9 +47,9 @@ Scene XML::importScene(const char* fileName) {
     std::vector<raytracer::Texture*> textures   = importer->getTextures();
 
     if (!triangles.empty()) {
-      scene.loadMaterials(materials,true); //load materials BEFORE triangles!
-      scene.loadTriangles(triangles,true);
-      scene.loadTextures(textures,true);
+      scene.loadMaterials(materials); //load materials BEFORE triangles!
+      scene.loadTriangles(triangles);
+      scene.loadTextures(textures);
     }
   }
   //Load lights
@@ -75,12 +82,14 @@ Scene XML::importScene(const char* fileName) {
       string falloff = light.attribute("falloff").value();
 
       if(falloff.compare("Quadratic") == 0) {
-        newLight->setDistanceFalloff(QUADRATIC);
+        newLight->setDistanceFalloff(ILight::QUADRATIC);
       } else if(falloff.compare("Linear") == 0) {
-        newLight->setDistanceFalloff(LINEAR);
+        newLight->setDistanceFalloff(ILight::LINEAR);
       }
 
-      scene.loadLights(newLight,1,true);
+      ILight* array[] = {newLight};
+
+      scene.loadLights(array,1);
     }
   }
   //Load camera

@@ -40,7 +40,7 @@ public:
     vec3 normal;
     vec2 texcoord;
     vec3 e1,e2;
-    const static int NOT_FOUND = -1;
+    const static unsigned int NOT_FOUND = -1;
   };
 
 
