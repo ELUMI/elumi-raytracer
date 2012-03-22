@@ -43,8 +43,8 @@ void HashPM::gatherFromG(vec3 point, float r, Photon* p, size_t g){
 vector<Photon> HashPM::gatherFromR(vec3 point, float r){
   set<size_t> positions;
   for(float x=point.x-r; x<point.x+r+bucketsize; x+=bucketsize){
-    for(float y=point.y-r; x<point.y+r+bucketsize; y+=bucketsize){
-      for(float z=point.z-r; x<point.z+r+bucketsize; z+=bucketsize){
+    for(float y=point.y-r; y<point.y+r+bucketsize; y+=bucketsize){
+      for(float z=point.z-r; z<point.z+r+bucketsize; z+=bucketsize){
         positions.insert(hash(vec3(x,y,z)));
       }
     }
@@ -53,7 +53,10 @@ vector<Photon> HashPM::gatherFromR(vec3 point, float r){
   vector<Photon> found;
   for(set<size_t>::iterator pos=positions.begin(); pos != positions.end(); ++pos){
     for(size_t i=0; i<buckets[*pos].size(); ++i){
-      found.push_back(buckets[*pos][i]);
+      Photon p = buckets[*pos][i];
+      if(length(p.position-point) < r) {
+        found.push_back(p);
+      }
     }
   }
   return found;

@@ -88,8 +88,8 @@ vec4 StandardTracer::shade(Ray incoming_ray
   }
 
   /**** For each light source in the scene ****/
-  for(unsigned int i=0; i<scene->getLightVector().size(); ++i) {
-    ILight* light  = scene->getLightVector().at(i);
+  for(unsigned int i=0; i<scene->getLightVector()->size(); ++i) {
+    ILight* light  = scene->getLightVector()->at(i);
 
     if (light->getFalloffType() == ILight::NONE) {
       ambient += light->getColor();

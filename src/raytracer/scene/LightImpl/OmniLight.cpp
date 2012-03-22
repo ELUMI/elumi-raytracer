@@ -90,6 +90,8 @@ float OmniLight::distanceToBlocker(IAccDataStruct* datastruct, vec3 point){
 }
 
 void OmniLight::getRays(Ray* rays, size_t n){
+  srand48(0);
+
   for(size_t i = 0; i<n; ++i){
     float x, y, z, w, t;
     z = 2.0 * drand48() - 1.0;

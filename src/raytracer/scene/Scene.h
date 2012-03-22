@@ -36,7 +36,7 @@ public:
 	Camera& getCamera();
 	IAccDataStruct* getAccDataStruct();
 
-	std::vector<ILight*> getLightVector();
+	std::vector<ILight*>* getLightVector();
 	const std::vector<Material*>& getMaterialVector();
 
 	Texture* getTextureAt(int index);

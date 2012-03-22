@@ -53,8 +53,8 @@ void Scene::loadTextures(std::vector<raytracer::Texture*> textures) {
   m_textures = textures;
 }
 
-std::vector<ILight*> Scene::getLightVector() {
-  return m_lights;
+std::vector<ILight*>* Scene::getLightVector() {
+  return &m_lights;
 }
 
 const std::vector<Material*>& Scene::getMaterialVector() {

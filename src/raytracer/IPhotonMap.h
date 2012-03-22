@@ -25,11 +25,13 @@ struct Photon {
 };
 
 class IPhotonMap {
+public:
+  virtual ~IPhotonMap() {};
+
   virtual void balance() = 0;
   virtual void addItem(vec3 point, Photon p) = 0;
   virtual void gatherFromG(vec3 point, float r, Photon* p, size_t g) = 0;
   virtual vector<Photon> gatherFromR(vec3 point, float r) = 0;
-
 };
 
 }

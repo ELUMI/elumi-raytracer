@@ -51,6 +51,7 @@ unsigned int win_width, win_height;
 string inputFileName, outputFileName;
 
 int main(int argc, char* argv[]) {
+  srand48(0);
   int running = GL_TRUE;
   getSettings(argc, argv);
   cout << "OpenGL version: " << settings.opengl_version << "\n";
@@ -90,7 +91,6 @@ int main(int argc, char* argv[]) {
    ***************** */
 
   camera.set(vec3(1.80622,1.6665,1.76089), vec3(-0.603289,-0.544639,-0.58259), vec3(0,1,0), 0.7845f, settings.width/settings.height);
-
 
   const int NR_LIGHTS = 3;
   ILight *lights[NR_LIGHTS];

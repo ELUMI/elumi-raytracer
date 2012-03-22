@@ -24,8 +24,11 @@ private:
   void storeInMap(Photon p);
   bool bounce(Photon& p);
   vec4 shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata);
-  Photon* gather(size_t& g, float& r, vec3 point);
+  vector<Photon> gather(float& r, vec3 point);
   void initTracing();
+
+  IPhotonMap* photonmap;
+  float radius;
 };
 
 }

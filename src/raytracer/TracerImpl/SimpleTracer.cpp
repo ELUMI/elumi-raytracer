@@ -105,7 +105,7 @@ vec4 SimpleTracer::traceHelper(Ray* ray, IAccDataStruct::IntersectionData inters
 
     vec3 color;
     //Light
-    ILight* light = scene->getLightVector().front();
+    ILight* light = scene->getLightVector()->front();
     vec3 dir = normalize(intersection_data.interPoint - light->getPosition());
     Ray lightRay = Ray(light->getPosition(), dir);
     IAccDataStruct::IntersectionData intersection_data_light = scene->getAccDataStruct()->findClosestIntersection(lightRay);

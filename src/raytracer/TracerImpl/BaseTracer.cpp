@@ -92,7 +92,7 @@ void BaseTracer::tracePixel(size_t i, IAccDataStruct::IntersectionData intersect
 
 void BaseTracer::initTracing()
 {
-  lights = &(scene->getLightVector());
+  lights = scene->getLightVector();
   pixelsLeft = settings->width * settings->height;
   abort = false;
   cout << "camera.set(vec3(" << scene->getCamera().getPosition().x
@@ -115,9 +115,9 @@ void BaseTracer::traceImage(float *color_buffer)
 
   if(settings->use_first_bounce){
     // For every pixel
+    #pragma omp parallel for
     for(int i = 0;i < number_of_rays;++i){
       //i must be signed according to openmp
-      //#pragma omp task
       if(!abort){
         tracePixel(i, first_intersections[i]);
         --pixelsLeft;
@@ -127,9 +127,9 @@ void BaseTracer::traceImage(float *color_buffer)
   }
   else{
     // For every pixel
+    #pragma omp parallel for
     for(int i = 0;i < number_of_rays;++i){
       //i must be signed according to openmp
-      //#pragma omp task
       if(!abort){
         IAccDataStruct::IntersectionData intersection_data = scene->getAccDataStruct()->findClosestIntersection(rays[i]);
         tracePixel(i, intersection_data);
