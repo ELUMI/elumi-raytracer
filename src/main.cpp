@@ -53,7 +53,6 @@ unsigned int win_width, win_height;
 string inputFileName, outputFileName;
 
 int main(int argc, char* argv[]) {
-  srand48(0);
   int running = GL_TRUE;
   getSettings(argc, argv);
   cout << "OpenGL version: " << settings.opengl_version << "\n";

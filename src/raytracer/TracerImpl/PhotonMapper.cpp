@@ -12,7 +12,7 @@ namespace raytracer {
 
 PhotonMapper::PhotonMapper(Scene* scene, Settings* settings)
 : BaseTracer(scene, settings) {
-  radius = 0.1;
+  radius = 1.0;
   photonmap = new HashPM(radius, 1024);
 
 }
@@ -28,7 +28,7 @@ void PhotonMapper::storeInMap(Photon p){
 
 bool PhotonMapper::bounce(Photon& p) {
   Ray ray(p.position, -p.direction);
-  cout << p.direction.x << " " << p.direction.y << " " << p.direction.z << "\n";
+  //cout << p.direction.x << " " << p.direction.y << " " << p.direction.z << "\n";
 
   IAccDataStruct::IntersectionData idata = datastruct->findClosestIntersection(ray);
   p.position = idata.interPoint;
@@ -83,7 +83,7 @@ void PhotonMapper::getPhotons() {
     light->getRays(rays, m);
 
     for(size_t j=0; j<m; ++j){
-      Ray ray = rays[i];
+      Ray ray = rays[j];
 
       Photon p;
       p.power = vec4(light->getColor(), power);
@@ -123,17 +123,32 @@ vec4 PhotonMapper::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idat
   float r;  //gather radius
 
   vector<Photon> photons = gather(r, idata.interPoint);
-  cout << photons.size() << " ";
+  if(photons.size() == 0)
+    return vec4(0);
   for(size_t i=0; i<photons.size(); ++i){
     Photon p = photons[i];
     float b = brdf(idata.interPoint, p.direction, incoming_ray.getDirection());
-    float k = 1/(M_PI*r*r); //filter kernel
-    float a = glm::max(0.0f, glm::dot(p.direction, idata.normal));
+
+    float k;
+    //k = 1/(M_PI*r*r); //simple filter kernel
+
+    { //advanced filter kernel (ISPM paper)
+      float dist = length(idata.interPoint-p.position);
+      float rz = 0.5 * r;
+      float t = (dist/r)*(1-dot((idata.interPoint-p.position) / dist, p.normal)*(r+rz)/rz);
+      float sigma = r;
+      float a = 1/(sqrt(2*M_PI)*sigma);
+      k = a*a*a*exp(-t*t/(2*sigma*sigma));
+    }
+
+
+    float a = glm::max(0.0f, glm::dot(-p.direction, idata.normal));
+    //cout << p.power.r << " " << p.power.g << " " << p.power.b << "\n";
+    //cout << b << " " << a << " " << k << "\n";
     l += b * p.power * a * k;
   }
 
   vec3 color = scene->getMaterialVector()[idata.material]->getDiffuse();
-  //cout << l.r << " " << l.g << " " << l.b << "\n";
   return l;
 }
 

@@ -2,6 +2,6 @@ width:200
 height:200
 opengl_version:3
 use_first_bounce:0
-tracer:2
+tracer:3
 max_recursion_depth:10
 recursion_attenuation_threshold:0.015625

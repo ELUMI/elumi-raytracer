@@ -49,6 +49,7 @@ private:
   Scene m_scene;
   Settings* m_settings;
   ITracer* m_tracer;
+  bool abort;
 
   float* color_buffer;
 

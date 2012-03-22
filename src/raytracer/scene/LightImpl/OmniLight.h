@@ -9,7 +9,7 @@
 #define OMNILIGHT_H_
 
 #include <glm/glm.hpp>
-
+#include "../../utilities/Random.h"
 #include "../ILight.h"
 
 using namespace glm;
@@ -48,6 +48,8 @@ private:
   float m_intensity;
   vec3 color;
   FalloffType m_falloff_type;
+
+  Random rand;
 };
 
 }

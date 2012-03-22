@@ -24,7 +24,7 @@ using namespace std;
 namespace raytracer {
 
 Renderer::Renderer(Settings* settings)
-  : m_scene(settings) {
+  : m_scene(settings), abort(false) {
   m_settings = settings;
 
   switch (settings->tracer) {
@@ -89,6 +89,7 @@ void Renderer::asyncRender() {
 
 void Renderer::stopRendering() {
   if(renderthread) {
+    abort = true;
     if(m_tracer)
       m_tracer->stopTracing();
     renderthread->join();
@@ -99,17 +100,21 @@ void Renderer::stopRendering() {
 
 
 void Renderer::render() {
+  abort = false;
   m_tracer->traceImage(color_buffer);
 
+  if(abort)
+    return;
+
   int length = m_settings->width * m_settings->height * 4;
-
-  ReinhardOperator reinhard = ReinhardOperator();
-  GammaEncode gamma = GammaEncode();
-  ClampOperator clamp = ClampOperator();
-
-  reinhard.run(color_buffer,length);
-  //gamma.run(color_buffer,length);
-  clamp.run(color_buffer,length);
+//
+//  ReinhardOperator reinhard = ReinhardOperator();
+//  GammaEncode gamma = GammaEncode();
+//  ClampOperator clamp = ClampOperator();
+//
+//  reinhard.run(color_buffer,length);
+//  //gamma.run(color_buffer,length);
+//  clamp.run(color_buffer,length);
 
 }
 
