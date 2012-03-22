@@ -107,7 +107,7 @@ void Renderer::render() {
     return;
 
   int length = m_settings->width * m_settings->height * 4;
-//
+
 //  ReinhardOperator reinhard = ReinhardOperator();
 //  GammaEncode gamma = GammaEncode();
 //  ClampOperator clamp = ClampOperator();

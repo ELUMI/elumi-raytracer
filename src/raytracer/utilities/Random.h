@@ -18,16 +18,9 @@
 
 namespace raytracer {
 
-class Random {
-public:
-  Random();
-  virtual ~Random();
-
-  float gen_random_float(float min, float max);
-
-private:
-  boost::mt19937 generator;
-};
+static boost::mt19937 generator(42u);
+void init_generator();
+float gen_random_float(float min, float max);
 
 }
 

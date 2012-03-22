@@ -9,21 +9,14 @@
 
 namespace raytracer {
 
-Random::Random() : generator(42u) {
+void init_generator() {
   generator.seed(static_cast<unsigned int>(std::time(0)));
-
 }
 
-Random::~Random() {
-
-}
-
-float Random::gen_random_float(float min, float max)
-{
+float gen_random_float(float min, float max) {
     boost::uniform_real<float> u(min, max);
     boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > gen(generator, u);
     return gen();
 }
-
 
 }

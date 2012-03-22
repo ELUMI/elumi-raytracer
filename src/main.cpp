@@ -9,11 +9,12 @@ namespace po = boost::program_options;
 #include "io/ImporterImpl/OBJImporter.h"
 #include "raytracer/Renderer.h"
 #include "raytracer/TracerImpl/BaseTracer.h"
+#include "raytracer/TracerImpl/PhotonMapper.h"
 #include "raytracer/scene/ILight.h"
 #include "raytracer/scene/LightImpl/OmniLight.h"
 #include "raytracer/scene/LightImpl/AreaLight.h"
 #include "raytracer/utilities/glutil.h"
-
+#include "raytracer/utilities/Random.h"
 
 #include <iostream>
 #include <fstream>
@@ -48,11 +49,13 @@ void initGL();
 void getSettings(int argc, char *argv[]);
 void drawDrawables(IDraw *drawables[], size_t n);
 void drawPoints();
+void drawPointsPhoton();
 
 unsigned int win_width, win_height;
 string inputFileName, outputFileName;
 
 int main(int argc, char* argv[]) {
+  init_generator();
   int running = GL_TRUE;
   getSettings(argc, argv);
   cout << "OpenGL version: " << settings.opengl_version << "\n";
@@ -92,13 +95,14 @@ int main(int argc, char* argv[]) {
   /* RENDERER
    ***************** */
 
-  camera.set(vec3(0.0353481,0.738262,-2.61175), vec3(0.00872248,0.0174527,0.99981), vec3(0,1,0), 0.7845f, settings.width/settings.height);
+  camera.set(vec3(-0.526775,-1.33687,7.86784), vec3(0.0516207,0.165048,-0.984934), vec3(0,1,0), 0.7845f, settings.width/settings.height);
 
   const int NR_LIGHTS = 1;
 
   ILight *lights[NR_LIGHTS];
 
   lights[0] = new AreaLight(vec3(0,0,0), vec3(0.5f,0.0f,0.0f), vec3(0.0f,0.0f,0.5f), 4, 4);
+  //lights[0] = new OmniLight(vec3(0,0,0));
   lights[0]->setColor(vec3(1,1,1));
   lights[0]->setPosition(vec3(-0.05,1.5,-0.1));
   lights[0]->setIntensity(2.0f);
@@ -173,6 +177,18 @@ int main(int argc, char* argv[]) {
         break;
       case 4:
         drawPoints();
+        break;
+      case 5:
+        drawPointsPhoton();
+        break;
+      case 6:
+        drawPoints();
+        drawPointsPhoton();
+        break;
+      case 7:
+        drawDrawables(drawables, sizeof(drawables) / sizeof(IDraw*));
+        drawPoints();
+        drawPointsPhoton();
         break;
       }
 
@@ -344,9 +360,9 @@ void drawDrawables(IDraw **drawables, size_t n) {
 void drawPoints()
 {
   mat4 view = camera.getViewMatrix();
-  BaseTracer *bt = dynamic_cast<BaseTracer*>(myRenderer->getTracer());
-  if(bt == 0) return; //failed to cast or no tracer
-  vec3 *posbuff = bt->posbuff;
+  BaseTracer *tracer = dynamic_cast<BaseTracer*>(myRenderer->getTracer());
+  if(tracer == 0) return; //failed to cast or no tracer
+  vec3 *posbuff = tracer->posbuff;
 
   glDisable(GL_DEPTH_TEST);
   glMatrixMode(GL_MODELVIEW);
@@ -364,6 +380,25 @@ void drawPoints()
     }
   }
   glEnd();
+
+  glPopMatrix();
+  glEnable(GL_DEPTH_TEST);
+}
+
+void drawPointsPhoton()
+{
+  mat4 view = camera.getViewMatrix();
+  PhotonMapper *tracer = dynamic_cast<PhotonMapper*>(myRenderer->getTracer());
+  if(tracer == 0) return; //failed to cast or no tracer
+  IPhotonMap *photonmap = tracer->photonmap;
+
+  glDisable(GL_DEPTH_TEST);
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glLoadMatrixf(value_ptr(view));
+  glColor3f(0, 1, 0);
+
+  photonmap->draw();
 
   glPopMatrix();
   glEnable(GL_DEPTH_TEST);
@@ -437,6 +472,15 @@ void timedCallback() {
   }
   if (glfwGetKey('6')) {
     renderMode = 6;
+  }
+  if (glfwGetKey('7')) {
+    renderMode = 7;
+  }
+  if (glfwGetKey('8')) {
+    renderMode = 8;
+  }
+  if (glfwGetKey('9')) {
+    renderMode = 9;
   }
   if (glfwGetKey('E')) {
     myRenderer->stopRendering();

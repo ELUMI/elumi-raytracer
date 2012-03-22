@@ -10,7 +10,6 @@
 
 #include "../ILight.h"
 #include "OmniLight.h"
-#include "../../utilities/Random.h"
 
 namespace raytracer {
 
@@ -49,7 +48,6 @@ private:
   FalloffType falloff_type;
 
   OmniLight* light_sources;
-  Random rand;
 };
 
 }

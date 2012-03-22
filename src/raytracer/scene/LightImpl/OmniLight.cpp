@@ -6,6 +6,7 @@
  */
 
 #include "OmniLight.h"
+#include "../../utilities/Random.h"
 
 namespace raytracer {
 
@@ -94,8 +95,8 @@ float OmniLight::distanceToBlocker(IAccDataStruct* datastruct, vec3 point, vec3 
 void OmniLight::getRays(Ray* rays, size_t n){
   for(size_t i = 0; i<n; ++i){
     float x, y, z, w, t;
-    z = rand.gen_random_float(-1.0f, 1.0f);
-    t = rand.gen_random_float(0.0f, 2.0 * M_PI);
+    z = gen_random_float(-1.0f, 1.0f);
+    t = gen_random_float(0.0f, 2.0 * M_PI);
     w = sqrt( 1 - z*z );
     x = w * cos( t );
     y = w * sin( t );

@@ -15,6 +15,8 @@ using namespace std;
 #include <glm/glm.hpp>
 using namespace glm;
 
+#include "IDraw.h"
+
 namespace raytracer {
 
 struct Photon {
@@ -24,7 +26,7 @@ struct Photon {
   vec4 power; //color
 };
 
-class IPhotonMap {
+class IPhotonMap : IDraw {
 public:
   virtual ~IPhotonMap() {};
 
@@ -32,6 +34,7 @@ public:
   virtual void addItem(vec3 point, Photon p) = 0;
   virtual void gatherFromG(vec3 point, float r, Photon* p, size_t g) = 0;
   virtual vector<Photon> gatherFromR(vec3 point, float r) = 0;
+  virtual void draw() = 0;
 };
 
 }
