@@ -39,6 +39,7 @@ Renderer::Renderer(int open_gl_version) {
 }
 
 Renderer::~Renderer() {
+  stopRendering();
   delete m_tracer;
   delete [] color_buffer;
   delete m_scene;

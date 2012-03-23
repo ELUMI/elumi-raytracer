@@ -171,6 +171,7 @@ int main(int argc, char* argv[]) {
       //Check if ESC key was pressed or window was closed
       running = !glfwGetKey(GLFW_KEY_ESC) && glfwGetWindowParam(GLFW_OPENED);
     }
+    myRenderer->stopRendering();
 
     //Close window and terminate GLFW
     glfwTerminate();
