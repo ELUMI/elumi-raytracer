@@ -98,15 +98,15 @@ void BaseTracer::initTracing()
   pixelsLeft = settings->width * settings->height;
   abort = false;
   cout << "camera.set(vec3(" << scene->getCamera().getPosition().x
-       << "," << scene->getCamera().getPosition().y
-       << "," << scene->getCamera().getPosition().z
-       << "), vec3(" << scene->getCamera().getDirection().x
-       << "," << scene->getCamera().getDirection().y
-       << "," << scene->getCamera().getDirection().z
-       << "), vec3(" << scene->getCamera().getUpVector().x
-       << "," << scene->getCamera().getUpVector().y
-       << "," << scene->getCamera().getUpVector().z
-       << "), 0.7845f, settings.width/settings.height);\n";
+      << "," << scene->getCamera().getPosition().y
+      << "," << scene->getCamera().getPosition().z
+      << "), vec3(" << scene->getCamera().getDirection().x
+      << "," << scene->getCamera().getDirection().y
+      << "," << scene->getCamera().getDirection().z
+      << "), vec3(" << scene->getCamera().getUpVector().x
+      << "," << scene->getCamera().getUpVector().y
+      << "," << scene->getCamera().getUpVector().z
+      << "), 0.7845f, settings.width/settings.height);\n";
 }
 
 void BaseTracer::traceImage(float *color_buffer)
@@ -153,9 +153,6 @@ void BaseTracer::traceImage(float *color_buffer)
     for (int i = 0; i < nr_threads; ++i) {
       threads[i].join();
     }
-
-    cout << "Threads done!" << endl;
-
     delete pattern;
 
   }
@@ -171,7 +168,7 @@ void BaseTracer::traceImageThread(int id) {
   pattern_mutex.unlock();
 
   while (my_batch < nr_batches) {
-    cout << "Thread: " << id << " on batch: " << my_batch << endl;
+    //cout << "Thread: " << id << " on batch: " << my_batch << endl;
 
     int length;
     int* batch = pattern->getBatch(my_batch, &length);
