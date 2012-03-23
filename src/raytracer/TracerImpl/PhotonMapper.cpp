@@ -23,7 +23,7 @@ PhotonMapper::~PhotonMapper() {
 }
 
 void PhotonMapper::storeInMap(Photon p){
-  photonmap->addItem(p.position, p);
+  photonmap->addPhoton(p);
 }
 
 bool PhotonMapper::bounce(Photon& p) {
