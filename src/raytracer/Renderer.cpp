@@ -39,16 +39,24 @@ void Renderer::init() {
   switch (m_scene->getSettings()->tracer) {
   case -1:
     m_tracer = new DebugTracer(m_scene);
+    cout << "Using debug tracer\n";
     break;
   case 0:
     m_tracer = new BaseTracer(m_scene);
+    cout << "Using base tracer\n";
     break;
   case 1:
     m_tracer = new SimpleTracer(m_scene);
+    cout << "Using simple tracer\n";
     break;
   case 2:
   default:
     m_tracer = new StandardTracer(m_scene);
+    cout << "Using standard tracer\n";
+    break;
+  case 3:
+    m_tracer = new PhotonMapper(m_scene);
+    cout << "Using photon mapper tracer\n";
     break;
   }
   buffer_length = m_scene->getSettings()->width * m_scene->getSettings()->height * 4;
@@ -120,9 +128,9 @@ void Renderer::render() {
   GammaEncode gamma = GammaEncode();
   ClampOperator clamp = ClampOperator();
 
-  reinhard.run(color_buffer,buffer_length);
+  //reinhard.run(color_buffer,buffer_length);
   //gamma.run(color_buffer,buffer_length);
-  clamp.run(color_buffer,buffer_length);
+  //clamp.run(color_buffer,buffer_length);
 
 }
 

@@ -68,7 +68,7 @@ bool PhotonMapper::bounce(Photon& p) {
 }
 
 void PhotonMapper::getPhotons() {
-  size_t n = 1024; //NUMBER_OF_PHOTONS;
+  size_t n = 1024*16; //NUMBER_OF_PHOTONS;
   size_t max_recursion_depth = settings->max_recursion_depth;
   float totalpower = 0;
   for(size_t i=0; i<lights->size(); ++i){

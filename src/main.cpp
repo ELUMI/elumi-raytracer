@@ -88,6 +88,8 @@ int main(int argc, char* argv[]) {
   Scene* myScene = xml->importScene("tree.xml");
   settings = myScene->getSettings();
 
+  getSettings(argc, argv);
+
 
 
   //getSettings(argc, argv);
