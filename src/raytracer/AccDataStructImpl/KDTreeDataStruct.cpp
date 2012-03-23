@@ -119,7 +119,7 @@ IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(
         }
       }
     }
-    if(closest_t != numeric_limits<float>::infinity( ) && closest_t<=max) {
+    if(closest_t != numeric_limits<float>::infinity( )) {
 
       vec3 v1v0 = *(closest_tri->getVertices()[1]) - *(closest_tri->getVertices()[0]);
       vec3 v2v1 = *(closest_tri->getVertices()[2]) - *(closest_tri->getVertices()[1]);
@@ -160,7 +160,7 @@ void KDTreeDataStruct::build(){
   time (&start);
 
   constructTreeStack();
-  constructWireframe(); // Should be an option
+//  constructWireframe(); // Should be an option
 
   time (&end);
   double dif = difftime (end,start);
