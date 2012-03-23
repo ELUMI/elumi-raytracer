@@ -97,16 +97,15 @@ void BaseTracer::initTracing()
   lights = scene->getLightVector();
   pixelsLeft = settings->width * settings->height;
   abort = false;
-  cout << "camera.set(vec3(" << scene->getCamera().getPosition().x
-      << "," << scene->getCamera().getPosition().y
-      << "," << scene->getCamera().getPosition().z
-      << "), vec3(" << scene->getCamera().getDirection().x
-      << "," << scene->getCamera().getDirection().y
-      << "," << scene->getCamera().getDirection().z
-      << "), vec3(" << scene->getCamera().getUpVector().x
-      << "," << scene->getCamera().getUpVector().y
-      << "," << scene->getCamera().getUpVector().z
-      << "), 0.7845f, settings.width/settings.height);\n";
+  cout << "<Position x=\"" << scene->getCamera().getPosition().x
+      << "\" y=\"" << scene->getCamera().getPosition().y
+      << "\" z=\"" << scene->getCamera().getPosition().z
+      << "\"/>\n<Direction x=\"" << scene->getCamera().getDirection().x
+      << "\" y=\"" << scene->getCamera().getDirection().y
+      << "\" z=\"" << scene->getCamera().getDirection().z
+      << "\"/>\n<Normal x=\"" << scene->getCamera().getUpVector().x
+      << "\" y=\"" << scene->getCamera().getUpVector().y
+      << "\" z=\"" << scene->getCamera().getUpVector().z << "\"/>\n";
 }
 
 void BaseTracer::traceImage(float *color_buffer)
