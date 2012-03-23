@@ -9,7 +9,6 @@
 #define OMNILIGHT_H_
 
 #include <glm/glm.hpp>
-
 #include "../ILight.h"
 
 using namespace glm;
