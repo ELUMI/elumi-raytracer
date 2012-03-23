@@ -51,7 +51,7 @@ void obj_set_material_defaults(obj_material *mtl)
 	mtl->glossy = 98;
 	mtl->shiny = 0;
 	mtl->refract_index = 1;
-	mtl->texture_filename[0] = '\0';
+	mtl->diffuse_map[0] = '\0';
 	mtl->bump_filename[0] = '\0';
 }
 
@@ -305,9 +305,9 @@ int obj_parse_mtl_file(char *filename, list *material_list)
 		{
 		}
 		// texture map
-		else if( strequal(current_token, "map_Ka") && material_open)
+		else if( strequal(current_token, "map_Kd") && material_open)
 		{
-			strncpy(current_mtl->texture_filename, strtok(NULL, " \t"), OBJ_FILENAME_LENGTH);
+			strncpy(current_mtl->diffuse_map, strtok(NULL, " \t"), OBJ_FILENAME_LENGTH);
 		}
 		// bump map
 		else if( strequal(current_token, "map_Bump") && material_open)
@@ -328,7 +328,7 @@ int obj_parse_mtl_file(char *filename, list *material_list)
 
 }
 
-int obj_parse_obj_file(obj_growable_scene_data *growable_data, char *filename)
+int obj_parse_obj_file(obj_growable_scene_data *growable_data, const char *filename)
 {
 	FILE* obj_file_stream;
 	int current_material = -1; 
@@ -576,7 +576,7 @@ void obj_copy_to_out_storage(obj_scene_data *data_out, obj_growable_scene_data *
 	data_out->camera = growable_data->camera;
 }
 
-int parse_obj_scene(obj_scene_data *data_out, char *filename)
+int parse_obj_scene(obj_scene_data *data_out, const char *filename)
 {
 	obj_growable_scene_data growable_data;
 

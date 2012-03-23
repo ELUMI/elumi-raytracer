@@ -17,22 +17,25 @@
 #include <boost/thread.hpp>
 #include "glm/glm.hpp"
 
+
 using namespace glm;
 
 namespace raytracer {
 
 class Renderer {
 public:
-  Renderer(Settings* settings);
+  Renderer(int open_gl_version);
   virtual ~Renderer();
   
-  Scene& getScene();
+  Scene* getScene();
   ITracer* getTracer();
 
   void loadTriangles(vector<Triangle*> triangles,AABB* aabb, bool overwrite=false);
+  void loadSceneFromXML(const char* filename);
   void loadCamera(Camera& camera);
-  void loadLights(ILight* lights, int length, bool overwrite=false);
-  void loadSettings(Settings& settings);
+  void loadLights(ILight** lights, int length, bool overwrite=false);
+  void setSettings(Settings* settings);
+
 
   float* getColorBuffer();
   void render();       // synchronic
@@ -45,10 +48,11 @@ public:
   unsigned int renderComplete();
   
 private:
-  Scene m_scene;
-  Settings* m_settings;
+  void init();
+  Scene* m_scene;
+  int buffer_length;
   ITracer* m_tracer;
-
+  int open_gl_version;
   float* color_buffer;
 
   boost::thread* renderthread;

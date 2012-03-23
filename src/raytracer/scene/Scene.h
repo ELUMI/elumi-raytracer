@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "../IAccDataStruct.h"
-#include "../AccDataStructImpl/VertexArrayDataStruct.h"
 //#include "../utilities/Triangle.h" // AccData inkluderar förmodligen denna
 #include "Material.h"
 #include "Texture.h"
@@ -28,16 +27,19 @@ public:
 
 	void loadTriangles(vector<Triangle*> triangles,AABB* aabb, bool overwrite=false);
 	void loadCamera(Camera camera);
-	void loadLights(ILight* lights, int length, bool overwrite=false);
-	void loadMaterials(Material* materials, int length);
+	void loadLights(ILight** lights, size_t length, bool overwrite=false);
+	void loadMaterials(Material* materials, size_t length);
 	void loadMaterials(std::vector<raytracer::Material*> materials);
 	void loadTextures(std::vector<raytracer::Texture*> textures);
+	void setSettings(Settings* settings);
 
 	Camera& getCamera();
 	IAccDataStruct* getAccDataStruct();
 
-	const std::vector<ILight*>& getLightVector();
+	Settings* getSettings();
+	std::vector<ILight*>* getLightVector();
 	const std::vector<Material*>& getMaterialVector();
+	const std::vector<Texture*>& getTextures();
 
 	Texture* getTextureAt(int index);
 
@@ -47,8 +49,9 @@ public:
 
 private:
 	Camera m_camera;
+  std::vector<Triangle*> m_triangles;
 	IAccDataStruct* m_acc_data_struct;
-	std::vector<ILight*> m_lights;
+	std::vector<ILight*>* m_lights;
 	std::vector<Material*> m_materials;
   std::vector<Texture*> m_textures;
 	IDraw* m_drawable;

@@ -28,6 +28,17 @@ void IDraw::drawWithView(mat4 view, GLuint loc){
   draw();
 }
 
+void IDraw::drawWithGLView(mat4 view){
+  glMatrixMode(GL_MODELVIEW);
+  vec3 pos = this->getPosition();
+  view = glm::translate(view, pos);
+  glPushMatrix();
+  glLoadMatrixf(value_ptr(view));
+  draw();
+  glLoadIdentity();
+  glPopMatrix();
+}
+
 void IDraw::draw(){
 }
 

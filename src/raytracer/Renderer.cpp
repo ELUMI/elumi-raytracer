@@ -6,8 +6,18 @@
  */
 
 #include "Renderer.h"
+#include "TracerImpl/DebugTracer.h"
 #include "TracerImpl/SimpleTracer.h"
 #include "TracerImpl/StandardTracer.h"
+
+#include "XMLImpl/XML.h"
+
+#include "IPostEffect.h"
+#include "PostEffectImpl/ReinhardOperator.h"
+#include "PostEffectImpl/ClampOperator.h"
+#include "PostEffectImpl/GammaEncode.h"
+
+#include "TracerImpl/PhotonMapper.h"
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
 
@@ -15,32 +25,85 @@ using namespace std;
 
 namespace raytracer {
 
-Renderer::Renderer(Settings* settings)
-  : m_scene(settings) {
-  m_settings = settings; // test
-  m_tracer = new StandardTracer(&m_scene, settings);
-  color_buffer = new float[m_settings->width * m_settings->height * 4];
-  renderthread = 0;
+Renderer::Renderer(int open_gl_version) {
+  this->open_gl_version = open_gl_version;
+
+  Settings* set = new Settings();
+  set->opengl_version = open_gl_version;
+
+  m_scene = new Scene(set);
+
+  m_tracer = NULL;
+  color_buffer = NULL;
+  init();
 }
 
 Renderer::~Renderer() {
   delete m_tracer;
   delete [] color_buffer;
+  delete m_scene;
+}
+
+void Renderer::init() {
+
+  if(m_tracer != NULL)
+      delete m_tracer;
+  if(color_buffer != NULL)
+      delete [] color_buffer;
+
+  switch (m_scene->getSettings()->tracer) {
+  case -1:
+    m_tracer = new DebugTracer(m_scene);
+    break;
+  case 0:
+    m_tracer = new BaseTracer(m_scene);
+    break;
+  case 1:
+    m_tracer = new SimpleTracer(m_scene);
+    break;
+  case 2:
+  default:
+    m_tracer = new StandardTracer(m_scene);
+    break;
+  }
+  buffer_length = m_scene->getSettings()->width * m_scene->getSettings()->height * 4;
+  color_buffer = new float[buffer_length];
+  renderthread = 0;
 }
 
 void Renderer::loadTriangles(vector<Triangle*> triangles,AABB* aabb, bool overwrite) {
-  m_scene.loadTriangles(triangles,aabb, overwrite);
+  if(m_scene == NULL) {
+    cout << "Render has no scene!\n";
+    return;
+  }
+  m_scene->loadTriangles(triangles,aabb, overwrite);
 }
 
 void Renderer::loadCamera(Camera& camera) {
-  m_scene.loadCamera(camera);
+  if(m_scene == NULL) {
+    cout << "Render has no scene!\n";
+    return;
+  }
+  m_scene->loadCamera(camera);
 }
 
-void Renderer::loadLights(ILight* lights, int length, bool overwrite) {
-  m_scene.loadLights(lights,length,overwrite);
+void Renderer::loadLights(ILight** lights, int length, bool overwrite) {
+  if(m_scene == NULL) {
+    cout << "Render has no scene!\n";
+    return;
+  }
+  m_scene->loadLights(lights,length,overwrite);
 }
 
-Scene& Renderer::getScene() {
+void Renderer::loadSceneFromXML(const char* filename) {
+  XML xml = XML(open_gl_version);
+  if(m_scene != NULL)
+    delete m_scene;
+  m_scene = xml.importScene(filename);
+  init();
+}
+
+Scene* Renderer::getScene() {
   return m_scene;
 }
 
@@ -49,10 +112,22 @@ ITracer* Renderer::getTracer() {
 }
 
 float* Renderer::getColorBuffer() {
-	return color_buffer;
+  return color_buffer;
+}
+
+void Renderer::setSettings(Settings* settings) {
+  if(m_scene == NULL) {
+    cout << "Render has no scene!\n";
+    return;
+  }
+  m_scene->setSettings(settings);
 }
 
 void Renderer::asyncRender() {
+  if(m_scene == NULL) {
+    cout << "Render has no scene!\n";
+    return;
+  }
   m_tracer->first_bounce(); //must be done in master thread
 
   if(renderthread){
@@ -73,13 +148,30 @@ void Renderer::stopRendering() {
 
 
 void Renderer::render() {
+
+  if(m_scene == NULL) {
+    cout << "Render has no scene!\n";
+    return;
+  }
+
   m_tracer->traceImage(color_buffer);
 
-  // POST FXS!
+  ReinhardOperator reinhard = ReinhardOperator();
+  GammaEncode gamma = GammaEncode();
+  ClampOperator clamp = ClampOperator();
+
+  reinhard.run(color_buffer,buffer_length);
+  //gamma.run(color_buffer,buffer_length);
+  clamp.run(color_buffer,buffer_length);
+
 }
 
 unsigned int Renderer::renderComplete() {
-	return m_tracer->getPixelsLeft();
+  if(m_tracer == NULL) {
+    cout << "Render has no tracer!\n";
+    return -1;
+  }
+  return m_tracer->getPixelsLeft();
 }
 
 }

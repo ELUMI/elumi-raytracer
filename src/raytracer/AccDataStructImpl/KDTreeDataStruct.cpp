@@ -122,28 +122,40 @@ IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(
     if(closest_t != numeric_limits<float>::infinity( )) {
 
       vec3 v1v0 = *(closest_tri->getVertices()[1]) - *(closest_tri->getVertices()[0]);
-      vec3 v2v1 = *(closest_tri->getVertices()[2]) - *(closest_tri->getVertices()[1]);
-      vec3 v2v0 = *(closest_tri->getVertices()[2]) - *(closest_tri->getVertices()[0]);
-      vec3 pv0 = closest_pos - *(closest_tri->getVertices()[0]);
-      vec3 pv1 = closest_pos - *(closest_tri->getVertices()[1]);
+        vec3 v2v1 = *(closest_tri->getVertices()[2]) - *(closest_tri->getVertices()[1]);
+        vec3 v2v0 = *(closest_tri->getVertices()[2]) - *(closest_tri->getVertices()[0]);
+        vec3 pv0 = closest_pos - *(closest_tri->getVertices()[0]);
+        vec3 pv1 = closest_pos - *(closest_tri->getVertices()[1]);
 
-      float a = length(cross(v1v0, v2v0));
-      float a0 = length(cross(v2v1, pv1))/a;
-      float a1 = length(cross(v2v0, pv0))/a;
-      float a2 = length(cross(v1v0, pv0))/a;
+        float a = length(cross(v1v0, v2v0));
+        float a0 = length(cross(v2v1, pv1))/a;
+        float a1 = length(cross(v2v0, pv0))/a;
+        float a2 = length(cross(v1v0, pv0))/a;
 
-      vec3 inter_normal = a0 * *(closest_tri->getNormals()[0]) +
-          a1 * *(closest_tri->getNormals()[1]) +
-          a2 * *(closest_tri->getNormals()[2]);
+        vec3 inter_normal = a0 * *(closest_tri->getNormals()[0]) +
+                            a1 * *(closest_tri->getNormals()[1]) +
+                            a2 * *(closest_tri->getNormals()[2]);
 
-      vec3 inter_tex =    a0 * *(closest_tri->getTextures()[0]) +
-          a1 * *(closest_tri->getTextures()[1]) +
-          a2 * *(closest_tri->getTextures()[2]);
+        vec3 inter_tex =    a0 * *(closest_tri->getTextures()[0]) +
+                            a1 * *(closest_tri->getTextures()[1]) +
+                            a2 * *(closest_tri->getTextures()[2]);
 
-      return IntersectionData(closest_tri->getMaterial(), closest_pos, glm::normalize(inter_normal), vec2(inter_tex));
+        vec3 v1 = v1v0;
+        vec3 v2 = v2v1;
+
+        if(v1.length() > v2.length()) {
+          v1 = v2v1;
+          v1 = v1v0;
+        }
+        if(v2.length() > v2v0.length()) {
+          v2 = v2v0;
+        }
+
+      return IntersectionData(closest_tri->getMaterial(), closest_pos, glm::normalize(inter_normal), vec2(inter_tex),
+            v1,v2);
     }
   }
-  return IntersectionData(IntersectionData::NOT_FOUND, vec3(), vec3(), vec2());
+  return IntersectionData(IntersectionData::NOT_FOUND, vec3(), vec3(), vec2(),vec3(),vec3());
 }
 
 IAccDataStruct::IntersectionData
@@ -152,7 +164,7 @@ KDTreeDataStruct::findClosestIntersection(Ray ray) {
   if(aabb->intersect(ray,min,max)){
     return findClosestIntersectionStack(&ray,min,max);
   }
-  return (IntersectionData(IntersectionData::NOT_FOUND, vec3(), vec3(), vec2()));
+  return IntersectionData(IntersectionData::NOT_FOUND, vec3(), vec3(), vec2(),vec3(),vec3());
 }
 
 void KDTreeDataStruct::build(){
