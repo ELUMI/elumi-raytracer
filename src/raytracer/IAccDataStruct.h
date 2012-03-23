@@ -46,6 +46,7 @@ public:
 	virtual ~IAccDataStruct()= 0;
 	virtual IntersectionData findClosestIntersection(Ray ray)=0;
 	virtual void setData(Triangle** triangles,size_t size,AABB* aabb) = 0;
+	virtual vector<AABB*>& getAABBList() = 0;
 
 };
 

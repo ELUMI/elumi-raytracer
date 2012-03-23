@@ -42,23 +42,47 @@ bool AABB::intersect(Ray ray,float& min,float& max){
 
   return true;
 }
-void AABB::createLines(){
-    lines.push_back(Line(pos,pos+vec3(size.x,0,0)));
-    lines.push_back(Line(pos,pos+vec3(0,size.y,0)));
-    lines.push_back(Line(pos,pos+vec3(0,0,+size.z)));
+void AABB::createAABBLines(){
+    lines.push_back(Line(pos,vec3(size.x,0,0)));
+    lines.push_back(Line(pos,vec3(0,size.y,0)));
+    lines.push_back(Line(pos,vec3(0,0,size.z)));
 
-    lines.push_back(Line(pos+vec3(size.x,0,0),pos+vec3(size.x,size.y,0)));
-    lines.push_back(Line(pos+vec3(size.x,0,0),pos+vec3(size.x,0,size.z)));
+    lines.push_back(Line(pos+vec3(size.x,0,0),vec3(0,size.y,0)));
+    lines.push_back(Line(pos+vec3(size.x,0,0),vec3(0,0,size.z)));
 
-    lines.push_back(Line(pos+vec3(0,size.y,0),pos+vec3(size.x,size.y,0)));
-    lines.push_back(Line(pos+vec3(0,+size.y,0),pos+vec3(0,size.y,size.z)));
+    lines.push_back(Line(pos+vec3(0,size.y,0),vec3(size.x,0,0)));
+    lines.push_back(Line(pos+vec3(0,size.y,0),vec3(0,0,size.z)));
 
-    lines.push_back(Line(vec3(pos.x,pos.y,pos.z+size.z),vec3(pos.x+size.x,pos.y,pos.z+size.z)));
-    lines.push_back(Line(vec3(pos.x,pos.y,pos.z+size.z),vec3(pos.x,pos.y+size.y,pos.z+size.z)));
+    lines.push_back(Line(vec3(pos.x,pos.y,pos.z+size.z),vec3(size.x,0,0)));
+    lines.push_back(Line(vec3(pos.x,pos.y,pos.z+size.z),vec3(0,size.y,0)));
 
-    lines.push_back(Line(pos+size,pos+size-vec3(size.x,0,0)));
-    lines.push_back(Line(pos+size,pos+size-vec3(0,size.y,0)));
-    lines.push_back(Line(pos+size,pos+size-vec3(0,0,size.z)));
+    lines.push_back(Line(pos+size,-vec3(size.x,0,0)));
+    lines.push_back(Line(pos+size,-vec3(0,size.y,0)));
+    lines.push_back(Line(pos+size,-vec3(0,0,size.z)));
 
 }
+void AABB::createSplittingLines(int axis){
+  if(axis==0){
+    lines.push_back(Line(pos,vec3(0,size.y,0)));
+    lines.push_back(Line(pos,vec3(0,0,size.z)));
+
+    lines.push_back(Line(pos+vec3(0,0,size.z),vec3(0,size.y,0)));
+    lines.push_back(Line(pos+vec3(0,size.y,0),vec3(0,0,size.z)));
+  }
+  else if(axis==1){
+    lines.push_back(Line(pos,vec3(size.x,0,0)));
+    lines.push_back(Line(pos,vec3(0,0,size.z)));
+
+    lines.push_back(Line(pos+vec3(0,0,size.z),vec3(size.x,0,0)));
+    lines.push_back(Line(pos+vec3(size.x,0,0),vec3(0,0,size.z)));
+  }
+  else{
+    lines.push_back(Line(pos,vec3(size.x,0,0)));
+    lines.push_back(Line(pos,vec3(0,size.y,0)));
+
+    lines.push_back(Line(pos+vec3(0,size.y,0),vec3(size.x,0,0)));
+    lines.push_back(Line(pos+vec3(size.x,0,0),vec3(0,size.y,0)));
+  }
+}
+
 }

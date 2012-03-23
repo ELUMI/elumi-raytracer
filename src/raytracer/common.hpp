@@ -16,7 +16,7 @@ namespace raytracer{
 
 class Line{
 public:
-  Line(vec3 start,vec3 end){Line::start=start;Line::end=end;}
+  Line(vec3 start,vec3 size){Line::start=start;Line::end=start+size;}
   vec3& getStart(){return start;}
   vec3& getEnd(){return end;}
 private:
@@ -27,12 +27,19 @@ class AABB{
     AABB(const float& x,const float& y,const float& z,const float& w,const float& h,const float&  d){
       AABB::pos = vec3(x,y,z);
       AABB::size = vec3(w,h,d);
-      createLines();
+      createAABBLines();
     }
     AABB(const vec3 pos,const vec3& size){
       AABB::pos = pos;
       AABB::size = size;
-      createLines();
+      createAABBLines();
+    }
+    AABB(const vec3 pos,const vec3& size,bool lines, int axis){
+          AABB::pos = pos;
+          AABB::size = size;
+          if(lines){
+            createSplittingLines(axis);
+          }
     }
     bool intersect(Ray ray,float& min,float& max);
     const vec3& getPos(){return AABB::pos;}
@@ -43,9 +50,9 @@ class AABB{
   private:
     vector<Line> lines;
     vec3  pos,size;
-    float x,y,z,w,h,d;
 
-    void createLines();
+    void createAABBLines();
+    void createSplittingLines(int axis);
 };
 }
 

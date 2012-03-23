@@ -5,8 +5,6 @@
  *      Author: DmZ
  */
 
-
-
 #include <vector>
 #include <glm/glm.hpp>
 #include <algorithm>
@@ -44,7 +42,11 @@ IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(
   min_stack.push(_min);
   max_stack.push(_max);
 
-  IntersectionData hit = IntersectionData(IntersectionData::NOT_FOUND, vec3(), vec3(), vec2());
+  // Speed optimisation
+  float* ray_dir = new float[3];
+  for(size_t axis=0;axis<3;axis++){
+    ray_dir[axis] = 1 / ray->getDirection()[axis];
+  }
   while(!node_stack.empty()){
     KDNode* node = node_stack.top();
     float min = min_stack.top();
@@ -55,31 +57,30 @@ IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(
     max_stack.pop();
 
     int axis = 0;
+
     while(!node->isLeaf()){
       axis = node->getAxis();
-      float t = (node->getSplit()-ray->getPosition()[axis]) / ray->getDirection()[axis];
-      float dir_t = ray->getDirection()[axis]*t;
-      //vec3 p = ray->getPosition()+ray->getDirection()*t;
-      float split = t;
+      float dir = (node->getSplit()-ray->getPosition()[axis]); // pos[axis] differance between ray and split
+      float split_t = dir * ray_dir[axis]; // t steps to split intersection
 
-      if(t<0||split>=max){
-        node = (0 < dir_t ? // ray.pos[axis] < ray.pos[axis] + ray.dir*t
+      if(split_t<0||split_t>max){ // If ray don't intersect split or only intersect one side
+        node = (dir > 0?
             node->getLeft() : node->getRight());
       }
-      else if(split<=min){
-        node = (0 > dir_t?
+      else if(split_t<min){ // Distance from ray to split < than distance from ray to min
+        node = (dir <= 0?
             node->getLeft() : node->getRight());
       }
       else{
-        KDNode* first = (0 < dir_t ?
+        KDNode* first = (dir > 0 ?
             node->getLeft() : node->getRight());
-        KDNode* second =(0 >= dir_t ?
+        KDNode* second =(first == node->getRight() ?
             node->getLeft() : node->getRight());
         node_stack.push(second);
-        min_stack.push(split);
+        min_stack.push(split_t);
         max_stack.push(max);
         node = first;
-        max = split;
+        max = split_t;
       }
     }
     vec3 o = ray->getPosition();
@@ -87,12 +88,11 @@ IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(
 
     Triangle* closest_tri = NULL;
     vec3 closest_pos;
-    float closest_dist;
     float closest_t = numeric_limits<float>::infinity( );
 
-    Triangle** node_triangles = node->getTriangles();
+    int* node_triangles_pos = node->getTriangles();
     for(size_t i=0;i<node->getSize();i++){
-      Triangle* cur_triangle = node_triangles[i];
+      Triangle* cur_triangle = triangles[node_triangles_pos[i]];
       const vector<vec3*> vertices = cur_triangle->getVertices();
       vec3 v0 = *(vertices[0]);
       vec3 v1 = *(vertices[1]);
@@ -111,18 +111,15 @@ IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(
       float u = res.y;
       float v = res.z;
 
-      float dist = glm::distance(o, closest_pos);
-
       if(u >= 0 && v >= 0 && u + v <= 1) {  // Intersection!
         if(t > 0 && t < closest_t) {
           closest_tri = cur_triangle;
           closest_pos = o + t * d;
-          closest_dist = dist;
           closest_t = t;
         }
       }
     }
-    if(closest_t != numeric_limits<float>::infinity( )) {
+    if(closest_t != numeric_limits<float>::infinity( ) && closest_t<=max) {
 
       vec3 v1v0 = *(closest_tri->getVertices()[1]) - *(closest_tri->getVertices()[0]);
       vec3 v2v1 = *(closest_tri->getVertices()[2]) - *(closest_tri->getVertices()[1]);
@@ -143,21 +140,15 @@ IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(
           a1 * *(closest_tri->getTextures()[1]) +
           a2 * *(closest_tri->getTextures()[2]);
 
-//      if(closest_dist<max)
-        return IntersectionData(closest_tri->getMaterial(), closest_pos, glm::normalize(inter_normal), vec2(inter_tex));
+      return IntersectionData(closest_tri->getMaterial(), closest_pos, glm::normalize(inter_normal), vec2(inter_tex));
     }
   }
-  return hit;
+  return IntersectionData(IntersectionData::NOT_FOUND, vec3(), vec3(), vec2());
 }
 
 IAccDataStruct::IntersectionData
 KDTreeDataStruct::findClosestIntersection(Ray ray) {
   float min,max;
-//  for(int n=0;n<3;n++){
-//      for(size_t t=0;t<triangle_count;t++){
-//        cout << KDTreeDataStruct::triangles[n][t]->getBarycenter(n) << endl;
-//      }
-//  }
   if(aabb->intersect(ray,min,max)){
     return findClosestIntersectionStack(&ray,min,max);
   }
@@ -167,48 +158,14 @@ KDTreeDataStruct::findClosestIntersection(Ray ray) {
 void KDTreeDataStruct::build(){
   time_t start,end;
   time (&start);
+
   constructTreeStack();
-  //root = constructTree(triangles_vec,triangle_count,0);
+  constructWireframe(); // Should be an option
+
   time (&end);
   double dif = difftime (end,start);
   cout << "Tree compete : " << dif;
   cout << endl;
-}
-
-void KDTreeDataStruct::quickSort(Triangle** triangles,int top,int bottom,int axis){
-
-  int middle = 0;
-  if(top<bottom){
-    middle = qsPartition(triangles,top,bottom,axis);
-    quickSort(triangles,top,middle,axis);
-    quickSort(triangles,middle+1,bottom,axis);
-  }
-}
-int KDTreeDataStruct::qsPartition(Triangle** triangles,int top,int bottom,int axis){
-  float t=triangles[top]->getMax(axis);
-  int i = top - 1;
-  int j = bottom + 1;
-  Triangle* temp;
-  do
-  {
-    do
-    {
-      j--;
-    }while (t < triangles[j]->getMax(axis));
-
-    do
-    {
-      i++;
-    } while (t > triangles[i]->getMax(axis));
-
-    if (i < j)
-    {
-      temp = triangles[j];
-      triangles[j] = triangles[i];
-      triangles[i] = temp;
-    }
-  }while (i < j);
-  return j;
 }
 
 /**
@@ -219,84 +176,77 @@ void KDTreeDataStruct::constructTreeStack(){
 
   stack<int> depth_node;
   stack<size_t> size_node;
-  stack<Triangle**> triangle_node;
+  stack<int*> triangle_pos_node;
   stack< KDNode* > node_stack;
 
   root = new KDNode();
+  root->setSide(KDTreeDataStruct::ROOT);
 
   depth_node.push(0);
 
-  quickSort(KDTreeDataStruct::triangles,0,triangle_count-1,0);
-  triangle_node.push(KDTreeDataStruct::triangles);
+
+  quickSort(root_triangles,0,triangle_count-1,0);
+  triangle_pos_node.push(root_triangles);
   size_node.push(triangle_count);
   node_stack.push(root);
+
+  int min_size = (int)log10(triangle_count)*8;
 
   while(!node_stack.empty()){
     int depth = depth_node.top();
     int axis = depth%3;
-    Triangle** triangles = triangle_node.top();
+    int* triangles_pos = triangle_pos_node.top();
 
     size_t size = size_node.top();
 
     size_node.pop();
     depth_node.pop();
-    triangle_node.pop();
+    triangle_pos_node.pop();
 
     KDNode* node = node_stack.top();
     node_stack.pop();
 
     // TODO: Should make size and depth check values so they can be set from a easier location. TODO: test different values for size and depth
-    if(size<=4 || depth>20){
+    if(size<=min_size|| depth>20){
       node->setSize(size);
-      node->setTriangles(triangles);
+      node->setTriangles(triangles_pos);
       node->setAxis(axis);
       node->setLeaf(true);
     }
     else{
 
-//      for(size_t t=0;t<size;t++){
-//       cout << "Max:" << KDTreeDataStruct::triangles[axis][t]->getMax(axis)
-//          << " Min:" << KDTreeDataStruct::triangles[axis][t]->getMin(axis)
-//          << " Bc:" << KDTreeDataStruct::triangles[axis][t]->getBarycenter(axis) << endl;
-//      }
-//      cout << "-------------------"<< endl;
       //Pick median triangle and just select the barycenter, or mean of the two in the middle.
-//      float first_median = triangles[start+size/2-1+size%2]->getMax(axis);
-//      float second_median = triangles[start+size/2]->getMax(axis);
-      float median = triangles[size/2-1+size%2]->getMax(axis);
-      // Count the triangles on both sides
-      int left_intersect=size/2+size%2;
-      size_t left_extra=0;
-      while(left_intersect<size){
-        float min_triangle = triangles[left_intersect]->getMin(axis);
-        if(min_triangle<=median){
-          left_extra++;
-          left_intersect++;
+      float first_median = triangles[triangles_pos[size/2-1+size%2]]->getBarycenter(axis);
+      float second_median = triangles[triangles_pos[size/2]]->getBarycenter(axis);
+      float median = (first_median+second_median)/2;
+
+      vector<int> right_tri,left_tri;
+
+      for(size_t i=0;i<size;i++){
+        float min_triangle = KDTreeDataStruct::triangles[triangles_pos[i]]->getMin(axis);
+        float max_triangle = KDTreeDataStruct::triangles[triangles_pos[i]]->getMax(axis);
+        if(min_triangle<median){
+          left_tri.push_back(i);
         }
-        else break;
+        if(max_triangle>median){
+          right_tri.push_back(i);
+        }
       }
-//      int right_intersect=size/2-1;
-//      size_t right_extra=0;
-//      while(right_intersect>=0){
-//        float max_triangle = triangles[right_intersect]->getMax(axis);
-//        if(max_triangle>=median){
-//          right_extra++;
-//          right_intersect--;
-//        }
-//        else break;
-//      }
+
       int child_axis = (axis+1)%3;
-      Triangle** left_triangles = new Triangle*[size/2+left_extra];
-      for(size_t t=0;t<size/2+left_extra;t++){
-        left_triangles[t]= triangles[t];
+      int* left_triangles = new int[left_tri.size()];
+      for(size_t t=0;t<left_tri.size();t++){
+        left_triangles[t]= triangles_pos[left_tri[t]];
       }
-      quickSort(left_triangles,0,size/2+left_extra-1,child_axis);
-      Triangle** right_triangles = new Triangle*[size/2];
-      for(size_t t=size/2;t<size;t++){
-        right_triangles[t-size/2]= triangles[t];
+      quickSort(left_triangles,0,left_tri.size()-1,child_axis);
+      int* right_triangles = new int[right_tri.size()];
+      for(size_t t=0;t<right_tri.size();t++){
+        right_triangles[t]= triangles_pos[right_tri[t]];
       }
-      quickSort(right_triangles,0,size/2-1,child_axis);
-      delete[] triangles;
+      quickSort(right_triangles,0,right_tri.size()-1,child_axis);
+
+      delete [] triangles_pos;
+
       // Set the split values and position in the array in which contains the node triangles
       node->setSplit(median);
       node->setAxis(axis);
@@ -304,11 +254,14 @@ void KDTreeDataStruct::constructTreeStack(){
       KDNode* left = new KDNode();
       KDNode* right = new KDNode();
 
-      size_node.push(size/2);
-      size_node.push(size/2+left_extra);
+      left->setSide(KDTreeDataStruct::LEFT);
+      right->setSide(KDTreeDataStruct::RIGHT);
 
-      triangle_node.push(right_triangles);
-      triangle_node.push(left_triangles);
+      size_node.push(right_tri.size());
+      size_node.push(left_tri.size());
+
+      triangle_pos_node.push(right_triangles);
+      triangle_pos_node.push(left_triangles);
 
       // Push both children to the stack, make sure to put left on bottom to traverse fist
       node_stack.push(right);
@@ -323,6 +276,64 @@ void KDTreeDataStruct::constructTreeStack(){
   }
 
 }
+void KDTreeDataStruct::constructWireframe(){
+  stack<AABB*> aabb_stack;
+  stack<KDNode*> node_stack;
+
+  node_stack.push(root);
+  aabb_stack.push(aabb);
+
+  while(!node_stack.empty()){
+    KDNode* node = node_stack.top();
+    AABB* s_aabb = aabb_stack.top();
+
+    node_stack.pop();
+    aabb_stack.pop();
+    Side side = node->getSide();
+    if(side==ROOT||side==RIGHT){ // Optimization, only need to save one of the AABB. (Need to construct both left/right to traverse down)
+      splitting_list.push_back(s_aabb);
+    }
+
+    if(!node->isLeaf()){
+      vec3 start,right_end,left_end;
+      AABB* left_aabb;
+      AABB* right_aabb;
+
+      int axis = node->getAxis();
+      vec3 pos = s_aabb->getPos();
+      vec3 size = s_aabb->getSize();
+      float split = node->getSplit();
+
+      if(axis==0){
+        start = vec3(split,pos[1],pos[2]);
+        right_end = size - vec3(split-pos.x,0,0);
+        left_end = vec3(split-pos.x,size.y,size.z);
+      }
+      else if(axis==1){
+        start = vec3(pos[0],split,pos[2]);
+        right_end = size - vec3(0,split-pos.y,0);
+        left_end = vec3(size.x,split-pos.y,size.z);
+      }
+      else{
+        start = vec3(pos[0],pos[1],split);
+        right_end = size-vec3(0,0,split-pos.z);
+        left_end = vec3(size.x,size.y,split-pos.z);
+      }
+
+      if(side==LEFT){
+        delete s_aabb;
+      }
+      left_aabb = new AABB(pos,left_end,false,axis); // False -> Don't create any lines
+      right_aabb = new AABB(start,right_end,true,axis); // True-> Create only four lines
+
+      aabb_stack.push(right_aabb);
+      aabb_stack.push(left_aabb);
+
+      node_stack.push(node->getRight());
+      node_stack.push(node->getLeft());
+    }
+  }
+}
 
 /**
  * Creates three triangle lists that are sorted after x,y,z axises. This is mush faster than
@@ -331,11 +342,48 @@ void KDTreeDataStruct::constructTreeStack(){
  */
 void KDTreeDataStruct::setData(Triangle** triangles,size_t size,AABB* aabb){
   KDTreeDataStruct::triangles = new Triangle*[size];
+  KDTreeDataStruct::root_triangles = new int[size];
   for(size_t t=0;t<size;t++){
-    KDTreeDataStruct::triangles[t]= triangles[t];
+    KDTreeDataStruct::triangles[t] = triangles[t];
+    KDTreeDataStruct::root_triangles[t] = t;
   }
   KDTreeDataStruct::triangle_count = size;
   KDTreeDataStruct::aabb=aabb;
   build();
+}
+void KDTreeDataStruct::quickSort(int* triangles,int top,int bottom,int axis){
+
+  int middle = 0;
+  if(top<bottom){
+    middle = qsPartition(triangles,top,bottom,axis);
+    quickSort(triangles,top,middle,axis);
+    quickSort(triangles,middle+1,bottom,axis);
+  }
+}
+int KDTreeDataStruct::qsPartition(int* triangles,int top,int bottom,int axis){
+  float t=KDTreeDataStruct::triangles[triangles[top]]->getBarycenter(axis);
+  int i = top - 1;
+  int j = bottom + 1;
+  int temp;
+  do
+  {
+    do
+    {
+      j--;
+    }while (t < KDTreeDataStruct::triangles[triangles[j]]->getBarycenter(axis));
+
+    do
+    {
+      i++;
+    } while (t > KDTreeDataStruct::triangles[triangles[i]]->getBarycenter(axis));
+
+    if (i < j)
+    {
+      temp = triangles[j];
+      triangles[j] = triangles[i];
+      triangles[i] = temp;
+    }
+  }while (i < j);
+  return j;
 }
 }

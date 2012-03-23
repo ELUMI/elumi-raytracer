@@ -13,6 +13,7 @@ namespace po = boost::program_options;
 #include "raytracer/utilities/glutil.h"
 #include "raytracer/common.hpp"
 #include "raytracer/AccDataStructImpl/LineArrayDataStruct.hpp"
+#include "raytracer/AccDataStructImpl/KDTreeDataStruct.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -235,7 +236,8 @@ int main(int argc, char* argv[]) {
     glfwEnable(GLFW_AUTO_POLL_EVENTS);
     glfwSetWindowSizeCallback(windowSize); // TODO: In settings
 
-    IDraw* data_struct_drawable = new LineArrayDataStruct(aabb->getLines());
+
+    IDraw* data_struct_drawable = new LineArrayDataStruct(myRenderer->getScene().getAccDataStruct()->getAABBList());
 
     while (running) {
       //OpenGl rendering goes here...d

@@ -40,9 +40,9 @@ private:
 	vector<vec3*> vertices;
 	vector<vec3*> normals;
 	vector<vec3*> texCoords;
-	vec3* barycenter;
-	float* min;
-	float* max;
+	vec3 barycenter;
+	vec3 min;
+	vec3 max;
 	unsigned int material;
 	unsigned int texture;
 };
