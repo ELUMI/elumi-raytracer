@@ -103,15 +103,15 @@ int main(int argc, char* argv[]) {
     buffer[i * 4 + 0] = 0;
     buffer[i * 4 + 1] = 0;
     buffer[i * 4 + 2] = 0;
-    buffer[i * 4 + 3] = 1;
+    buffer[i * 4 + 3] = 0;
     buffer[i * 4 + 4] = 0;
     buffer[i * 4 + 5] = 0;
     buffer[i * 4 + 6] = 0;
-    buffer[i * 4 + 7] = 1;
+    buffer[i * 4 + 7] = 0;
     buffer[i * 4 + 8] = 0;
     buffer[i * 4 + 9] = 0;
     buffer[i * 4 + 10] = 0;
-    buffer[i * 4 + 11] = 1;
+    buffer[i * 4 + 11] = 0;
   }
 
   if (!settings->opengl_version) {
