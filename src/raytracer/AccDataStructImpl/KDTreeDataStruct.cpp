@@ -225,10 +225,10 @@ void KDTreeDataStruct::constructTreeStack(){
       for(size_t i=0;i<size;i++){
         float min_triangle = KDTreeDataStruct::triangles[triangles_pos[i]]->getMin(axis);
         float max_triangle = KDTreeDataStruct::triangles[triangles_pos[i]]->getMax(axis);
-        if(min_triangle<median){
+        if(min_triangle<=median){
           left_tri.push_back(i);
         }
-        if(max_triangle>median){
+        if(max_triangle>=median){
           right_tri.push_back(i);
         }
       }
