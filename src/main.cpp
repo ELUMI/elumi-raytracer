@@ -62,8 +62,6 @@ int main(int argc, char* argv[]) {
 
   getSettings(argc, argv);
 
-  cout << open_gl_version;
-
   if (open_gl_version) {
         win_width = 300;//settings->width* (settings->height > 400 ? 1 : 4);
         win_height = 300;//settings->height*(settings->height > 400 ? 1 : 4);
