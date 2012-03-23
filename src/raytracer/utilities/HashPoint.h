@@ -25,15 +25,19 @@ public:
   virtual ~HashPoint();
 
   void addItem(vec3 point, T p);
+  void addItem(size_t hash, T p);
+  //void addGrid(vec3 min, vec3 max, T p);
   vector<T> gatherFromR(vec3 point, float r);
 
   size_t getNumberOfBuckets();
+  float getBucketSize();
 
   //T* getBucket(vec3 point);
   vector<T> getBucket(size_t hash);
+  vector<T> getBucket(vec3 point);
 
-protected:
   virtual size_t hash(vec3 point);
+protected:
 
   float bucketsize;
   size_t n_buckets;
@@ -71,6 +75,12 @@ void HashPoint<T>::addItem(vec3 point, T i){
 }
 
 template <class T>
+void HashPoint<T>::addItem(size_t pos, T i){
+  buckets[pos].push_back(i);
+}
+
+
+template <class T>
 vector<T> HashPoint<T>::gatherFromR(vec3 point, float r){
   set<size_t> positions;
   for(float x=point.x-r; x<point.x+r+bucketsize; x+=bucketsize){
@@ -101,6 +111,16 @@ size_t HashPoint<T>::getNumberOfBuckets(){
 template <class T>
 vector<T> HashPoint<T>::getBucket(size_t hash){
   return buckets[hash];
+}
+
+template <class T>
+vector<T> HashPoint<T>::getBucket(vec3 point){
+  return buckets[hash(point)];
+}
+
+template <class T>
+float HashPoint<T>::getBucketSize(){
+  return bucketsize;
 }
 
 }

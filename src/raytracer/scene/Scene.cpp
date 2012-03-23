@@ -8,6 +8,7 @@
 #include "Scene.h"
 #include "../AccDataStructImpl/VertexArrayDataStruct.h"
 #include "../AccDataStructImpl/ArrayDataStruct.h"
+#include "../AccDataStructImpl/HashDataStruct.h"
 #include "../AccDataStructImpl/TriangleArray.h"
 
 namespace raytracer {
@@ -16,7 +17,7 @@ namespace raytracer {
 Scene::Scene(Settings* settings)
   : m_camera(), m_materials() {
   m_lights = new std::vector<ILight*>;
-  m_acc_data_struct = new ArrayDataStruct();
+  m_acc_data_struct = new HashDataStruct(0.1f, 1024);
   m_settings = settings;
 }
 
