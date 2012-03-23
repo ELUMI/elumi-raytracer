@@ -10,10 +10,6 @@
 
 #include "pugixml/pugixml.hpp"
 #include "../IXML.h"
-#include "../scene/Camera.h"
-#include "../Settings.h"
-#include "../scene/ILight.h"
-#include "../scene/LightImpl/OmniLight.h"
 #include <glm/glm.hpp>
 #include <iostream>
 #include <string>
