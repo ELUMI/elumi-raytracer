@@ -10,10 +10,6 @@
 
 #include "pugixml/pugixml.hpp"
 #include "../IXML.h"
-#include "../scene/Camera.h"
-#include "../Settings.h"
-#include "../scene/ILight.h"
-#include "../scene/LightImpl/OmniLight.h"
 #include <glm/glm.hpp>
 #include <iostream>
 #include <string>
@@ -22,10 +18,13 @@ namespace raytracer {
 
 class XML : public IXML {
 public:
-  XML();
+  XML(int open_gl_version);
 
   Scene* importScene(const char* fileName);
   void exportScene(Scene scene, const char* fileName);
+
+private:
+  int open_gl_version;
 };
 
 }

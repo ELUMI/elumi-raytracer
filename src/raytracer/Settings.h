@@ -18,9 +18,9 @@ namespace raytracer {
 struct Settings {
 
   Settings() {
-    width = 640;
-    height = 480;
-    opengl_version = 3;
+    width = 400;
+    height = 300;
+    opengl_version = 2;
     background_color = vec4(0,0,0,0);
     use_first_bounce = false;
     test=0;

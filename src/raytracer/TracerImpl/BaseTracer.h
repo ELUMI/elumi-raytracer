@@ -13,6 +13,9 @@
 #include "../Settings.h"
 #include "../utilities/Ray.h"
 #include "../utilities/DeferredProcesser.h"
+#include "../IRenderPattern.h"
+
+#include <boost/thread/mutex.hpp>
 
 namespace raytracer {
 
@@ -54,8 +57,15 @@ protected:
   IAccDataStruct::IntersectionData* first_intersections;
 
   virtual void initTracing();
+
+
 private:
-  virtual void tracePixel(size_t i, IAccDataStruct::IntersectionData intersection_data);
+  void traceImageThread(int id);
+
+  IRenderPattern* pattern;
+  int nr_batches;
+  int next_batch;
+  boost::mutex pattern_mutex;
 };
 
 }

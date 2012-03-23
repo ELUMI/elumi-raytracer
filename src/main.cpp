@@ -49,73 +49,64 @@ void mouseMove(int x, int y);
 void mouseMove(int x, int y);
 void windowSize(int width, int height);
 void initGL();
-void getSettings(int argc, char *argv[]);
+void getArguments(int argc, char *argv[]);
 void drawDrawables(IDraw *drawables[], size_t n);
 void drawPoints();
 void drawPointsPhoton();
 void writePhotonMap();
 void readPhotonMap();
 
+int open_gl_version = -1;
 unsigned int win_width, win_height;
 string inputFileName, outputFileName;
 
 int main(int argc, char* argv[]) {
   init_generator();
   int running = GL_TRUE;
+  getArguments(argc, argv);
 
-  settings = new Settings();
+  // INIT OPEN GL
+  if (open_gl_version) {
+    win_width = 50;
+    win_height = 50;
 
-  if (settings->opengl_version) {
-      win_width = settings->width* (settings->height > 400 ? 1 : 4);
-      win_height = settings->height*(settings->height > 400 ? 1 : 4);
+    glfwInit();
+    if (!glfwOpenWindow(win_width, win_height, 0, 0, 0, 0, 0, 0,
+        GLFW_WINDOW)) {
+      cerr << "Failed to open window";
 
-      glfwInit();
-      //Open an OpenGl window
-      if (!glfwOpenWindow(win_width, win_height, 0, 0, 0, 0, 0, 0,
-          GLFW_WINDOW)) {
-        cerr << "Failed to open window";
-        glfwTerminate();
-        exit(EXIT_FAILURE);
-      }
-      initGL();
-      CHECK_GL_ERROR();
-
-      glfwSetMouseButtonCallback(mouse);
-      glfwSetMousePosCallback(mouseMove);
-    } else {
-      cout << "Not using OpenGL" << endl;
+      glfwTerminate();
+      exit(EXIT_FAILURE);
     }
+    initGL();
+    CHECK_GL_ERROR();
+    glfwSetMouseButtonCallback(mouse);
+    glfwSetMousePosCallback(mouseMove);
+  } else {
+    cout << "Not using OpenGL" << endl;
+  }
+  cout << "OpenGL version: " << open_gl_version << "\n";
 
-  raytracer::IXML* xml = new raytracer::XML();
-  Scene* myScene = xml->importScene("tree.xml");
+
+  // CREATE RENDERER AND LOAD SCENE DATA
+  myRenderer = new Renderer(open_gl_version);
+  myRenderer->loadSceneFromXML(inputFileName.c_str());
+  Scene* myScene = myRenderer->getScene();
   settings = myScene->getSettings();
-
-  getSettings(argc, argv);
-
-
-
-  //getSettings(argc, argv);
-  cout << "OpenGL version: " << settings->opengl_version << "\n";
-
-  /* XML
-   *************/
-
-
-
-
-
-  /* RENDERER
-   ***************** */
-
-
-  myRenderer = new Renderer(myScene);
   camera = myScene->getCamera();
 
+  // RESIZE
+  if (open_gl_version) {
+    glfwSetWindowSize(settings->width, settings->height);
+  }
+
+
+  // START BUFFER
   buffer = myRenderer->getColorBuffer();
   for (int i = 0; i < settings->width * settings->height-3; i += 3) {
-    buffer[i * 4 + 0] = 1;
+    buffer[i * 4 + 0] = 0;
     buffer[i * 4 + 1] = 0;
-    buffer[i * 4 + 2] = 1;
+    buffer[i * 4 + 2] = 0;
     buffer[i * 4 + 3] = 1;
     buffer[i * 4 + 4] = 0;
     buffer[i * 4 + 5] = 0;
@@ -196,6 +187,7 @@ int main(int argc, char* argv[]) {
       //Check if ESC key was pressed or window was closed
       running = !glfwGetKey(GLFW_KEY_ESC) && glfwGetWindowParam(GLFW_OPENED);
     }
+    myRenderer->stopRendering();
 
     //Close window and terminate GLFW
     glfwTerminate();
@@ -208,6 +200,7 @@ int main(int argc, char* argv[]) {
     exporter->exportImage(outputFileName.c_str(), settings->width, settings->height, buffer);
     delete exporter;
   }
+
   delete myRenderer;
   std::cout << std::endl << "end of PROGRAM" << std::endl;
 
@@ -228,17 +221,11 @@ void readPhotonMap() {
 }
 
 
-void getSettings(int argc, char *argv[]) {
-  // Initial values.
-  settings->background_color[0] = 0;
-  settings->background_color[1] = 0;
-  settings->background_color[2] = 0;
-  settings->background_color[3] = 0;
-
+void getArguments(int argc, char *argv[]) {
   // Declare the supported options.
   po::options_description desc("Allowed options");
-  desc.add_options()("help,h", "produce help message")("no_opengl",
-      "Do not use OpenGL")("input-file,i", po::value<string>(), "Input file")(
+  desc.add_options()("help,h", "produce help message")("gl-version,gl",po::value<int>(),
+      "Open GL version")("input-file,i", po::value<string>(), "Input file")(
           "output-file,o", po::value<string>(), "Output file")("settings-file,s",
               po::value<string>(), "Settings file");
   po::variables_map vm;
@@ -247,41 +234,6 @@ void getSettings(int argc, char *argv[]) {
   if (vm.count("help")) {
     cout << desc << "\n";
     exit(1);
-  }
-  if (vm.count("settings-file")) {
-    string line;
-    ifstream settings_stream(vm["settings-file"].as<string> ().c_str());
-    if (settings_stream.is_open()) {
-      while (settings_stream.good()) {
-        getline(settings_stream, line);
-        vector<string> strs;
-        boost::split(strs, line, boost::is_any_of(":")); // Line may show error in eclipse but it should compile anyhow.
-        string option = boost::trim_copy(strs[0]);
-        string value = boost::trim_copy(strs[1]);
-        cout << "Using setting: " << option
-            << "\t\twith value: " << value << endl;
-        stringstream ssvalue(value);
-        if (option == "width") {
-          ssvalue >> settings->width;
-        } else if (option == "height") {
-          ssvalue >> settings->height;
-        } else if (option == "opengl_version") {
-          ssvalue >> settings->opengl_version;
-        } else if (option == "background_color") {
-          //TODO Handle backgroudn color
-        } else if (option == "use_first_bounce") {
-          ssvalue >> settings->use_first_bounce;
-        } else if (option == "tracer") {
-          ssvalue >> settings->tracer;
-        } else if (option == "max_recursion_depth") {
-          ssvalue >> settings->max_recursion_depth;
-        } else if (option == "recursion_attenuation_threshold") {
-          ssvalue >> settings->recursion_attenuation_threshold;
-        } else {
-          cout << "Unknown option: " << option << endl;
-        }
-      }
-    }
   }
 
   if (vm.count("input-file")) {
@@ -296,16 +248,16 @@ void getSettings(int argc, char *argv[]) {
     cout << "Saving file to default destination (out.png)." << endl;
     outputFileName = "out.png";
   }
-  if (vm.count("no_opengl")) {
-    cout << "Not using OpenGL" << endl;
-    settings->opengl_version = 0;
+  if (vm.count("gl-version")) {
+    open_gl_version = vm["gl-version"].as<int> ();
   } else {
-    cout << "Using OpenGL.\n";
+    cout << "Not using OpenGL.\n";
+    open_gl_version = 0;
   }
 }
 
 void initGL() {
-  if(settings->opengl_version == 2) {
+  if(open_gl_version == 2) {
     return;
   }
   glewInit();
