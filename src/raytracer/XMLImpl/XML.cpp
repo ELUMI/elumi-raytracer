@@ -14,12 +14,14 @@ namespace raytracer {
 
 IImporter* importer;
 
-XML::XML() {
-  // TODO Auto-generated constructor stub
+XML::XML(int open_gl_version) {
+  this->open_gl_version = open_gl_version;
   importer = new OBJImporter();
 }
 
-IXML::~IXML() {}
+IXML::~IXML() {
+  delete importer;
+}
 
 Scene* XML::importScene(const char* fileName) {
 
@@ -33,7 +35,8 @@ Scene* XML::importScene(const char* fileName) {
     const char* xml_file = xml_settings.attribute("fileName").value();
   }
 
-  Settings* settings = new Settings();
+  Settings* settings = new Settings(); // TODO LÄS IN FRÅN FIL
+  settings->opengl_version = open_gl_version;
 
   Scene* scene = new Scene(settings);
 

@@ -24,17 +24,18 @@ namespace raytracer {
 
 class Renderer {
 public:
-  Renderer(Scene* scene);
+  Renderer(int open_gl_version);
   virtual ~Renderer();
   
   Scene* getScene();
   ITracer* getTracer();
 
+  void loadSceneFromXML(const char* filename);
   void loadTriangles(vector<Triangle*> triangles, bool overwrite=false);
   void loadCamera(Camera& camera);
   void loadLights(ILight** lights, int length, bool overwrite=false);
   void setSettings(Settings* settings);
-  void loadScene(Scene* scene);
+
 
   float* getColorBuffer();
   void render();       // synchronic
@@ -49,10 +50,9 @@ public:
 private:
   void init();
   Scene* m_scene;
-  //Settings* m_settings;
   int buffer_length;
   ITracer* m_tracer;
-
+  int open_gl_version;
   float* color_buffer;
 
   boost::thread* renderthread;

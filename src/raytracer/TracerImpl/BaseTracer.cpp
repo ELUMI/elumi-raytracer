@@ -12,7 +12,7 @@ namespace raytracer {
 
 BaseTracer::BaseTracer(Scene* scene) {
   this->scene = scene;
-
+  rays = NULL;
   datastruct = scene->getAccDataStruct();
 
   first_pass = 0;
@@ -26,7 +26,8 @@ BaseTracer::BaseTracer(Scene* scene) {
 
 BaseTracer::~BaseTracer() {
   stopTracing();
-  delete[] rays;
+  if(rays!=NULL)
+    delete[] rays;
   delete[] posbuff;
 }
 

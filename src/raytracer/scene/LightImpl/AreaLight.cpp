@@ -89,11 +89,10 @@ void AreaLight::setColor(vec3 color) {
 }
 
 void AreaLight::draw() {
-  GLUquadricObj *quadobj;
-  quadobj = gluNewQuadric(); //TODO FIXA ANNAN FÄRG?
-  glColor3f(0.0f, 0.0f, 1.0f);
-  gluSphere(quadobj, 0.5, 10,10);
-  gluDeleteQuadric(quadobj);
+  OmniLight* light = light_sources;
+  for (unsigned int i=0; i<samples; ++i,light++) {
+    light->draw();
+  }
 }
 
 vec3 AreaLight::getColor() const {

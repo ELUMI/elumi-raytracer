@@ -22,10 +22,13 @@ namespace raytracer {
 
 class XML : public IXML {
 public:
-  XML();
+  XML(int open_gl_version);
 
   Scene* importScene(const char* fileName);
   void exportScene(Scene scene, const char* fileName);
+
+private:
+  int open_gl_version;
 };
 
 }

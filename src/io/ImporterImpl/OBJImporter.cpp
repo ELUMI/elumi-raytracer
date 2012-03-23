@@ -24,6 +24,9 @@ OBJImporter::OBJImporter()
 
 }
 OBJImporter::~OBJImporter(){
+
+  //TODO
+
 	triangles.clear();
 	materials.clear();
 	textures.clear();
