@@ -19,7 +19,7 @@ class IPostEffect {
 public:
   virtual ~IPostEffect() {};
 
-  virtual float* run(float* color_bufferm, int length) = 0;
+  virtual void run(float* color_buffer, int pixels, int channels) = 0;
 
   static void registerEffect(string name, IPostEffect* effect) {
     effects.push(effect);

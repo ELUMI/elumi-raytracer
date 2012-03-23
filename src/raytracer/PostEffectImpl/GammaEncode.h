@@ -18,7 +18,7 @@ public:
 
   GammaEncode(float gamma = 2.22f);
 
-  float* run(float* color_buffer, int lenght);
+  void run(float* color_buffer, int pixels, int channels);
 
 private:
   float gamma;

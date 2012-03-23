@@ -23,12 +23,12 @@ public:
                    int low = 1,         // Smallest region in pixels.
                    int high = 43);      // Largest region in pixels.
 
-  float* run(float* color_buffer, int lenght);
+  void run(float* color_buffer, int pixels, int channels);
 
 private:
 
-  float logAverage(glm::vec3* buf, int length);
-  float getMaxValue(glm::vec3* buf, int length);
+  float logAverage(float* buf, int pixels, int channels);
+  float getMaxValue(float* buf, int pixels, int channels);
 
   float key;
   float white;

@@ -173,9 +173,9 @@ void Renderer::render() {
   GammaEncode gamma = GammaEncode();
   ClampOperator clamp = ClampOperator();
 
-  reinhard.run(color_buffer,buffer_length);
+  reinhard.run(color_buffer,buffer_length / 4, 4);
   //gamma.run(color_buffer,buffer_length);
-  clamp.run(color_buffer,buffer_length);
+  clamp.run(color_buffer,buffer_length / 4, 4);
 
 }
 

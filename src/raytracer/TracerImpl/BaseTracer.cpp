@@ -174,22 +174,20 @@ void BaseTracer::traceImageThread(int id) {
     int* batch = pattern->getBatch(my_batch, &length);
 
     for (size_t i = 0; i < length; ++i) {
-      if (!abort) {
-        IAccDataStruct::IntersectionData intersection_data =
-            scene->getAccDataStruct()->findClosestIntersection(rays[batch[i]]);
-        vec4 c = trace(rays[batch[i]], intersection_data);
-
-        buffer[batch[i] * 4] = c.r;
-        buffer[batch[i] * 4 + 1] = c.g;
-        buffer[batch[i] * 4 + 2] = c.b;
-        buffer[batch[i] * 4 + 3] = c.a;
-        //--pixelsLeft;
-      } else {
-        break;
+      if (abort) {
+        return;
       }
+      IAccDataStruct::IntersectionData intersection_data =
+          scene->getAccDataStruct()->findClosestIntersection(rays[batch[i]]);
+      vec4 c = trace(rays[batch[i]], intersection_data);
+
+      buffer[batch[i] * 4] = c.r;
+      buffer[batch[i] * 4 + 1] = c.g;
+      buffer[batch[i] * 4 + 2] = c.b;
+      buffer[batch[i] * 4 + 3] = c.a;
+
+      --pixelsLeft;
     }
-    if (abort)
-      break;
 
     pattern_mutex.lock();
     my_batch = next_batch++;
@@ -201,8 +199,8 @@ void BaseTracer::stopTracing() {
   abort = true;
 }
 
-unsigned int BaseTracer::getPixelsLeft() {
-  return pixelsLeft;
+float BaseTracer::getPixelsLeft() {
+  return (nr_batches - next_batch) / nr_batches;
 }
 
 int BaseTracer::spawnRays() {

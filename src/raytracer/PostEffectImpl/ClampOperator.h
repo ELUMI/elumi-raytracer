@@ -18,7 +18,7 @@ public:
 
   ClampOperator();
 
-  float* run(float* color_buffer, int lenght);
+  void run(float* color_buffer, int pixels, int channels);
 
 private:
 
