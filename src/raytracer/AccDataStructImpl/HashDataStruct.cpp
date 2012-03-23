@@ -90,9 +90,9 @@ IAccDataStruct::IntersectionData HashDataStruct::findClosestIntersection(Ray ray
     vector<Triangle*> goodlist;
     for(size_t i=0; i<list.size(); ++i){
       if(list[i].hash == hash) {
-        //goodlist.push_back(list[i].triangle);
+        goodlist.push_back(list[i].triangle);
       }
-      goodlist.push_back(list[i].triangle);
+      //goodlist.push_back(list[i].triangle);
     }
 
     if(goodlist.size()){

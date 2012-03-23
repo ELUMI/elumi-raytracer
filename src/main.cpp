@@ -53,6 +53,8 @@ void getSettings(int argc, char *argv[]);
 void drawDrawables(IDraw *drawables[], size_t n);
 void drawPoints();
 void drawPointsPhoton();
+void writePhotonMap();
+void readPhotonMap();
 
 unsigned int win_width, win_height;
 string inputFileName, outputFileName;
@@ -124,6 +126,8 @@ int main(int argc, char* argv[]) {
     buffer[i * 4 + 10] = 0;
     buffer[i * 4 + 11] = 1;
   }
+
+  readPhotonMap();
 
   if (!settings->opengl_version) {
     myRenderer->render();
@@ -198,6 +202,7 @@ int main(int argc, char* argv[]) {
     //Close window and terminate GLFW
     glfwTerminate();
   }
+
   /* EXPORTER
    ***************** */
   if (myRenderer->renderComplete() == 0) {
@@ -210,6 +215,20 @@ int main(int argc, char* argv[]) {
 
   exit(EXIT_SUCCESS);
 }
+
+
+void writePhotonMap() {
+  PhotonMapper *tracer = dynamic_cast<PhotonMapper*>(myRenderer->getTracer());
+  if(tracer == 0) return; //failed to cast or no tracer
+  tracer->photonmap->write("photonmap");
+}
+
+void readPhotonMap() {
+  PhotonMapper *tracer = dynamic_cast<PhotonMapper*>(myRenderer->getTracer());
+  if(tracer == 0) return; //failed to cast or no tracer
+  tracer->photonmap->read("photonmap");
+}
+
 
 void getSettings(int argc, char *argv[]) {
   // Initial values.

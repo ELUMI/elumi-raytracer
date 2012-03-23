@@ -29,6 +29,9 @@ public:
 
   Photon* getBucket(vec3 point);
 
+  void write(const char* filename);
+  void read(const char* filename);
+
 private:
   HashPoint<Photon> hashpoint;
 };

@@ -35,6 +35,9 @@ public:
   //virtual void gatherFromG(vec3 point, float r, Photon* p, size_t g) = 0;
   virtual vector<Photon> gatherFromR(vec3 point, float r) = 0;
   virtual void draw() = 0;
+
+  virtual void write(const char* filename) = 0;
+  virtual void read(const char* filename) = 0;
 };
 
 }

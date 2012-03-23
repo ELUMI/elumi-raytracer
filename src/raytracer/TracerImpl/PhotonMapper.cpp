@@ -68,7 +68,7 @@ bool PhotonMapper::bounce(Photon& p) {
 }
 
 void PhotonMapper::getPhotons() {
-  size_t n = 1024*16; //NUMBER_OF_PHOTONS;
+  size_t n = 1024*64; //NUMBER_OF_PHOTONS;
   size_t max_recursion_depth = settings->max_recursion_depth;
   float totalpower = 0;
   for(size_t i=0; i<lights->size(); ++i){
@@ -91,6 +91,8 @@ void PhotonMapper::getPhotons() {
       p.position = ray.getPosition();
 
       for(size_t k=0; k<max_recursion_depth; ++k) {
+        if(abort)
+          return;
         if(!bounce(p))
           break;
       }
@@ -101,7 +103,7 @@ void PhotonMapper::getPhotons() {
 void PhotonMapper::initTracing(){
   BaseTracer::initTracing();
   //make map
-  getPhotons();
+  //getPhotons();
   //balance map
 }
 
@@ -133,18 +135,21 @@ vec4 PhotonMapper::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idat
 
     { //advanced filter kernel (ISPM paper)
       float dist = length(idata.interPoint-p.position);
-      float rz = 0.5 * r;
+      float rz = 0.1 * r;
       float t = (dist/r)*(1-dot((idata.interPoint-p.position) / dist, p.normal)*(r+rz)/rz);
-      float sigma = r;
+      float scale = 0.2;
+      float sigma = r*scale;
       float a = 1/(sqrt(2*M_PI)*sigma);
       k = a*a*a*exp(-t*t/(2*sigma*sigma));
+      k *= scale;
     }
 
 
-    float a = glm::max(0.0f, glm::dot(-p.direction, idata.normal));
+    float a = glm::max(0.0f, glm::dot(p.direction, idata.normal));
     //cout << p.power.r << " " << p.power.g << " " << p.power.b << "\n";
     //cout << b << " " << a << " " << k << "\n";
     l += b * p.power * a * k;
+    //l += a;
   }
 
   vec3 color = scene->getMaterialVector()[idata.material]->getDiffuse();

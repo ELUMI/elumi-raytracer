@@ -6,6 +6,7 @@
  */
 
 #include "HashPM.h"
+#include <fstream>
 
 namespace raytracer {
 
@@ -42,6 +43,52 @@ void HashPM::draw(){
     }
   }
   glEnd();
+}
+
+void HashPM::write(const char* filename){
+  ofstream file;
+  file.open (filename);
+  for(size_t j=0; j<hashpoint.getNumberOfBuckets(); ++j){
+    vector<Photon> photons = hashpoint.getBucket(j);
+    for(size_t i=0; i<photons.size(); ++i){
+      Photon p = photons[i];
+      vec3 c = p.position;
+      file << c.x << "\t" << c.y << "\t" << c.z << "\t";
+      c = p.direction;
+      file << c.x << "\t" << c.y << "\t" << c.z << "\t";
+      c = p.normal;
+      file << c.x << "\t" << c.y << "\t" << c.z << "\t";
+      {
+      vec4 c = p.power;
+      file << c.x << "\t" << c.y << "\t" << c.z << "\t" << c.w << "\n";
+      }
+    }
+  }
+  file.close();
+}
+
+void HashPM::read(const char* filename){
+  ifstream file;
+  file.open (filename);
+
+  while(!file.eof()) {
+    Photon p;
+    vec3 c;
+    file >> c.x >> c.y >> c.z;
+    p.position = c;
+    file >> c.x >> c.y >> c.z;
+    p.direction = c;
+    file >> c.x >> c.y >> c.z;
+    p.normal = c;
+    {
+    vec4 c;
+    file >> c.x >> c.y >> c.z >> c.w;
+    p.power = c;
+    }
+
+    addPhoton(p);
+  }
+  file.close();
 }
 
 
