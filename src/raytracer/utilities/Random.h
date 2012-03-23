@@ -15,12 +15,16 @@
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/variate_generator.hpp>
 
+#include <glm/glm.hpp>
+using namespace glm;
 
 namespace raytracer {
 
 static boost::mt19937 generator(42u);
 void init_generator();
 float gen_random_float(float min, float max);
+vec3 get_random_dir();
+vec3 get_random_hemisphere(vec3 normal);
 
 }
 

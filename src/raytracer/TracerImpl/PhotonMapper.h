@@ -29,6 +29,7 @@ private:
   void initTracing();
 
   float radius;
+  size_t totalphotons;
 };
 
 }

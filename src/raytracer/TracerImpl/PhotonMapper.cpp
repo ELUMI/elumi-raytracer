@@ -7,6 +7,7 @@
 
 #include "PhotonMapper.h"
 #include "../PhotonMapImpl/HashPM.h"
+#include "../utilities/Random.h"
 
 namespace raytracer {
 
@@ -14,7 +15,7 @@ PhotonMapper::PhotonMapper(Scene* scene)
 : BaseTracer(scene) {
   radius = 1;
   photonmap = new HashPM(radius, 1024);
-
+  totalphotons = 0;
 }
 
 PhotonMapper::~PhotonMapper() {
@@ -37,56 +38,66 @@ bool PhotonMapper::bounce(Photon& p) {
     return false;
   }
 
-  vec3 color = scene->getMaterialVector()[idata.material]->getDiffuse();
-  p.power = vec4(color,1);
   storeInMap(p);
 
-  return false;
+  //return false;
 
-  float absorbtion, reflection, refraction;
+  Material* mat = scene->getMaterialVector()[idata.material];
+
+  float reflection = mat->getReflection()/3;
+  float refraction = mat->getReflection()/3;
+  float absorbtion = 1/3;
+  float diffuse    = 1 - reflection - refraction - absorbtion;
   vec3 outgoing;
 
-  assert(absorbtion+reflection+refraction==1.0f);
+  assert(reflection <= 1 && refraction <= 1 && absorbtion <= 1 && diffuse <= 1);
+  assert(reflection+refraction+diffuse+absorbtion==1.0f);
 
   //russian roulette
-  float rand = drand48();
-  if(rand < absorbtion) {
+  float rand = gen_random_float(0,1);
+  if (rand < reflection) {
+    outgoing = glm::reflect(p.direction, p.normal);
+    p.power *= reflection * mat->getDiffuse();
+  } else if (rand < reflection+refraction) {
+    outgoing = glm::refract(p.direction, p.normal, mat->getIndexOfRefraction());
+    p.power *= refraction * mat->getDiffuse();
+  } else if(rand < reflection+refraction+diffuse) {  //diffuse interreflection
+    outgoing = get_random_hemisphere(p.normal);
+    p.power *= diffuse    * mat->getDiffuse();
+  } else { //absorbtion
     return false;
-  } if (rand < reflection) {
-    //set outgoing
-  } else if (rand < refraction) {
-    //set outgoing
   }
 
   p.direction = -outgoing;
-  p.power *= vec4(color,p.power.a * 0.5); //0.5 is todo
 
-  if(p.power.a < settings->recursion_attenuation_threshold)
+  if((p.power.r + p.power.g + p.power.b)/3 < settings->recursion_attenuation_threshold)
     return false;
 
   return true;
 }
 
 void PhotonMapper::getPhotons() {
-  size_t n = 1024*64; //NUMBER_OF_PHOTONS;
+  size_t n = 1024*32; //NUMBER_OF_PHOTONS;
   size_t max_recursion_depth = settings->max_recursion_depth;
   float totalpower = 0;
   for(size_t i=0; i<lights->size(); ++i){
     totalpower += lights->at(i)->getPower();
   }
 
-  float power = totalpower / n;
   for(size_t i=0; i<lights->size(); ++i){
     ILight* light = lights->at(i);
-    size_t m = n * light->getPower() / totalpower; //photons per light
+    float npe = n * light->getPower() / totalpower;
+    size_t m = size_t(npe); //photons per light
     Ray* rays = new Ray[m];
     light->getRays(rays, m);
+
+    vec3 power = (1/(light->getPower() / totalpower)) * light->getColor();
 
     for(size_t j=0; j<m; ++j){
       Ray ray = rays[j];
 
       Photon p;
-      p.power = vec4(light->getColor(), power);
+      p.power = power;
       p.direction = -ray.getDirection();
       p.position = ray.getPosition();
 
@@ -98,13 +109,14 @@ void PhotonMapper::getPhotons() {
       }
     }
   }
+
+  totalphotons += n;
 }
 
 void PhotonMapper::initTracing(){
   BaseTracer::initTracing();
-  //make map
   //getPhotons();
-  //balance map
+  photonmap->balance();
 }
 
 
@@ -118,14 +130,14 @@ float inline brdf(vec3 point, vec3 idir, vec3 odir){
 }
 
 vec4 PhotonMapper::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata){
-  vec4 l = vec4(0);
+  vec3 l = vec3(0);
 
   size_t g; //number of photons
   float r;  //gather radius
 
   vector<Photon> photons = gather(r, idata.interPoint);
   if(photons.size() == 0)
-    return vec4(0);
+    return vec4(0,0,0,1);
   for(size_t i=0; i<photons.size(); ++i){
     Photon p = photons[i];
     float b = brdf(idata.interPoint, p.direction, incoming_ray.getDirection());
@@ -144,16 +156,16 @@ vec4 PhotonMapper::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idat
       k *= scale;
     }
 
-
     float a = glm::max(0.0f, glm::dot(p.direction, idata.normal));
     //cout << p.power.r << " " << p.power.g << " " << p.power.b << "\n";
     //cout << b << " " << a << " " << k << "\n";
     l += b * p.power * a * k;
     //l += a;
   }
+  //l /= totalphotons;
 
   vec3 color = scene->getMaterialVector()[idata.material]->getDiffuse();
-  return l;
+  return vec4(l,0);
 }
 
 

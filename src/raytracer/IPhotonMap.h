@@ -23,7 +23,7 @@ struct Photon {
   vec3 direction; //pointing away from position, by convention
   vec3 position;
   vec3 normal;
-  vec4 power; //color
+  vec3 power; //color
 };
 
 class IPhotonMap : IDraw {

@@ -127,8 +127,6 @@ int main(int argc, char* argv[]) {
     buffer[i * 4 + 11] = 1;
   }
 
-  readPhotonMap();
-
   if (!settings->opengl_version) {
     myRenderer->render();
   } else {
@@ -544,7 +542,14 @@ void timedCallback() {
     cout << settings->debug_mode << "\n";
     glfwSleep(0.5);
   }
-
+  if (glfwGetKey('O')) {
+    myRenderer->stopRendering();
+    readPhotonMap();
+    myRenderer->asyncRender();
+  }
+  if (glfwGetKey('P')) {
+    writePhotonMap();
+  }
 
 }
 
