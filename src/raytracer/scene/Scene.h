@@ -49,6 +49,7 @@ public:
 
 private:
 	Camera m_camera;
+  std::vector<Triangle*> m_triangles;
 	IAccDataStruct* m_acc_data_struct;
 	std::vector<ILight*>* m_lights;
 	std::vector<Material*> m_materials;

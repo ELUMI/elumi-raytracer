@@ -38,20 +38,8 @@ Renderer::Renderer(int open_gl_version) {
   init();
 }
 
-//Renderer::Renderer(Settings* settings) {
-//  m_scene = new Scene(settings);
-//  m_settings = settings;
-//  init();
-//}
-
-
-
-//Renderer::Renderer(Scene* scene) {
-//  m_scene = scene;
-//  init();
-//}
-
 Renderer::~Renderer() {
+  stopRendering();
   delete m_tracer;
   delete [] color_buffer;
   delete m_scene;

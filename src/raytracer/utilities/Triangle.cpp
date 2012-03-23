@@ -22,8 +22,12 @@ Triangle::Triangle(vector<vec3*> vertices, vector<vec3*> normals, vector<vec3*> 
 }
 
 Triangle::~Triangle() {
-  //TODO ta bort alla verts etc.
-	//delete(Triangle::material); //TODO: Add delete in scene
+  for(size_t i=0; i<vertices.size(); ++i)
+    delete vertices.at(i);
+  for(size_t i=0; i<normals.size(); ++i)
+      delete normals.at(i);
+  for(size_t i=0; i<texCoords.size(); ++i)
+      delete texCoords.at(i);
 }
 
 void Triangle::set(vector<vec3*> vertices, vector<vec3*> normals, vector<vec3*> texCoords,

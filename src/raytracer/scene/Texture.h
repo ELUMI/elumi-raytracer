@@ -20,7 +20,6 @@ class Texture {
 public:
   enum TextureType { TEXTURE,HEIGHTMAP,NORMALMAP };
   enum DataType { RGB,RGBA,BGR,BGRA };
-  Texture();
   Texture(unsigned int width, unsigned int height, unsigned char* data);
   Texture(unsigned int width, unsigned int height, unsigned char* data,TextureType type);
 	virtual ~Texture();

@@ -14,8 +14,6 @@ using namespace std;
 
 namespace raytracer {
 
-Texture::Texture() {
-}
 
 Texture::Texture(unsigned int width, unsigned int height, unsigned char* data, TextureType type) {
   Texture::width = width;
@@ -32,6 +30,8 @@ Texture::Texture(unsigned int width, unsigned int height, unsigned char* data) {
 }
 
 Texture::~Texture() {
+  // TODO ? kanske.
+  // vart skapas data, och vart tas det bort?
 }
 
 unsigned int Texture::getHeight() {
