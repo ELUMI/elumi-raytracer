@@ -5,10 +5,18 @@
  *      Author: irri
  */
 
+#include <iostream>
+
 #include "BaseTracer.h"
 #include <glm/gtc/matrix_transform.hpp> //translate, rotate, scale, perspective
-namespace raytracer {
 
+#include "boost/thread.hpp"
+#include "boost/bind.hpp"
+#include "boost/thread/mutex.hpp"
+
+#include "../RenderPatternImpl/LinePattern.h"
+
+namespace raytracer {
 
 BaseTracer::BaseTracer(Scene* scene) {
   this->scene = scene;
@@ -68,27 +76,20 @@ void BaseTracer::first_bounce() {
       int i = y * width + x;
       vec4 pos = vp2m * vec4(x + 0.5, y + 0.5, depths[i], 1);
 
+
       //see comment in deferred.frag
       unsigned int material = ceil(normals[i].w - 0.5); //alpha channel is noisy, but this works!
       assert(material == IAccDataStruct::IntersectionData::NOT_FOUND || material < scene->getMaterialVector().size());
 
       first_intersections[i] = IAccDataStruct::IntersectionData(material,
           vec3(pos) / pos.w, vec3(normals[i]), texcoords[i],vec3(),vec3());
+
     }
   }
 
   delete[] normals;
   delete[] texcoords;
   delete[] depths;
-}
-
-void BaseTracer::tracePixel(size_t i, IAccDataStruct::IntersectionData intersection_data) {
-  posbuff[i] = intersection_data.interPoint; //put this before so trace can overwrite it
-  vec4 c = trace(rays[i], intersection_data);
-  buffer[i * 4] = c.r;
-  buffer[i * 4 + 1] = c.g;
-  buffer[i * 4 + 2] = c.b;
-  buffer[i * 4 + 3] = c.a;
 }
 
 void BaseTracer::initTracing()
@@ -114,31 +115,88 @@ void BaseTracer::traceImage(float *color_buffer)
   initTracing();
   int number_of_rays = spawnRays();
 
-  if(settings->use_first_bounce){
+
+  if (settings->use_first_bounce) {
     // For every pixel
-    #pragma omp parallel for
-    for(int i = 0;i < number_of_rays;++i){
-      //i must be signed according to openmp
-      if(!abort){
-        tracePixel(i, first_intersections[i]);
-        #pragma omp atomic
+#pragma omp parallel for
+    for (size_t i = 0; i < number_of_rays; ++i) {
+      //#pragma omp task
+#pragma omp flush (abort)
+      if (!abort) {
+        vec4 c = trace(rays[i], first_intersections[i]);
+        buffer[i * 4] = glm::min(1.0f, c.r);
+        buffer[i * 4 + 1] = glm::min(1.0f, c.g);
+        buffer[i * 4 + 2] = glm::min(1.0f, c.b);
+        buffer[i * 4 + 3] = glm::min(1.0f, c.a);
+
+#pragma omp atomic
         --pixelsLeft;
       }
     }
 
+  } else {
+
+    pattern = new LinePattern(settings->width, settings->height);
+
+    nr_batches = pattern->getNumberBatches();
+    next_batch = 0;
+
+    // Launch threads
+    int nr_threads = boost::thread::hardware_concurrency();
+    boost::thread threads[nr_threads];
+    for (int i = 0; i < nr_threads; ++i) {
+      threads[i] = boost::thread(
+          boost::bind(&BaseTracer::traceImageThread, this, i));
+    }
+
+    // Wait for threads to complete
+    for (int i = 0; i < nr_threads; ++i) {
+      threads[i].join();
+    }
+
+    cout << "Threads done!" << endl;
+
+    delete pattern;
+
   }
-  else{
-    // For every pixel
-    #pragma omp parallel for
-    for(int i = 0;i < number_of_rays;++i){
-      //i must be signed according to openmp
-      if(!abort){
-        IAccDataStruct::IntersectionData intersection_data = scene->getAccDataStruct()->findClosestIntersection(rays[i]);
-        tracePixel(i, intersection_data);
-        #pragma omp atomic
-        --pixelsLeft;
+
+}
+
+void BaseTracer::traceImageThread(int id) {
+
+  // Synchronize work
+  int my_batch = 0;
+  pattern_mutex.lock();
+  my_batch = next_batch++;
+  pattern_mutex.unlock();
+
+  while (my_batch < nr_batches) {
+    cout << "Thread: " << id << " on batch: " << my_batch << endl;
+
+    int length;
+    int* batch = pattern->getBatch(my_batch, &length);
+
+    for (size_t i = 0; i < length; ++i) {
+      if (!abort) {
+        IAccDataStruct::IntersectionData intersection_data =
+            scene->getAccDataStruct()->findClosestIntersection(rays[batch[i]]);
+        vec4 c = trace(rays[batch[i]], intersection_data);
+
+        buffer[batch[i] * 4] = c.r;
+        buffer[batch[i] * 4 + 1] = c.g;
+        buffer[batch[i] * 4 + 2] = c.b;
+        buffer[batch[i] * 4 + 3] = c.a;
+        //--pixelsLeft;
+      } else {
+        break;
       }
     }
+    if (abort)
+      break;
+
+    pattern_mutex.lock();
+    my_batch = next_batch++;
+    pattern_mutex.unlock();
   }
 }
 
@@ -205,6 +263,7 @@ vec4 BaseTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata)
   light /= lights->size();
   vec3 color = scene->getMaterialVector()[idata.material]->getDiffuse();
   return vec4(color * light, 1);
+
 }
 
 }
