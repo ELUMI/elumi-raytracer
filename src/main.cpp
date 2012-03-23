@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
     glfwSetWindowSizeCallback(windowSize); // TODO: In settings
 
 
-    IDraw* data_struct_drawable = new LineArrayDataStruct(myRenderer->getScene()->getAccDataStruct()->getAABBList());
+//    IDraw* data_struct_drawable = new LineArrayDataStruct(myRenderer->getScene()->getAccDataStruct()->getAABBList());
 
     while (running) {
       //OpenGl rendering goes here...d
