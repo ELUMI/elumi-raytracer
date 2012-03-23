@@ -46,7 +46,7 @@ AreaLight::AreaLight(vec3 position, vec3 axis1, vec3 axis2, unsigned int sample1
 }
 
 AreaLight::~AreaLight() {
-  delete light_sources;
+  delete [] light_sources;
 }
 
 ILight::FalloffType AreaLight::getFalloffType() const {

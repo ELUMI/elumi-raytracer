@@ -63,8 +63,8 @@ int main(int argc, char* argv[]) {
 
   // INIT OPEN GL
   if (open_gl_version) {
-    win_width = 50;//settings->width* (settings->height > 400 ? 1 : 4);
-    win_height = 50;//settings->height*(settings->height > 400 ? 1 : 4);
+    win_width = 50;
+    win_height = 50;
 
     glfwInit();
     if (!glfwOpenWindow(win_width, win_height, 0, 0, 0, 0, 0, 0,
@@ -91,6 +91,7 @@ int main(int argc, char* argv[]) {
   settings = myScene->getSettings();
   camera = myScene->getCamera();
 
+  // RESIZE
   if (open_gl_version) {
     glfwSetWindowSize(settings->width, settings->height);
   }
