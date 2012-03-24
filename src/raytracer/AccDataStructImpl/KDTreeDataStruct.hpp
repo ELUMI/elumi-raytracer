@@ -63,6 +63,15 @@ private:
     unsigned char side;
     bool leaf;
   };
+  class SortableTriangle : Triangle {
+  public:
+    SortableTriangle(Triangle* triangle){
+
+    }
+  private:
+    float min,max,baryCenter;
+
+  };
 //  KDNode* constructTree(vector<Triangle*> triangles,int size,int depth);
   void constructTreeStack();
   void constructWireframe();
