@@ -55,20 +55,24 @@ void OBJImporter::loadFile(const char* filename){
 	for(int i=0; i<obj_data->materialCount; i++){
 		obj_material *material = obj_data->materialList[i];
 
-		std::string _name = material->name;
-		glm::vec3 _ambient = vec3(material->amb[0],material->amb[1],material->amb[2]);
-		glm::vec3 _diffuse = vec3(material->diff[0],material->diff[1],material->diff[2]);
-		glm::vec3 _specular = vec3(material->spec[0],material->spec[1],material->spec[2]);
-		glm::vec3 _emissive = vec3(material->emissive[0],material->emissive[1],material->emissive[2]);
+		std::string _name           = material->name;
+		glm::vec3 _ambient          = vec3(material->amb[0],material->amb[1],material->amb[2]);
+		glm::vec3 _diffuse          = vec3(material->diff[0],material->diff[1],material->diff[2]);
+		glm::vec3 _specular         = vec3(material->spec[0],material->spec[1],material->spec[2]);
+		glm::vec3 _emissive         = vec3(material->emissive[0],material->emissive[1],material->emissive[2]);
 
-		glm::vec3 _transparency = vec3(material->trans[0],material->trans[1],material->trans[2]);
-		float _shininess = material->shiny;
-		float _sharpness = material->glossy;
-		float _reflection = material->reflect;
-		float _index_of_refraction = material->refract_index;
-		float _refraction = material->refract;
-		std::string _diffuse_map = material->diffuse_map;
-		std::string _bump_map = material->bump_filename;
+		glm::vec3 _transparency     = vec3(material->trans[0],material->trans[1],material->trans[2]);
+		float _shininess            = material->shiny;
+		float _sharpness            = material->glossy;
+		float _reflection           = material->reflect;
+		float _index_of_refraction  = material->refract_index;
+		float _refraction           = material->refract;
+		float _reflect_spread       = material->reflect_spread;
+		int   _reflect_samples      = material->reflect_samples;
+		float _refract_spread       = material->refract_spread;
+		int   _refract_samples      = material->refract_samples;
+		std::string _diffuse_map    = material->diffuse_map;
+		std::string _bump_map       = material->bump_filename;
 
     replace(_diffuse_map.begin(), _diffuse_map.end(), '\n', '\0');
     replace(_bump_map.begin(), _bump_map.end(), '\n', '\0');
@@ -133,8 +137,23 @@ void OBJImporter::loadFile(const char* filename){
       }
     }
 
-		OBJImporter::materials.push_back(new Material(_name,_ambient,_diffuse,_specular,_emissive,
-				_transparency,_shininess,_sharpness,_reflection,_index_of_refraction,diff_map_index,bump_map));
+		OBJImporter::materials.push_back(new Material(
+		    _name,
+		    _ambient,
+		    _diffuse,
+		    _specular,
+		    _emissive,
+				_transparency,
+				_shininess,
+				_sharpness,
+				_reflection,
+				_index_of_refraction,
+				diff_map_index,
+				bump_map,
+				_reflect_spread,
+				_reflect_samples,
+				_refract_spread,
+				_refract_samples));
 	}
 
 	// Start creating the triangles

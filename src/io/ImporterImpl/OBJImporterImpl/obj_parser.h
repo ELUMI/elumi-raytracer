@@ -50,11 +50,16 @@ typedef struct obj_material
 	double spec[3];
 	double emissive[3];
 	double reflect;
+	double reflect_spread;
+	double reflect_samples;
 	double refract;
+	double refract_spread;
+	double refract_samples;
 	double trans[3];
 	double shiny;
 	double glossy;
 	double refract_index;
+
 };
 
 typedef struct obj_camera

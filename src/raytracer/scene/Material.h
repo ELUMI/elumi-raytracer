@@ -22,7 +22,9 @@ public:
   Material();
   Material(std::string name,glm::vec3 ambient,glm::vec3 diffuse,glm::vec3 specular,
       glm::vec3 emissive,glm::vec3 opacity,float shininess,float sharpness,
-      float reflection ,float index_of_refraction, int diffuse_map,int bump_map);
+      float reflection ,float index_of_refraction, int diffuse_map,int bump_map,
+      float reflect_spread, int reflect_samples,
+      float refract_spread, int refract_samples);
   virtual ~Material();
 
   glm::vec3 getColor();
@@ -37,6 +39,9 @@ public:
   int getDiffuseMap();
   int getBumpMap();
   float getOpacity() const;
+
+  float getReflectionSpread() const;
+  float getRefractionSpread() const;
 
 
 private:
@@ -53,6 +58,11 @@ private:
   float index_of_refraction;// (Ni)
   float reflection;         // (r)
   float sharpness;			    // ???????????????????????????????????????????????
+
+  float reflect_spread;     // (r_spread)
+  int reflect_samples;    // (r_samples)
+  float refract_spread;     // (Ni_spread)
+  int refract_samples;    // (Ni_samples)
 
   int diffuse_map;
   int bump_map;

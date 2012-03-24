@@ -6,6 +6,7 @@
  */
 
 #include "Random.h"
+#include <glm/gtx/rotate_vector.hpp>
 
 namespace raytracer {
 
@@ -34,6 +35,27 @@ vec3 get_random_hemisphere(vec3 normal){
   if(dot(dir, normal) < 0)
     return -dir;
   return dir;
+}
+
+// TODO: Find better algorithm
+vec3 get_random_cone(vec3 normal, float max) {
+  if(max <= 0.0f) // Cone as narrow as the axis
+    return normal;
+
+  vec3 dir = get_random_dir();
+  if(max >= 2.0f * M_PI)  // Whole sphere
+    return dir;
+
+  // Find angle between normal and dir. If angle is outside conde, rotate
+  // back to within the cone.
+  float angle = acos(dot(dir, normal));
+  if(angle > max) {
+    float rot = ceil((angle - max) / (max * 2)) * max * 2;
+    return rotate(dir,  rot, cross(dir, normal));  // Rotate back within range
+  } else {
+    return dir;
+  }
+
 }
 
 }
