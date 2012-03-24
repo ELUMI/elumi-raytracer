@@ -106,8 +106,16 @@ float Material::getReflectionSpread() const {
   return reflect_spread;
 }
 
+int Material::getReflectionSamples() const {
+  return reflect_samples;
+}
+
 float Material::getRefractionSpread() const {
   return refract_spread;
+}
+
+int Material::getRefractionSamples() const {
+  return refract_samples;
 }
 
 }

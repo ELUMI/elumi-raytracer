@@ -9,10 +9,11 @@
 
 
 #include "StandardTracer.h"
+#include "../utilities/Random.h"
 
 namespace raytracer {
 
-// TODO rapport ändra threshold jämförelsebilder
+// TODO report, change threshold comparison images
 StandardTracer::StandardTracer(Scene* scene)
 : BaseTracer(scene)
 , MAX_RECURSION_DEPTH(settings->max_recursion_depth)
@@ -155,8 +156,13 @@ vec4 StandardTracer::shade(Ray incoming_ray
   // Multiply the accumelated ambient light colors with ambient material color
   ambient *= material->getAmbient();
 
-  float reflectance = material->getReflection();
-  float transmittance = (1-material->getOpacity());
+  float reflectance     = material->getReflection();
+  float reflect_spread  = material->getReflectionSpread();
+  int   reflect_samples = material->getReflectionSamples();
+
+  float transmittance   = (1-material->getOpacity());
+  float refract_spread  = material->getRefractionSpread();
+  int   refract_samples = material->getRefractionSamples();
 
   if (attenuation > ATTENUATION_THRESHOLD && depth < MAX_RECURSION_DEPTH) {
 
@@ -179,9 +185,27 @@ vec4 StandardTracer::shade(Ray incoming_ray
       vec3 offset = refr_normal * 0.01f;
       vec3 refl_dir = glm::reflect(incoming_ray.getDirection(), refr_normal);
       Ray refl_ray = Ray(idata.interPoint + offset, glm::normalize(refl_dir));
-      refl_color = tracePrim(refl_ray, attenuation*reflectance, depth+1) * reflectance;
 
-      // SVART BEROR PÅ ATT DEN STUDSAR MOT SIG SJÄLV OCH ALLTID BLIR REFLECTIVE TILLS MAXDJUP
+
+      if(reflect_spread > 0.0f && reflect_samples > 1) { // Glossy reflections
+        for(int i = 0; i < reflect_samples; ++i) {
+
+          vec3 sample_dir = glm::normalize(
+              get_random_cone(refl_dir, reflect_spread));
+
+          Ray sample_ray = Ray(idata.interPoint + offset, sample_dir);
+
+          refl_color +=
+              tracePrim(sample_ray, attenuation*reflectance/reflect_samples, depth+1)
+              * reflectance / reflect_samples;
+
+        }
+      } else {  // Non glossy
+        refl_color =
+            tracePrim(refl_ray, attenuation*reflectance, depth+1) * reflectance;
+      }
+
+      // BLACK BECAUSE OF BOUNCES AGAINTS ITSELF AND ALLWAYS REFLECTIVE UNTILL MAX DEPTH
 
     }
 
@@ -201,11 +225,11 @@ vec4 StandardTracer::shade(Ray incoming_ray
         Ray refr_ray = Ray(idata.interPoint + offset, refr_dir);
         refr_color = tracePrim(refr_ray, attenuation*(transmittance), depth+1) * (transmittance);
 
-        // SVART BEROR PÅ SELF SHADOWING
+        // BLACK IS BECAUSE OF SELF SHADOWING
       }
 
     } // end refraction
-  } // end annutation
+  } // end attenuation
 
   // Mix the output colors
   vec4 color = vec4((ambient + diffuse + specular),1.0f) * (1-transmittance) + refr_color;

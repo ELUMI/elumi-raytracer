@@ -41,7 +41,9 @@ public:
   float getOpacity() const;
 
   float getReflectionSpread() const;
+  int getReflectionSamples() const;
   float getRefractionSpread() const;
+  int getRefractionSamples() const;
 
 
 private:
