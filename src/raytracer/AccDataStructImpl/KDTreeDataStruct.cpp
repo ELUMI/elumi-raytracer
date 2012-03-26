@@ -20,6 +20,10 @@
 #include "../utilities/Triangle.h"
 #include "../utilities/Ray.h"
 
+#include "boost/thread.hpp"
+#include "boost/bind.hpp"
+#include "boost/thread/mutex.hpp"
+
 
 using namespace glm;
 
@@ -27,6 +31,7 @@ namespace raytracer {
 
 KDTreeDataStruct::KDTreeDataStruct(Settings* settings){
   root = new KDNode();
+  root->setSide(KDTreeDataStruct::ROOT);
   KDTreeDataStruct::settings = settings;
 }
 
@@ -171,23 +176,128 @@ KDTreeDataStruct::findClosestIntersection(Ray ray) {
 
 void KDTreeDataStruct::build(){
   // Launch threads
-//  int nr_threads = boost::thread::hardware_concurrency();
-//  boost::thread threads[nr_threads];
-//  for (int i = 0; i < nr_threads; ++i) {
-//    threads[i] = boost::thread(
-//        boost::bind(&KDTreeDataStruct::constructTreeStack, this, RIGHT));
-//  }
-//
-//  // Wait for threads to complete
-//  for (int i = 0; i < nr_threads; ++i) {
-//    threads[i].join();
-//  }
+  int nr_threads = boost::thread::hardware_concurrency();
+  if(nr_threads==1){
+    KDTreeDataStruct::constructTreeStack(root,0);
+  }
+  else if(nr_threads<4){ // Less than 4 threads
+    nr_threads = 2;
+    constructTreeNode(root,0);
+    KDNode** nodes= new KDNode*[2];
+    nodes[0] = root->getLeft();
+    nodes[1] = root->getRight();
 
+    boost::thread threads[nr_threads];
+    for (int i = 0; i < 2; ++i) {
+      threads[i] = boost::thread(
+          boost::bind(&KDTreeDataStruct::constructTreeStack, this,nodes[i],1));
+    }
+    for (int i = 0; i < nr_threads; ++i) {
+          threads[i].join();
+    }
+  }
+  else{ // More than/or equal to 4 threads
+    int current_threads = 0;
+    constructTreeNode(root,0);
+    constructTreeNode(root->getLeft(),1);
+    constructTreeNode(root->getRight(),1);
+    KDNode** nodes= new KDNode*[4];
+    if(root->getLeft()->getLeft() !=NULL){
+      nodes[current_threads] = root->getLeft()->getLeft();
+      current_threads++;
+    }
+    if(root->getLeft()->getRight() !=NULL){
+      nodes[current_threads] = root->getLeft()->getRight();
+      current_threads++;
+    }
+    if(root->getRight()->getLeft() !=NULL){
+      nodes[current_threads] = root->getRight()->getLeft();
+      current_threads++;
+    }
+    if(root->getRight()->getRight() !=NULL){
+      nodes[current_threads] = root->getRight()->getRight();
+      current_threads++;
+    }
 
-  constructTreeStack(LEFT);
+    boost::thread threads[current_threads];
+    for (int i = 0; i < current_threads; ++i) {
+      threads[i] = boost::thread(
+          boost::bind(&KDTreeDataStruct::constructTreeStack, this,nodes[i],2));
+    }
+    for (int i = 0; i < current_threads; ++i) {
+          threads[i].join();
+    }
+  }
 
   if(settings->wireframe==1){
     constructWireframe();
+  }
+}
+
+void KDTreeDataStruct::constructTreeNode(KDNode* node,int depth){
+  int axis = depth%3;
+  int* triangles_pos = node->getTriangles();
+  size_t size = node->getSize();
+
+  // TODO: Should make size and depth check values so they can be set from a easier location. TODO: test different values for size and depth
+  if(size<=min_size){
+    node->setSize(size);
+    node->setTriangles(triangles_pos);
+    node->setAxis(axis);
+    node->setLeaf(true);
+  }
+  else{
+
+    //Pick median triangle and just select the barycenter, or mean of the two in the middle.
+    float first_median = triangles[triangles_pos[size/2-1+size%2]]->getBarycenter(axis);
+    float second_median = triangles[triangles_pos[size/2]]->getBarycenter(axis);
+    float median = (first_median+second_median)/2;
+
+    vector<int> right_tri,left_tri;
+
+    for(size_t i=0;i<size;i++){
+      float min_triangle = KDTreeDataStruct::triangles[triangles_pos[i]]->getMin(axis);
+      float max_triangle = KDTreeDataStruct::triangles[triangles_pos[i]]->getMax(axis);
+      if(min_triangle<median){
+        left_tri.push_back(i);
+      }
+      if(max_triangle>median){
+        right_tri.push_back(i);
+      }
+    }
+
+    int child_axis = (axis+1)%3;
+    int* left_triangles = new int[left_tri.size()];
+    for(size_t t=0;t<left_tri.size();t++){
+      left_triangles[t]= triangles_pos[left_tri[t]];
+    }
+    quickSort(left_triangles,0,left_tri.size()-1,child_axis);
+    int* right_triangles = new int[right_tri.size()];
+    for(size_t t=0;t<right_tri.size();t++){
+      right_triangles[t]= triangles_pos[right_tri[t]];
+    }
+    quickSort(right_triangles,0,right_tri.size()-1,child_axis);
+
+    delete [] triangles_pos;
+
+    // Set the split values and position in the array in which contains the node triangles
+    node->setSplit(median);
+    node->setAxis(axis);
+
+    KDNode* left = new KDNode();
+    KDNode* right = new KDNode();
+
+    left->setSide(KDTreeDataStruct::LEFT);
+    right->setSide(KDTreeDataStruct::RIGHT);
+
+    left->setSize(right_tri.size());
+    right->setSize(left_tri.size());
+
+    left->setTriangles(right_triangles);
+    right->setTriangles(left_triangles);
+
+    node->setLeft(left);
+    node->setRight(right);
   }
 }
 
@@ -195,25 +305,21 @@ void KDTreeDataStruct::build(){
  * Doing a stack implementation instead of a recursive approach because the call_stack may end up loosing some data
  * or giving corrupt data. This way we will never leave the method and therefor don't risk damaging the call_stack
  */
-void KDTreeDataStruct::constructTreeStack(Side side){
-
+void KDTreeDataStruct::constructTreeStack(KDNode* node,int depth){
+  if(node->isLeaf())
+    return;
   stack<int> depth_node;
   stack<size_t> size_node;
   stack<int*> triangle_pos_node;
   stack< KDNode* > node_stack;
 
-  root = new KDNode();
-  root->setSide(KDTreeDataStruct::ROOT);
+  depth_node.push(depth);
 
-  depth_node.push(0);
+  quickSort(node->getTriangles(),0,node->getSize()-1,0);
+  triangle_pos_node.push(node->getTriangles());
+  size_node.push(node->getSize());
+  node_stack.push(node);
 
-
-  quickSort(root_triangles,0,triangle_count-1,0);
-  triangle_pos_node.push(root_triangles);
-  size_node.push(triangle_count);
-  node_stack.push(root);
-
-  int min_size = (int)log10(triangle_count)*8;
 
   while(!node_stack.empty()){
     int depth = depth_node.top();
@@ -372,6 +478,9 @@ void KDTreeDataStruct::setData(Triangle** triangles,size_t size,AABB* aabb){
   }
   KDTreeDataStruct::triangle_count = size;
   KDTreeDataStruct::aabb=aabb;
+  KDTreeDataStruct::root->setTriangles(root_triangles);
+  KDTreeDataStruct::root->setSize(size);
+  min_size = (int)log10(triangle_count)*8;
   build();
 }
 void KDTreeDataStruct::quickSort(int* triangles,int top,int bottom,int axis){

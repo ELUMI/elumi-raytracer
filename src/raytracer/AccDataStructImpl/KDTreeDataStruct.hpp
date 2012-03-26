@@ -96,7 +96,8 @@ private:
     Triangle* triangle;
 
   };
-  void constructTreeStack(Side side);
+  void constructTreeStack(KDNode* node,int depth);
+  void constructTreeNode(KDNode* node,int depth);
   void constructWireframe();
   IAccDataStruct::IntersectionData findClosestIntersectionR(KDNode* node,Ray* ray,float min,float max,int depth);
 
@@ -112,6 +113,7 @@ private:
   int* root_triangles;
   size_t triangle_count;
   Settings* settings;
+  int min_size;
 
 };
 
