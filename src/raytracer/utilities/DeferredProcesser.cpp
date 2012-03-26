@@ -16,7 +16,7 @@ DeferredProcesser::DeferredProcesser(unsigned int width, unsigned int height) {
   //************************************
   // The loadShaderProgram and linkShaderProgam functions are defined in glutil.cpp and
   // do exactly what we did in lab1 but are hidden for convenience
-  shader_program = loadShaderProgram("deferred.vert", "deferred.frag");
+  shader_program = loadShaderProgram("data/gl_shaders/deferred.vert", "data/gl_shaders/deferred.frag");
   glBindAttribLocation(shader_program, 0, "position");
   glBindAttribLocation(shader_program, 1, "color");
   glBindAttribLocation(shader_program, 2, "texCoordIn");

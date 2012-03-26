@@ -10,6 +10,7 @@
 
 
 #include <IL/il.h>
+#include <IL/ilu.h>
 
 #include "OBJImporter.h"
 #include "../IImporter.h"
@@ -24,6 +25,9 @@ OBJImporter::OBJImporter()
 
 }
 OBJImporter::~OBJImporter(){
+
+  //TODO
+
 	triangles.clear();
 	materials.clear();
 	textures.clear();
@@ -36,6 +40,7 @@ OBJImporter::~OBJImporter(){
 void OBJImporter::loadFile(const char* filename){
 
   ilInit();
+  //iluInit();
 
 	obj_loader *obj_data = new obj_loader();
 
@@ -45,6 +50,8 @@ void OBJImporter::loadFile(const char* filename){
 	catch(int e){
 		cout << "Couldn't find file '" << filename << "'. Errmsg:" << e << endl;
 	}
+
+	int materialOffset = materials.size();
 
 	for(int i=0; i<obj_data->materialCount; i++){
 		obj_material *material = obj_data->materialList[i];
@@ -61,22 +68,23 @@ void OBJImporter::loadFile(const char* filename){
 		float _reflection = material->reflect;
 		float _index_of_refraction = material->refract_index;
 		float _refraction = material->refract;
-		std::string _texture_map = material->texture_filename;
+		std::string _diffuse_map = material->diffuse_map;
 		std::string _bump_map = material->bump_filename;
 
-    replace(_texture_map.begin(), _texture_map.end(), '\n', '\0');
+    replace(_diffuse_map.begin(), _diffuse_map.end(), '\n', '\0');
     replace(_bump_map.begin(), _bump_map.end(), '\n', '\0');
 
 
 		ILuint image;
-		int texture = -1, bump_map = -1;
-
-		image = ilGenImage();
-		ilBindImage(image);
+		int diff_map_index = -1, bump_map = -1;
 
 		//Texture
-    if(!_texture_map.empty()) {
-      ilLoadImage(_texture_map.c_str());
+    if(!_diffuse_map.empty()) {
+
+      image = ilGenImage();
+      ilBindImage(image);
+
+      ilLoadImage(_diffuse_map.c_str());
 
       if(ilGetError() == IL_NO_ERROR) {
         cout << "Image loaded" << endl;
@@ -86,7 +94,17 @@ void OBJImporter::loadFile(const char* filename){
         h = ilGetInteger(IL_IMAGE_HEIGHT);
 
         textures.push_back(new Texture(w,h,ilGetData()));
-        texture = textures.size()-1;
+        diff_map_index = textures.size()-1;
+
+        //Mip maps
+        /*if(iluBuildMipmaps()) {
+          for(int i = 0;ilActiveMipmap(i);i++) {
+            w = ilGetInteger(IL_IMAGE_WIDTH);
+            h = ilGetInteger(IL_IMAGE_HEIGHT);
+            textures.push_back(new Texture(w,h,ilGetData()));
+            textures.at(diff_map_index)->addMipmap();
+          }
+        }*/
 
       } else {
         //Image not loaded (?)
@@ -102,25 +120,22 @@ void OBJImporter::loadFile(const char* filename){
       ilLoadImage(_bump_map.c_str());
 
       if(ilGetError() == IL_NO_ERROR) {
-        cout << "Image loaded" << endl;
         ILuint w,h;
 
         w = ilGetInteger(IL_IMAGE_WIDTH);
         h = ilGetInteger(IL_IMAGE_HEIGHT);
 
-        cout << ilGetInteger(IL_FORMAT_MODE) << endl;
-
         textures.push_back(new Texture(w,h,ilGetData()));
         bump_map = textures.size()-1;
-
+        image++;
       } else {
         //Image not loaded (?)
-        cout << "Image not loaded" << endl;
+        cout << "Bumpmap not loaded" << endl;
       }
     }
 
 		OBJImporter::materials.push_back(new Material(_name,_ambient,_diffuse,_specular,_emissive,
-				_transparency,_shininess,_sharpness,_reflection,_index_of_refraction,texture,bump_map));
+				_transparency,_shininess,_sharpness,_reflection,_index_of_refraction,diff_map_index,bump_map));
 	}
 
   float inf=std::numeric_limits<float>::infinity();
@@ -129,7 +144,6 @@ void OBJImporter::loadFile(const char* filename){
 	// Start creating the triangles
 	for(int i=0; i<obj_data->faceCount; i++){
 		obj_face *face = obj_data->faceList[i];
-
 
 		vector<vec3*> _vertices;
 		vector<vec3*> _normals;
@@ -155,7 +169,7 @@ void OBJImporter::loadFile(const char* filename){
 			  _texCoords.push_back(new vec3(_text->e[0],_text->e[1],_text->e[2]));
 			else _texCoords.push_back(new vec3(0,0,0));
 		}
-		unsigned int _material = face->material_index;
+		unsigned int _material = face->material_index+materialOffset;
 		OBJImporter::triangles.push_back(new Triangle(_vertices,_normals,_texCoords,_material));
 
 		// More than one triangle for each face?

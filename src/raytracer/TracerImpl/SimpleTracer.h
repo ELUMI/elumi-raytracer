@@ -14,7 +14,7 @@ namespace raytracer {
 
 class SimpleTracer : public BaseTracer {
 public:
-  SimpleTracer(Scene* scene, Settings* settings);
+  SimpleTracer(Scene* scene);
   virtual ~SimpleTracer();
 
   void traceImage(float* color_buffer);
