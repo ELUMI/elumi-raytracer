@@ -24,7 +24,7 @@ public:
   void balance();
   void addPhoton(Photon p);
   //void gatherFromG(vec3 point, float r, Photon* p, size_t g);
-  vector<Photon> gatherFromR(vec3 point, float r);
+  vector<Photon*> gatherFromR(vec3 point, float r) const;
   void draw();
 
   Photon* getBucket(vec3 point);

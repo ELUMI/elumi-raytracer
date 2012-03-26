@@ -22,7 +22,7 @@ void HashPM::addPhoton(Photon p){
   hashpoint.addItem(p.position, p);
 }
 
-vector<Photon> HashPM::gatherFromR(vec3 point, float r){
+vector<Photon*> HashPM::gatherFromR(vec3 point, float r) const {
   return hashpoint.gatherFromR(point, r);
 }
 

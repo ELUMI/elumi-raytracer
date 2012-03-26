@@ -120,7 +120,7 @@ void PhotonMapper::initTracing(){
 }
 
 
-vector<Photon> PhotonMapper::gather(float& r, vec3 point){
+vector<Photon*> PhotonMapper::gather(float& r, vec3 point){
   r = radius;
   return photonmap->gatherFromR(point, r);
 }
@@ -135,20 +135,20 @@ vec4 PhotonMapper::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idat
   size_t g; //number of photons
   float r;  //gather radius
 
-  vector<Photon> photons = gather(r, idata.interPoint);
+  vector<Photon*> photons = gather(r, idata.interPoint);
   if(photons.size() == 0)
     return vec4(0,0,0,1);
   for(size_t i=0; i<photons.size(); ++i){
-    Photon p = photons[i];
-    float b = brdf(idata.interPoint, p.direction, incoming_ray.getDirection());
+    Photon* p = photons[i];
+    float b = brdf(idata.interPoint, p->direction, incoming_ray.getDirection());
 
     float k;
     //k = 1/(M_PI*r*r); //simple filter kernel
 
     { //advanced filter kernel (ISPM paper)
-      float dist = length(idata.interPoint-p.position);
+      float dist = length(idata.interPoint-p->position);
       float rz = 0.1 * r;
-      float t = (dist/r)*(1-dot((idata.interPoint-p.position) / dist, p.normal)*(r+rz)/rz);
+      float t = (dist/r)*(1-dot((idata.interPoint-p->position) / dist, p->normal)*(r+rz)/rz);
       float scale = 0.2;
       float sigma = r*scale;
       float a = 1/(sqrt(2*M_PI)*sigma);
@@ -156,10 +156,10 @@ vec4 PhotonMapper::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idat
       k *= scale;
     }
 
-    float a = glm::max(0.0f, glm::dot(p.direction, idata.normal));
+    float a = glm::max(0.0f, glm::dot(p->direction, idata.normal));
     //cout << p.power.r << " " << p.power.g << " " << p.power.b << "\n";
     //cout << b << " " << a << " " << k << "\n";
-    l += b * p.power * a * k;
+    l += b * p->power * a * k;
     //l += a;
   }
   //l /= totalphotons;

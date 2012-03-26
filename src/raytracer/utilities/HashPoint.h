@@ -27,16 +27,16 @@ public:
   void addItem(vec3 point, T p);
   void addItem(size_t hash, T p);
   //void addGrid(vec3 min, vec3 max, T p);
-  vector<T> gatherFromR(vec3 point, float r);
+  vector<T*> gatherFromR(vec3 point, float r) const;
 
-  size_t getNumberOfBuckets();
-  float getBucketSize();
+  size_t getNumberOfBuckets() const;
+  float getBucketSize() const;
 
   //T* getBucket(vec3 point);
-  vector<T> getBucket(size_t hash);
-  vector<T> getBucket(vec3 point);
+  vector<T> getBucket(size_t hash) const;
+  vector<T> getBucket(vec3 point) const;
 
-  virtual size_t hash(vec3 point);
+  virtual size_t hash(vec3 point) const;
 protected:
 
   float bucketsize;
@@ -61,7 +61,7 @@ HashPoint<T>::~HashPoint() {
 }
 
 template <class T>
-size_t HashPoint<T>::hash(vec3 point){
+size_t HashPoint<T>::hash(vec3 point) const {
   size_t h = int(point.x/bucketsize)*17;
   h += int(point.y/bucketsize)*101;
   h += int(point.z/bucketsize)*67;
@@ -81,7 +81,7 @@ void HashPoint<T>::addItem(size_t pos, T i){
 
 
 template <class T>
-vector<T> HashPoint<T>::gatherFromR(vec3 point, float r){
+vector<T*> HashPoint<T>::gatherFromR(vec3 point, float r) const {
   set<size_t> positions;
   for(float x=point.x-r; x<point.x+r+bucketsize; x+=bucketsize){
     for(float y=point.y-r; y<point.y+r+bucketsize; y+=bucketsize){
@@ -91,11 +91,11 @@ vector<T> HashPoint<T>::gatherFromR(vec3 point, float r){
     }
   }
 
-  vector<T> found;
+  vector<T*> found;
   for(set<size_t>::iterator pos=positions.begin(); pos != positions.end(); ++pos){
     for(size_t i=0; i<buckets[*pos].size(); ++i){
-      T p = buckets[*pos][i];
-      if(length(p.position-point) < r) {
+      T* p = &(buckets[*pos][i]);
+      if(length(p->position-point) < r) {
         found.push_back(p);
       }
     }
@@ -104,23 +104,23 @@ vector<T> HashPoint<T>::gatherFromR(vec3 point, float r){
 }
 
 template <class T>
-size_t HashPoint<T>::getNumberOfBuckets(){
+size_t HashPoint<T>::getNumberOfBuckets() const {
   return n_buckets;
 }
 
 template <class T>
-vector<T> HashPoint<T>::getBucket(size_t hash){
+float HashPoint<T>::getBucketSize() const {
+  return bucketsize;
+}
+
+template <class T>
+vector<T> HashPoint<T>::getBucket(size_t hash) const {
   return buckets[hash];
 }
 
 template <class T>
-vector<T> HashPoint<T>::getBucket(vec3 point){
+vector<T> HashPoint<T>::getBucket(vec3 point) const {
   return buckets[hash(point)];
-}
-
-template <class T>
-float HashPoint<T>::getBucketSize(){
-  return bucketsize;
 }
 
 }

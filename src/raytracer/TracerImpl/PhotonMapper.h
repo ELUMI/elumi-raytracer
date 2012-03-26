@@ -25,7 +25,7 @@ private:
   void storeInMap(Photon p);
   bool bounce(Photon& p);
   vec4 shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata);
-  vector<Photon> gather(float& r, vec3 point);
+  vector<Photon*> gather(float& r, vec3 point);
   void initTracing();
 
   float radius;
