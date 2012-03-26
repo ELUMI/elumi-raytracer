@@ -34,6 +34,7 @@ vec4 StandardTracer::trace(Ray ray, IAccDataStruct::IntersectionData idata) {
   return shade(ray, idata, 1.0f, 0);
 }
 
+// Recursive trace method (trace')
 vec4 StandardTracer::tracePrim(Ray ray, float attenuation, unsigned short depth) {
   IAccDataStruct::IntersectionData idata = datastruct->findClosestIntersection(ray);
   return shade(ray, idata, attenuation, depth);
@@ -220,12 +221,27 @@ vec4 StandardTracer::shade(Ray incoming_ray
 
       vec3 offset = -refr_normal * 0.01f;
       vec3 refr_dir = glm::refract(incoming_ray.getDirection(), refr_normal, eta);
-      if (refr_dir == vec3(0,0,0)) {
+      if (refr_dir == vec3(0,0,0)) {  // Total reflectionr returns vec3(0,0,0)
         transmittance = 0.0f;
       } else {
 
         Ray refr_ray = Ray(idata.interPoint + offset, refr_dir);
-        refr_color = tracePrim(refr_ray, attenuation*(transmittance), depth+1) * (transmittance);
+
+
+        if(/*refract_spread > 0.0f && */refract_samples > 0) {
+          for(int i = 0; i < refract_samples; ++i) {
+            vec3 sample_dir = glm::normalize(
+                          get_random_cone(refr_dir, refract_spread));
+            //cout << "(" << sample_dir.x << ", " << sample_dir.y << ", " << sample_dir.z << ")" << endl;
+            Ray sample_ray = Ray(idata.interPoint + offset, sample_dir);
+
+            refr_color += tracePrim(sample_ray, attenuation*(transmittance) / refract_samples, depth+1)
+                         * (transmittance) / refract_samples;
+          }
+        } else {
+          refr_color = tracePrim(refr_ray, attenuation*(transmittance), depth+1)
+                       * (transmittance);
+        }
 
         // BLACK IS BECAUSE OF SELF SHADOWING
       }
