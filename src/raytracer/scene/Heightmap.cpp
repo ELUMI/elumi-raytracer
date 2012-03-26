@@ -45,6 +45,10 @@ IAccDataStruct::IntersectionData Heightmap::getTriangle(Ray ray) {
   vec3 v = vec3(0,1,0);
   vec3 w = vec3(0,0,1);
 
+  float h1 = 150;
+  float h2 = 30;
+  float h3 = 150;
+
   vec3 current_vector = u;
 
   for(int i = 0; i < 3; i++) {
@@ -67,8 +71,25 @@ IAccDataStruct::IntersectionData Heightmap::getTriangle(Ray ray) {
     float f = dot(current_vector,ray.getDirection());
 
     if(true) {
-      float t1 = (e + width/2)/f;
-      float t2 = (e - width/2)/f;
+
+      float h = 10;
+
+      switch (i) {
+      case 0:
+        h = h1;
+        break;
+      case 1:
+        h = h2;
+        break;
+      case 2:
+        h = h3;
+        break;
+      default:
+        break;
+      }
+
+      float t1 = (e + h)/f;
+      float t2 = (e - h)/f;
 
       if(t1 > t2) {
         float tmp = t1;
@@ -98,6 +119,8 @@ IAccDataStruct::IntersectionData Heightmap::getTriangle(Ray ray) {
   }
 
   //cout << "T min: " << t_min << " T max: " << t_max << endl;
+
+  cout << "X: " << intersection_point.x << " Y: " << intersection_point.y << " Z: " << intersection_point.z << endl;
 
   if(intersection)
     return IAccDataStruct::IntersectionData(0,intersection_point,vec3(0,1,0),vec2(),vec3(),vec3());
