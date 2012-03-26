@@ -52,6 +52,7 @@ private:
   Scene* m_scene;
   int buffer_length;
   ITracer* m_tracer;
+  bool abort;
   int open_gl_version;
   float* color_buffer;
 

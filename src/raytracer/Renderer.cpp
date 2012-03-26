@@ -27,6 +27,7 @@ namespace raytracer {
 
 Renderer::Renderer(int open_gl_version) {
   this->open_gl_version = open_gl_version;
+  abort = false;
 
   Settings* set = new Settings();
   set->opengl_version = open_gl_version;
@@ -55,16 +56,24 @@ void Renderer::init() {
   switch (m_scene->getSettings()->tracer) {
   case -1:
     m_tracer = new DebugTracer(m_scene);
+    cout << "Using debug tracer\n";
     break;
   case 0:
     m_tracer = new BaseTracer(m_scene);
+    cout << "Using base tracer\n";
     break;
   case 1:
     m_tracer = new SimpleTracer(m_scene);
+    cout << "Using simple tracer\n";
     break;
   case 2:
   default:
     m_tracer = new StandardTracer(m_scene);
+    cout << "Using standard tracer\n";
+    break;
+  case 3:
+    m_tracer = new PhotonMapper(m_scene);
+    cout << "Using photon mapper tracer\n";
     break;
   }
   buffer_length = m_scene->getSettings()->width * m_scene->getSettings()->height * 4;
@@ -139,6 +148,7 @@ void Renderer::asyncRender() {
 
 void Renderer::stopRendering() {
   if(renderthread) {
+    abort = true;
     if(m_tracer)
       m_tracer->stopTracing();
     renderthread->join();
@@ -149,6 +159,7 @@ void Renderer::stopRendering() {
 
 
 void Renderer::render() {
+  abort = false;
 
   if(m_scene == NULL) {
     cout << "Render has no scene!\n";
@@ -156,6 +167,9 @@ void Renderer::render() {
   }
 
   m_tracer->traceImage(color_buffer);
+
+  if(abort)
+    return;
 
   ReinhardOperator reinhard = ReinhardOperator();
   GammaEncode gamma = GammaEncode();

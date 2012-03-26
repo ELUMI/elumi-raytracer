@@ -9,11 +9,12 @@ namespace po = boost::program_options;
 #include "io/ImporterImpl/OBJImporter.h"
 #include "raytracer/Renderer.h"
 #include "raytracer/TracerImpl/BaseTracer.h"
+#include "raytracer/TracerImpl/PhotonMapper.h"
 #include "raytracer/scene/ILight.h"
 #include "raytracer/scene/LightImpl/OmniLight.h"
 #include "raytracer/scene/LightImpl/AreaLight.h"
 #include "raytracer/utilities/glutil.h"
-
+#include "raytracer/utilities/Random.h"
 
 #include "raytracer/IXML.h"
 #include "raytracer/XMLImpl/XML.h"
@@ -51,13 +52,16 @@ void initGL();
 void getArguments(int argc, char *argv[]);
 void drawDrawables(IDraw *drawables[], size_t n);
 void drawPoints();
+void drawPointsPhoton();
+void writePhotonMap();
+void readPhotonMap();
 
 int open_gl_version = -1;
 unsigned int win_width, win_height;
 string inputFileName, outputFileName;
 
 int main(int argc, char* argv[]) {
-  srand48(0);
+  init_generator();
   int running = GL_TRUE;
   getArguments(argc, argv);
 
@@ -158,6 +162,18 @@ int main(int argc, char* argv[]) {
       case 4:
         drawPoints();
         break;
+      case 5:
+        drawPointsPhoton();
+        break;
+      case 6:
+        drawPoints();
+        drawPointsPhoton();
+        break;
+      case 7:
+        drawDrawables(drawables, sizeof(drawables) / sizeof(IDraw*));
+        drawPoints();
+        drawPointsPhoton();
+        break;
       }
 
       CHECK_GL_ERROR();
@@ -176,6 +192,7 @@ int main(int argc, char* argv[]) {
     //Close window and terminate GLFW
     glfwTerminate();
   }
+
   /* EXPORTER
    ***************** */
   if (myRenderer->renderComplete() == 0) {
@@ -189,6 +206,20 @@ int main(int argc, char* argv[]) {
 
   exit(EXIT_SUCCESS);
 }
+
+
+void writePhotonMap() {
+  PhotonMapper *tracer = dynamic_cast<PhotonMapper*>(myRenderer->getTracer());
+  if(tracer == 0) return; //failed to cast or no tracer
+  tracer->photonmap->write("photonmap");
+}
+
+void readPhotonMap() {
+  PhotonMapper *tracer = dynamic_cast<PhotonMapper*>(myRenderer->getTracer());
+  if(tracer == 0) return; //failed to cast or no tracer
+  tracer->photonmap->read("photonmap");
+}
+
 
 void getArguments(int argc, char *argv[]) {
   // Declare the supported options.
@@ -288,9 +319,9 @@ void drawDrawables(IDraw **drawables, size_t n) {
 void drawPoints()
 {
   mat4 view = camera.getViewMatrix();
-  BaseTracer *bt = dynamic_cast<BaseTracer*>(myRenderer->getTracer());
-  if(bt == 0) return; //failed to cast or no tracer
-  vec3 *posbuff = bt->posbuff;
+  BaseTracer *tracer = dynamic_cast<BaseTracer*>(myRenderer->getTracer());
+  if(tracer == 0) return; //failed to cast or no tracer
+  vec3 *posbuff = tracer->posbuff;
 
   glDisable(GL_DEPTH_TEST);
   glMatrixMode(GL_MODELVIEW);
@@ -308,6 +339,25 @@ void drawPoints()
     }
   }
   glEnd();
+
+  glPopMatrix();
+  glEnable(GL_DEPTH_TEST);
+}
+
+void drawPointsPhoton()
+{
+  mat4 view = camera.getViewMatrix();
+  PhotonMapper *tracer = dynamic_cast<PhotonMapper*>(myRenderer->getTracer());
+  if(tracer == 0) return; //failed to cast or no tracer
+  IPhotonMap *photonmap = tracer->photonmap;
+
+  glDisable(GL_DEPTH_TEST);
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glLoadMatrixf(value_ptr(view));
+  glColor3f(0, 1, 0);
+
+  photonmap->draw();
 
   glPopMatrix();
   glEnable(GL_DEPTH_TEST);
@@ -382,6 +432,15 @@ void timedCallback() {
   if (glfwGetKey('6')) {
     renderMode = 6;
   }
+  if (glfwGetKey('7')) {
+    renderMode = 7;
+  }
+  if (glfwGetKey('8')) {
+    renderMode = 8;
+  }
+  if (glfwGetKey('9')) {
+    renderMode = 9;
+  }
   if (glfwGetKey('E')) {
     myRenderer->stopRendering();
     myRenderer->loadCamera(camera);
@@ -435,7 +494,14 @@ void timedCallback() {
     cout << settings->debug_mode << "\n";
     glfwSleep(0.5);
   }
-
+  if (glfwGetKey('O')) {
+    myRenderer->stopRendering();
+    readPhotonMap();
+    myRenderer->asyncRender();
+  }
+  if (glfwGetKey('P')) {
+    writePhotonMap();
+  }
 
 }
 

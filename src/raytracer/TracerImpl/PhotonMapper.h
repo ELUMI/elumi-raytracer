@@ -18,6 +18,7 @@ public:
   PhotonMapper(Scene* scene);
   virtual ~PhotonMapper();
 
+  IPhotonMap* photonmap;
 private:
   Photon* photons;
   void getPhotons();
@@ -27,8 +28,8 @@ private:
   vector<Photon> gather(float& r, vec3 point);
   void initTracing();
 
-  IPhotonMap* photonmap;
   float radius;
+  size_t totalphotons;
 };
 
 }

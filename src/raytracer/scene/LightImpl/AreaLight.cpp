@@ -6,6 +6,7 @@
  */
 
 #include "AreaLight.h"
+#include "../../utilities/Random.h"
 
 namespace raytracer {
 
@@ -118,10 +119,10 @@ void AreaLight::setPosition(vec3 position) {
 
 void AreaLight::getRays(Ray* rays, size_t n) {
   for(size_t i = 0; i<n; ++i){
-    size_t j = rand.gen_random_float(0.0f, samples);
+    size_t j = gen_random_float(0.0f, samples);
     Ray ray;
     light_sources[j].getRays(&ray,1);
-    vec3 offset = rand.gen_random_float(0.0f, 1.0f) * delta1 + rand.gen_random_float(0.0f, 1.0f) * delta2;
+    vec3 offset = gen_random_float(0.0f, 1.0f) * delta1 + gen_random_float(0.0f, 1.0f) * delta2;
     rays[i] = Ray(ray.getPosition()+offset, ray.getDirection());
   }
 }
@@ -132,7 +133,7 @@ float AreaLight::calcLight(IAccDataStruct* datastruct, vec3 point, vec3 HEJ) {
 
   OmniLight* light = light_sources;
   for (unsigned int i=0; i<samples; ++i,light++) {
-    vec3 offset = rand.gen_random_float(0.0f, 1.0f) * delta1 + rand.gen_random_float(0.0f, 1.0f) * delta2;
+    vec3 offset = gen_random_float(0.0f, 1.0f) * delta1 + gen_random_float(0.0f, 1.0f) * delta2;
     in_light += light->calcLight(datastruct,point,offset) / samples;
   }
 
