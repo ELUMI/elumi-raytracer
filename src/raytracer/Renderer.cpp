@@ -171,7 +171,7 @@ void Renderer::render() {
   if(abort)
     return;
 
-  ReinhardOperator reinhard = ReinhardOperator();
+  ReinhardOperator reinhard = ReinhardOperator(m_scene->getSettings()->key);
   GammaEncode gamma = GammaEncode();
   ClampOperator clamp = ClampOperator();
 

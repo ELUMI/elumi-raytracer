@@ -62,10 +62,11 @@ Scene* XML::importScene(const char* fileName) {
     if(!result) {
       throw fnf_exception;
     } else {
-      xml_node screen = settings_doc.child("Screen");
-      xml_node tracer = settings_doc.child("Tracer");
-      xml_node recursion = settings_doc.child("Recursion");
-      xml_node threading = settings_doc.child("Threading");
+      xml_node screen       = settings_doc.child("Screen");
+      xml_node tracer       = settings_doc.child("Tracer");
+      xml_node recursion    = settings_doc.child("Recursion");
+      xml_node threading    = settings_doc.child("Threading");
+      xml_node tonemapping  = settings_doc.child("Tonemapping");
 
       if(screen) {
         settings->width = screen.attribute("width").as_int();
@@ -80,6 +81,9 @@ Scene* XML::importScene(const char* fileName) {
       }
       if(threading) {
         settings->threads = threading.attribute("threads").as_int();
+      }
+      if(tonemapping) {
+        settings->key = tonemapping.attribute("key").as_float();
       }
     }
   }
