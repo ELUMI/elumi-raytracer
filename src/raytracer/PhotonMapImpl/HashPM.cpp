@@ -11,8 +11,7 @@
 namespace raytracer {
 
 HashPM::HashPM(float bucketsize, size_t n_buckets)
-  : hashpoint(bucketsize, n_buckets) {
-
+  : hashpoint(bucketsize, n_buckets), totalPhotons(0) {
 }
 
 HashPM::~HashPM() {
@@ -20,6 +19,11 @@ HashPM::~HashPM() {
 
 void HashPM::addPhoton(Photon p){
   hashpoint.addItem(p.position, p);
+  ++totalPhotons;
+}
+
+size_t HashPM::getTotalPhotons() const {
+  return totalPhotons;
 }
 
 vector<Photon*> HashPM::gatherFromR(vec3 point, float r) const {

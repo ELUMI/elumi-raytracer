@@ -117,7 +117,7 @@ vec4 SimpleTracer::traceHelper(Ray* ray, IAccDataStruct::IntersectionData inters
 
       //Diffuse
       float diff = abs(dot(lightRay.getDirection(), intersection_data.normal));
-      float falloff = light->getIntensity(length(light->getPosition()-intersection_data.interPoint));
+      float falloff = light->getIntensity() * light->getFalloff(length(light->getPosition()-intersection_data.interPoint));
 
       //Specular
       Ray invLightRay = Ray(intersection_data.interPoint, -lightRay.getDirection());

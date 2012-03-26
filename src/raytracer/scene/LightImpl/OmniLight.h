@@ -22,7 +22,8 @@ public:
   virtual ~OmniLight();
 
   vec3 getPosition();
-  float getIntensity(float distance);
+  float getIntensity();
+  float getFalloff(float distance);
   vec3 getColor() const;
   FalloffType getFalloffType() const;
 

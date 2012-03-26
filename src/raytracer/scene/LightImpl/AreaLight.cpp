@@ -67,7 +67,12 @@ vec3 AreaLight::getPosition() {
   return position;
 }
 
-float AreaLight::getIntensity(float distance) {
+float AreaLight::getIntensity() {
+  //TODO
+  return intensity;
+}
+
+float AreaLight::getFalloff(float distance) {
   //TODO
   return 1.0f;
 }

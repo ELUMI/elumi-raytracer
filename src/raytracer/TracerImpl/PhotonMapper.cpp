@@ -15,7 +15,6 @@ PhotonMapper::PhotonMapper(Scene* scene)
 : BaseTracer(scene) {
   radius = 1;
   photonmap = new HashPM(radius, 1024);
-  totalphotons = 0;
 }
 
 PhotonMapper::~PhotonMapper() {
@@ -91,7 +90,7 @@ void PhotonMapper::getPhotons() {
     Ray* rays = new Ray[m];
     light->getRays(rays, m);
 
-    vec3 power = (1/(light->getPower() / totalpower)) * light->getColor();
+    vec3 power = (1/(light->getPower() / totalpower)) * light->getColor() * light->getIntensity();
 
     for(size_t j=0; j<m; ++j){
       Ray ray = rays[j];
@@ -109,8 +108,6 @@ void PhotonMapper::getPhotons() {
       }
     }
   }
-
-  totalphotons += n;
 }
 
 void PhotonMapper::initTracing(){
@@ -162,10 +159,10 @@ vec4 PhotonMapper::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idat
     l += b * p->power * a * k;
     //l += a;
   }
-  //l /= totalphotons;
+  l /= photonmap->getTotalPhotons();
 
   vec3 color = scene->getMaterialVector()[idata.material]->getDiffuse();
-  return vec4(l,0);
+  return vec4(l*color,0);
 }
 
 
