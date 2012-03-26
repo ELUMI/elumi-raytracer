@@ -191,7 +191,10 @@ void Renderer::tonemapImage(bool enable){
 void Renderer::render() {
   abort = false;
   tonemapped = false;
-  color_buffer_other = NULL;
+  if(color_buffer_other!=NULL){
+    delete[] color_buffer_other;
+    color_buffer_other = NULL;
+  }
 
   if(m_scene == NULL) {
     cout << "Render has no scene!\n";
