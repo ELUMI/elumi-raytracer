@@ -12,7 +12,7 @@
 namespace raytracer {
 
 PhotonMapper::PhotonMapper(Scene* scene)
-: BaseTracer(scene) {
+: StandardTracer(scene) {
   radius = 1;
   photonmap = new HashPM(radius, 1024);
 }
@@ -20,6 +20,12 @@ PhotonMapper::PhotonMapper(Scene* scene)
 PhotonMapper::~PhotonMapper() {
   // TODO Auto-generated destructor stub
   delete photonmap;
+}
+
+void PhotonMapper::initTracing(){
+  StandardTracer::initTracing();
+  //getPhotons();
+  photonmap->balance();
 }
 
 void PhotonMapper::storeInMap(Photon p){
@@ -110,13 +116,6 @@ void PhotonMapper::getPhotons() {
   }
 }
 
-void PhotonMapper::initTracing(){
-  BaseTracer::initTracing();
-  //getPhotons();
-  photonmap->balance();
-}
-
-
 vector<Photon*> PhotonMapper::gather(float& r, vec3 point){
   r = radius;
   return photonmap->gatherFromR(point, r);
@@ -126,7 +125,14 @@ float inline brdf(vec3 point, vec3 idir, vec3 odir){
   return 1.0;
 }
 
-vec4 PhotonMapper::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata){
+vec4 PhotonMapper::shade(Ray incoming_ray,
+    IAccDataStruct::IntersectionData idata,
+    float attenuation, unsigned short depth) {
+  if (idata.material == IAccDataStruct::IntersectionData::NOT_FOUND) {
+    // No intersection
+    return settings->background_color;
+  }
+
   vec3 l = vec3(0);
 
   size_t g; //number of photons

@@ -24,6 +24,9 @@ StandardTracer::~StandardTracer() {
 
 }
 
+void StandardTracer::initTracing(){
+  BaseTracer::initTracing();
+}
 
 void StandardTracer::traceImage(float* color_buffer) {
   BaseTracer::traceImage(color_buffer);

@@ -58,9 +58,9 @@ protected:
 
   virtual void initTracing();
 
-
 private:
   void traceImageThread(int id);
+  void tracePixel(Ray ray, size_t i, IAccDataStruct::IntersectionData intersection_data);
 
   IRenderPattern* pattern;
   int nr_batches;

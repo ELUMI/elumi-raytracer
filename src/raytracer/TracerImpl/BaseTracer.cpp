@@ -108,6 +108,17 @@ void BaseTracer::initTracing()
       << "\" z=\"" << scene->getCamera().getUpVector().z << "\"/>\n";
 }
 
+void BaseTracer::tracePixel(Ray ray, size_t i,
+    IAccDataStruct::IntersectionData intersection_data){
+
+  posbuff[i] = intersection_data.interPoint;
+  vec4 c = trace(ray, intersection_data);
+  buffer[i * 4] = c.r;
+  buffer[i * 4 + 1] = c.g;
+  buffer[i * 4 + 2] = c.b;
+  buffer[i * 4 + 3] = c.a;
+}
+
 void BaseTracer::traceImage(float *color_buffer)
 {
   buffer = color_buffer;
@@ -117,73 +128,52 @@ void BaseTracer::traceImage(float *color_buffer)
 
   if (settings->use_first_bounce) {
     // For every pixel
-#pragma omp parallel for
-    for (size_t i = 0; i < number_of_rays; ++i) {
+    for(size_t i = 0;i < number_of_rays;++i){
       //#pragma omp task
-#pragma omp flush (abort)
-      if (!abort) {
-        vec4 c = trace(rays[i], first_intersections[i]);
-        buffer[i * 4] = glm::min(1.0f, c.r);
-        buffer[i * 4 + 1] = glm::min(1.0f, c.g);
-        buffer[i * 4 + 2] = glm::min(1.0f, c.b);
-        buffer[i * 4 + 3] = glm::min(1.0f, c.a);
-
-#pragma omp atomic
+      if(!abort){
+        tracePixel(rays[i], i, first_intersections[i]);
         --pixelsLeft;
       }
     }
 
-  } else {
-
+  }
+  else{
     pattern = new LinePattern(settings->width, settings->height);
-
     nr_batches = pattern->getNumberBatches();
     next_batch = 0;
-
     // Launch threads
     int nr_threads = boost::thread::hardware_concurrency();
     boost::thread threads[nr_threads];
-    for (int i = 0; i < nr_threads; ++i) {
-      threads[i] = boost::thread(
-          boost::bind(&BaseTracer::traceImageThread, this, i));
+    for(int i = 0;i < nr_threads;++i){
+      threads[i] = boost::thread(boost::bind(&BaseTracer::traceImageThread, this, i));
     }
-
     // Wait for threads to complete
-    for (int i = 0; i < nr_threads; ++i) {
+    for(int i = 0;i < nr_threads;++i){
       threads[i].join();
     }
     delete pattern;
-
   }
 
 }
 
-void BaseTracer::traceImageThread(int id) {
 
+void BaseTracer::traceImageThread(int id)
+{
   // Synchronize work
   int my_batch = 0;
   pattern_mutex.lock();
   my_batch = next_batch++;
   pattern_mutex.unlock();
-
-  while (my_batch < nr_batches) {
+  while(my_batch < nr_batches){
     //cout << "Thread: " << id << " on batch: " << my_batch << endl;
-
     int length;
-    int* batch = pattern->getBatch(my_batch, &length);
-
-    for (size_t i = 0; i < length; ++i) {
-      if (abort) {
+    int *batch = pattern->getBatch(my_batch, &length);
+    for(size_t i = 0;i < length;++i){
+      if(abort){
         return;
       }
-      IAccDataStruct::IntersectionData intersection_data =
-          scene->getAccDataStruct()->findClosestIntersection(rays[batch[i]]);
-      vec4 c = trace(rays[batch[i]], intersection_data);
-
-      buffer[batch[i] * 4] = c.r;
-      buffer[batch[i] * 4 + 1] = c.g;
-      buffer[batch[i] * 4 + 2] = c.b;
-      buffer[batch[i] * 4 + 3] = c.a;
+      IAccDataStruct::IntersectionData intersection_data = scene->getAccDataStruct()->findClosestIntersection(rays[batch[i]]);
+      tracePixel(rays[batch[i]], batch[i], intersection_data);
 
       --pixelsLeft;
     }
@@ -238,9 +228,7 @@ vec4 BaseTracer::trace(Ray ray, IAccDataStruct::IntersectionData idata) {
     color = settings->background_color;
   } else {
     // Intersection!
-
     color = shade(ray, idata);
-
   }
 
   return color;

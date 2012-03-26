@@ -19,10 +19,12 @@ public:
 
   virtual void traceImage(float* color_buffer);
 
-private:
-  vec4 trace(Ray ray, IAccDataStruct::IntersectionData idata);
-  vec4 tracePrim(Ray ray, float attenuation, unsigned short depth);
-  vec4 shade(Ray ray, IAccDataStruct::IntersectionData idata, float attenuation, unsigned short depth);
+protected:
+  virtual vec4 trace(Ray ray, IAccDataStruct::IntersectionData idata);
+  virtual vec4 tracePrim(Ray ray, float attenuation, unsigned short depth);
+  virtual vec4 shade(Ray ray, IAccDataStruct::IntersectionData idata, float attenuation, unsigned short depth);
+  virtual void initTracing();
+
 
   const unsigned short MAX_RECURSION_DEPTH;
   const float ATTENUATION_THRESHOLD;
