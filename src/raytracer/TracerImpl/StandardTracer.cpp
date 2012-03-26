@@ -5,7 +5,7 @@
  *      Author: irri
  */
 
-
+#include <iostream>
 
 
 #include "StandardTracer.h"
@@ -187,16 +187,18 @@ vec4 StandardTracer::shade(Ray incoming_ray
       Ray refl_ray = Ray(idata.interPoint + offset, glm::normalize(refl_dir));
 
 
-      if(reflect_spread > 0.0f && reflect_samples > 1) { // Glossy reflections
+      if(/*reflect_spread > 0.0f && */reflect_samples > 0) { // Glossy reflections
         for(int i = 0; i < reflect_samples; ++i) {
+          //std::cout << "Sample: " << i << endl;
 
           vec3 sample_dir = glm::normalize(
               get_random_cone(refl_dir, reflect_spread));
+          //std::cout << "(" << sample_dir.x << ", " << sample_dir.y << ", " << sample_dir.z << ")" << std::endl;
 
           Ray sample_ray = Ray(idata.interPoint + offset, sample_dir);
 
           refl_color +=
-              tracePrim(sample_ray, attenuation*reflectance/reflect_samples, depth+1)
+              tracePrim(sample_ray, attenuation*reflectance / reflect_samples, depth+1)
               * reflectance / reflect_samples;
 
         }
