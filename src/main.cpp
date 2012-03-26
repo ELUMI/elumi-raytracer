@@ -414,6 +414,9 @@ void timedCallback() {
   if (glfwGetKey('A')) {
     camera.translate(vec3(0, -speed, 0));
   }
+  if (glfwGetKey(' ')) {
+    camera.translate(vec3(0, 0, speed));
+  }
   if (glfwGetKey('X')) {
     camera.translate(vec3(0, 0, speed));
   }
