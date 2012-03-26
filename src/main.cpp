@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
     glfwSetWindowSizeCallback(windowSize); // TODO: In settings
 
 
-//    IDraw* data_struct_drawable = new LineArrayDataStruct(myRenderer->getScene()->getAccDataStruct()->getAABBList());
+    IDraw* data_struct_drawable = new LineArrayDataStruct(myRenderer->getScene()->getAccDataStruct()->getAABBList());
 
     while (running) {
       //OpenGl rendering goes here...d
@@ -143,10 +143,11 @@ int main(int argc, char* argv[]) {
       glDisable(GL_CULL_FACE);
 
       int light_size = myRenderer->getScene()->getLightVector()->size();
-      IDraw* drawables[1+light_size];
+      IDraw* drawables[2+light_size];
       drawables[0] = myRenderer->getScene()->getDrawable();
       for(int i=0; i<light_size; ++i)
         drawables[1+i] = myScene->getLightVector()->at(i);
+      drawables[1+light_size] = data_struct_drawable;
 
       switch (renderMode) {
       case 1:

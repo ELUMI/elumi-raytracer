@@ -92,7 +92,7 @@ IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(
 
     int* node_triangles_pos = node->getTriangles();
     for(size_t i=0;i<node->getSize();i++){
-      Triangle* cur_triangle = triangles[node_triangles_pos[i]];
+      Triangle* cur_triangle = triangles[node_triangles_pos[i]]->getTriangle();
       const vector<vec3*> vertices = cur_triangle->getVertices();
       vec3 v0 = *(vertices[0]);
       vec3 v1 = *(vertices[1]);
@@ -172,7 +172,7 @@ void KDTreeDataStruct::build(){
   time (&start);
 
   constructTreeStack();
-//  constructWireframe(); // Should be an option
+  constructWireframe(); // Should be an option
 
   time (&end);
   double dif = difftime (end,start);
@@ -237,10 +237,10 @@ void KDTreeDataStruct::constructTreeStack(){
       for(size_t i=0;i<size;i++){
         float min_triangle = KDTreeDataStruct::triangles[triangles_pos[i]]->getMin(axis);
         float max_triangle = KDTreeDataStruct::triangles[triangles_pos[i]]->getMax(axis);
-        if(min_triangle<=median){
+        if(min_triangle<median){
           left_tri.push_back(i);
         }
-        if(max_triangle>=median){
+        if(max_triangle>median){
           right_tri.push_back(i);
         }
       }
@@ -290,7 +290,7 @@ void KDTreeDataStruct::constructTreeStack(){
 }
 void KDTreeDataStruct::constructWireframe(){
   stack<AABB*> aabb_stack;
-  stack<KDNode*> node_stack;
+   stack<KDNode*> node_stack;
 
   node_stack.push(root);
   aabb_stack.push(aabb);
@@ -353,10 +353,10 @@ void KDTreeDataStruct::constructWireframe(){
  * that need to be created because each node has an axis, start and end position.
  */
 void KDTreeDataStruct::setData(Triangle** triangles,size_t size,AABB* aabb){
-  KDTreeDataStruct::triangles = new Triangle*[size];
+  KDTreeDataStruct::triangles = new SortableTriangle*[size];
   KDTreeDataStruct::root_triangles = new int[size];
   for(size_t t=0;t<size;t++){
-    KDTreeDataStruct::triangles[t] = triangles[t];
+    KDTreeDataStruct::triangles[t] = new SortableTriangle(triangles[t]);
     KDTreeDataStruct::root_triangles[t] = t;
   }
   KDTreeDataStruct::triangle_count = size;

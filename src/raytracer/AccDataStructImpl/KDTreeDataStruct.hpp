@@ -63,13 +63,36 @@ private:
     unsigned char side;
     bool leaf;
   };
-  class SortableTriangle : Triangle {
+  class SortableTriangle {
   public:
-    SortableTriangle(Triangle* triangle){
+    SortableTriangle(Triangle* tri): triangle(tri)
+    {
+      vector<vec3*> vertices = triangle->getVertices();
+      barycenter = vec3((vertices[0]->x + vertices[1]->x + vertices[2]->x)/3
+          ,(vertices[0]->y + vertices[1]->y + vertices[2]->y)/3
+          ,(vertices[0]->z + vertices[1]->z + vertices[2]->z)/3);
 
+      min = vec3((*vertices[0])[0],(*vertices[0])[1],(*vertices[0])[2]);
+
+      max = vec3((*vertices[0])[0],(*vertices[0])[1],(*vertices[0])[2]);
+      for(size_t j=1;j<3;j++){
+        for(size_t i=0;i<3;i++){
+          float _value = (*vertices[j])[i];
+          if(_value<min[i])
+            min[i] = _value;
+          if(_value>max[i])
+            max[i] = _value;
+        }
+      }
     }
+
+    const float& getMax(int axis){return max[axis];}
+    const float& getMin(int axis){return min[axis];}
+    const float& getBarycenter(int axis){return barycenter[axis];}
+    Triangle* getTriangle(){return triangle;}
   private:
-    float min,max,baryCenter;
+    vec3 min,max,barycenter;
+    Triangle* triangle;
 
   };
 //  KDNode* constructTree(vector<Triangle*> triangles,int size,int depth);
@@ -85,7 +108,7 @@ private:
   KDNode* root;
   AABB* aabb;
   vector<AABB*> splitting_list;
-  Triangle** triangles;
+  SortableTriangle** triangles;
   int* root_triangles;
   size_t triangle_count;
 
