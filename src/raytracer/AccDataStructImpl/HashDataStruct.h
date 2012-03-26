@@ -19,7 +19,7 @@ public:
   virtual ~HashDataStruct();
 
   IntersectionData findClosestIntersection(Ray ray);
-  void setData(std::vector<Triangle*> triangles);
+  void setData(Triangle** triangles,size_t size,AABB* aabb);
 private:
   struct HashedTriangle {
     size_t hash;

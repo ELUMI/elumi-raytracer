@@ -8,7 +8,6 @@
 #include "Scene.h"
 #include "../AccDataStructImpl/VertexArrayDataStruct.h"
 #include "../AccDataStructImpl/ArrayDataStruct.h"
-#include "../AccDataStructImpl/KDTreeDataStruct.hpp"
 #include "../AccDataStructImpl/HashDataStruct.h"
 #include "../AccDataStructImpl/TriangleArray.h"
 
