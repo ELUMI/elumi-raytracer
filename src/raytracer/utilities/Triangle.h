@@ -26,13 +26,14 @@ public:
 
 	void set(vector<vec3*> _vertices,vector<vec3*> _normals,vector<vec3*> texCoords,
 	    unsigned int material);
+  void set(Triangle* copy);
 	const vector<vec3*>& getVertices();
 	const vector<vec3*>& getNormals();
 	const vector<vec3*>& getTextures();
-	unsigned int getMaterial();
-	unsigned int getTexture();
+  unsigned int getMaterial();
+  unsigned int getTexture();
 
-private:
+protected:
 	vector<vec3*> vertices;
 	vector<vec3*> normals;
 	vector<vec3*> texCoords;

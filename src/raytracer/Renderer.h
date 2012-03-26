@@ -31,7 +31,7 @@ public:
   ITracer* getTracer();
 
   void loadSceneFromXML(const char* filename);
-  void loadTriangles(vector<Triangle*> triangles, bool overwrite=false);
+  void loadTriangles(vector<Triangle*> triangles,AABB* aabb, bool overwrite=false);
   void loadCamera(Camera& camera);
   void loadLights(ILight** lights, int length, bool overwrite=false);
   void setSettings(Settings* settings);
@@ -41,6 +41,7 @@ public:
   void render();       // synchronic
   void asyncRender();  // asynchronic
   void stopRendering();// synchronic
+  void tonemapImage(bool enable);
   
   /*
    * @return The number of pixels left to render
@@ -50,12 +51,14 @@ public:
 private:
   void init();
   Scene* m_scene;
-  int buffer_length;
+  size_t buffer_length;
   ITracer* m_tracer;
   bool abort;
   int open_gl_version;
+  float* color_buffer_other;
   float* color_buffer;
 
+  bool tonemapped;
   boost::thread* renderthread;
 };
 

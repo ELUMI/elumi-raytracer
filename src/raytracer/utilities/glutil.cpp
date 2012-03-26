@@ -12,6 +12,7 @@
 #include <GL/glew.h>
 #include <stdio.h>
 #include <GL/glu.h>
+#include <iostream>
 //#include <GL/glut.h>
 
 //#include <IL/il.h>
@@ -285,16 +286,17 @@ GLuint loadShaderProgram(const std::string &vertexShader, const std::string &fra
 	glCompileShader(vShader);
 	int compileOk = 0;
 	glGetShaderiv(vShader, GL_COMPILE_STATUS, &compileOk);
-	if (!compileOk) 
+	if (!compileOk)
   {
 		std::string err = GetShaderInfoLog(vShader);
+    std::cout << err;
 		fatal_error( err );
 		return 0;
 	}
 
 	glCompileShader(fShader);
 	glGetShaderiv(fShader, GL_COMPILE_STATUS, &compileOk);
-	if (!compileOk) 
+	if (!compileOk)
   {
 		std::string err = GetShaderInfoLog(fShader);
 		fatal_error( err );

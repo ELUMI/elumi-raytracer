@@ -37,8 +37,8 @@ void getMaxMin(Triangle* t, vec3& min, vec3& max){
   }
 }
 
-void HashDataStruct::setData(std::vector<Triangle*> triangles){
-  for(size_t i=0; i<triangles.size(); ++i){
+void HashDataStruct::setData(Triangle** triangles,size_t size,AABB* aabb){
+  for(size_t i=0; i<size; ++i){
     Triangle* t = triangles[i];
     vec3 min,max;
     getMaxMin(t, min, max);
@@ -96,7 +96,7 @@ IAccDataStruct::IntersectionData HashDataStruct::findClosestIntersection(Ray ray
     }
 
     if(goodlist.size()){
-      ads.setData(goodlist);
+      ads.setData(goodlist.data(),goodlist.size(),NULL);
       IAccDataStruct::IntersectionData idata = ads.findClosestIntersection(Ray(point,dir));
       if(idata.material != IAccDataStruct::IntersectionData::NOT_FOUND){
         return idata;
