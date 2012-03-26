@@ -195,7 +195,7 @@ int main(int argc, char* argv[]) {
 
   /* EXPORTER
    ***************** */
-  if (myRenderer->renderComplete() == 0) {
+  if (myRenderer->renderComplete() == 0.0f) {
     raytracer::IExporter* exporter = new raytracer::PNGExporter;
     exporter->exportImage(outputFileName.c_str(), settings->width, settings->height, buffer);
     delete exporter;

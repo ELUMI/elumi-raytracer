@@ -42,10 +42,8 @@ public:
   void asyncRender();  // asynchronic
   void stopRendering();// synchronic
   
-  /*
-   * @return The number of pixels left to render
-   */
-  unsigned int renderComplete();
+
+  float renderComplete();
   
 private:
   void init();
