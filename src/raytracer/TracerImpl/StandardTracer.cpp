@@ -188,13 +188,11 @@ vec4 StandardTracer::shade(Ray incoming_ray
       Ray refl_ray = Ray(idata.interPoint + offset, glm::normalize(refl_dir));
 
 
-      if(/*reflect_spread > 0.0f && */reflect_samples > 0) { // Glossy reflections
+      if(reflect_spread > 0.0f && reflect_samples > 0) { // Glossy reflections
         for(int i = 0; i < reflect_samples; ++i) {
-          //std::cout << "Sample: " << i << endl;
 
           vec3 sample_dir = glm::normalize(
               get_random_cone(refl_dir, reflect_spread));
-          //std::cout << "(" << sample_dir.x << ", " << sample_dir.y << ", " << sample_dir.z << ")" << std::endl;
 
           Ray sample_ray = Ray(idata.interPoint + offset, sample_dir);
 
@@ -228,17 +226,19 @@ vec4 StandardTracer::shade(Ray incoming_ray
         Ray refr_ray = Ray(idata.interPoint + offset, refr_dir);
 
 
-        if(/*refract_spread > 0.0f && */refract_samples > 0) {
+        if(refract_spread > 0.0f && refract_samples > 0) {  // Glossy refractions
           for(int i = 0; i < refract_samples; ++i) {
+
             vec3 sample_dir = glm::normalize(
                           get_random_cone(refr_dir, refract_spread));
-            //cout << "(" << sample_dir.x << ", " << sample_dir.y << ", " << sample_dir.z << ")" << endl;
+
             Ray sample_ray = Ray(idata.interPoint + offset, sample_dir);
 
             refr_color += tracePrim(sample_ray, attenuation*(transmittance) / refract_samples, depth+1)
                          * (transmittance) / refract_samples;
+
           }
-        } else {
+        } else {  // Non glossy
           refr_color = tracePrim(refr_ray, attenuation*(transmittance), depth+1)
                        * (transmittance);
         }
