@@ -193,7 +193,7 @@ int main(int argc, char* argv[]) {
 void getArguments(int argc, char *argv[]) {
   // Declare the supported options.
   po::options_description desc("Allowed options");
-  desc.add_options()("help,h", "produce help message")("gl-version,gl",po::value<int>(),
+  desc.add_options()("help,h", "produce help message")("gl-version,v",po::value<int>(),
       "Open GL version")("input-file,i", po::value<string>(), "Input file")(
           "output-file,o", po::value<string>(), "Output file")("settings-file,s",
               po::value<string>(), "Settings file");
