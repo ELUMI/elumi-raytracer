@@ -1,5 +1,6 @@
-<Screen width="160" height="140"/>
+<Screen width="320" height="240"/>
 <Tracer version="2"/>
 <Tree version="2"/>
+<Wireframe enable="1"/>
 <Recursion maxDepth="5" attenuationThreshold="0.015625"/>
 
