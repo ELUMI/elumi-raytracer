@@ -1,4 +1,3 @@
-
 #include <vector>
 #include <glm/glm.hpp>
 
@@ -34,7 +33,6 @@ ArrayDataStruct::findClosestIntersection(Ray ray) {
   vec3 closest_pos;
 
   float closest_t = numeric_limits<float>::infinity( );
-
 
   for(int i = 0; i < size; i++) {
     Triangle* cur_triangle = triangles[i];
@@ -113,6 +111,7 @@ void ArrayDataStruct::setData(Triangle** triangles,size_t size,AABB* aabb) {
     ArrayDataStruct::triangles[t]->set(triangles[t]);
   }
   ArrayDataStruct::size = size;
+  aabb_list.push_back(aabb);
   ArrayDataStruct::aabb = aabb;
 }
 

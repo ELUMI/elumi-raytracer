@@ -1,0 +1,5 @@
+<Screen width="160" height="140"/>
+<Tracer version="2"/>
+<Tree version="2"/>
+<Recursion maxDepth="5" attenuationThreshold="0.015625"/>
+

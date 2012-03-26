@@ -192,5 +192,3 @@ void XML::exportScene(Scene scene, const char* fileName) {
 }
 
 }
-
-

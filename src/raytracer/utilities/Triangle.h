@@ -30,17 +30,13 @@ public:
 	const vector<vec3*>& getVertices();
 	const vector<vec3*>& getNormals();
 	const vector<vec3*>& getTextures();
-  const float& getMax(int axis);
-  const float& getMin(int axis);
-	unsigned int getMaterial();
-	unsigned int getTexture();
+  unsigned int getMaterial();
+  unsigned int getTexture();
 
-private:
+protected:
 	vector<vec3*> vertices;
 	vector<vec3*> normals;
 	vector<vec3*> texCoords;
-	float* min;
-	float* max;
 	unsigned int material;
 	unsigned int texture;
 };

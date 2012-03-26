@@ -1,0 +1,17 @@
+<Object fileName="3ballz.obj"/>
+<Settings fileName="settings.xml"></Settings>
+<Camera>
+<Position x="0.1" y="1.0.f" z="5.5"/>
+<Direction x="0" y="0" z="-1"/>
+<Normal x="0" y="1" z="0"/>
+</Camera>
+<Light type="Point" intensity="100" falloff="Quadratic">
+<Position x="-5" y="2" z="-5.5"/>
+<Color r="0.5" g="0" b="0.5"/>
+</Light>
+<Light type="Area" intensity="200" falloff="Quadratic">
+<Position x="5" y="2" z="5.5"/>
+<Color r="0.5" g="0.5" b="0.5"/>
+<Axis1 x="1" y="0" z="0" samples="3"/>
+<Axis2 x="0" y="0" z="1" samples="3"/>
+</Light>
