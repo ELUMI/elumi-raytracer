@@ -65,6 +65,7 @@ Scene* XML::importScene(const char* fileName) {
       xml_node screen = settings_doc.child("Screen");
       xml_node tracer = settings_doc.child("Tracer");
       xml_node recursion = settings_doc.child("Recursion");
+      xml_node threading = settings_doc.child("Threading");
 
       if(screen) {
         settings->width = screen.attribute("width").as_int();
@@ -76,6 +77,9 @@ Scene* XML::importScene(const char* fileName) {
       if(recursion) {
         settings->max_recursion_depth = recursion.attribute("maxDepth").as_int();
         settings->recursion_attenuation_threshold = recursion.attribute("attenuationThreshold").as_float();
+      }
+      if(threading) {
+        settings->threads = threading.attribute("threads").as_int();
       }
     }
   }

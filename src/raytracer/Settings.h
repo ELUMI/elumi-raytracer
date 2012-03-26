@@ -28,6 +28,8 @@ struct Settings {
     tracer = 2;
     max_recursion_depth = 5;
     recursion_attenuation_threshold = 0.015625;
+
+    threads = 0;  // auto
   }
 
   int width;
@@ -40,6 +42,8 @@ struct Settings {
   int tracer;
   unsigned int max_recursion_depth;
   float recursion_attenuation_threshold;
+
+  int threads;
 };
 
 }
