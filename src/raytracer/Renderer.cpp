@@ -25,7 +25,7 @@ using namespace std;
 
 namespace raytracer {
 
-Renderer::Renderer(int open_gl_version) {
+Renderer::Renderer(int open_gl_version):color_buffer_other(NULL) {
   this->open_gl_version = open_gl_version;
   abort = false;
 
@@ -158,9 +158,39 @@ void Renderer::stopRendering() {
   }
 }
 
+void Renderer::tonemapImage(bool enable){
+
+  if(color_buffer_other==NULL){
+    ReinhardOperator reinhard = ReinhardOperator();
+    GammaEncode gamma = GammaEncode();
+    ClampOperator clamp = ClampOperator();
+    color_buffer_other = new float[buffer_length];
+    for(size_t s_buffer=0;s_buffer<buffer_length;s_buffer++){
+      color_buffer_other[s_buffer] = color_buffer[s_buffer];
+    }
+    reinhard.run(color_buffer_other,buffer_length / 4, 4);
+
+    clamp.run(color_buffer_other,buffer_length / 4, 4);
+
+  }
+
+  if((enable&&!tonemapped)||(!enable&&tonemapped)){
+    tonemapped=!tonemapped;
+    float* color_buffer_temp= new float[buffer_length];;
+    for(size_t s_buffer=0;s_buffer<buffer_length;s_buffer++){
+      color_buffer_temp[s_buffer] = color_buffer[s_buffer];
+    }
+    for(size_t s_buffer=0;s_buffer<buffer_length;s_buffer++){
+      color_buffer[s_buffer] = color_buffer_other[s_buffer];
+      color_buffer_other[s_buffer] = color_buffer_temp[s_buffer];
+    }
+    delete[] color_buffer_temp;
+  }
+}
 
 void Renderer::render() {
   abort = false;
+  tonemapped = false;
 
   if(m_scene == NULL) {
     cout << "Render has no scene!\n";
@@ -172,13 +202,6 @@ void Renderer::render() {
   if(abort)
     return;
 
-  ReinhardOperator reinhard = ReinhardOperator();
-  GammaEncode gamma = GammaEncode();
-  ClampOperator clamp = ClampOperator();
-
-  reinhard.run(color_buffer,buffer_length / 4, 4);
-  //gamma.run(color_buffer,buffer_length);
-  clamp.run(color_buffer,buffer_length / 4, 4);
 
 }
 
