@@ -20,12 +20,14 @@
 #include "../utilities/Triangle.h"
 #include "../utilities/Ray.h"
 
+
 using namespace glm;
 
 namespace raytracer {
 
-KDTreeDataStruct::KDTreeDataStruct(){
+KDTreeDataStruct::KDTreeDataStruct(Settings* settings){
   root = new KDNode();
+  KDTreeDataStruct::settings = settings;
 }
 
 KDTreeDataStruct::KDTreeDataStruct(std::vector<Triangle*> triangles){
@@ -161,30 +163,39 @@ IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(
 IAccDataStruct::IntersectionData
 KDTreeDataStruct::findClosestIntersection(Ray ray) {
   float min,max;
-  if(aabb->intersect(ray,min,max)){ //TODO: Bugg n‰r kameran ligger pÂ linjen fˆr fˆrsta splitting planet
+  if(aabb->intersect(ray,min,max)){ //TODO: Bugg n√§r kameran ligger p√• linjen f√∂r f√∂rsta splitting planet
     return findClosestIntersectionStack(&ray,min,max);
   }
   return IntersectionData(IntersectionData::NOT_FOUND, vec3(), vec3(), vec2(),vec3(),vec3());
 }
 
 void KDTreeDataStruct::build(){
-  time_t start,end;
-  time (&start);
+  // Launch threads
+//  int nr_threads = boost::thread::hardware_concurrency();
+//  boost::thread threads[nr_threads];
+//  for (int i = 0; i < nr_threads; ++i) {
+//    threads[i] = boost::thread(
+//        boost::bind(&KDTreeDataStruct::constructTreeStack, this, RIGHT));
+//  }
+//
+//  // Wait for threads to complete
+//  for (int i = 0; i < nr_threads; ++i) {
+//    threads[i].join();
+//  }
 
-  constructTreeStack();
-  constructWireframe(); // Should be an option
 
-  time (&end);
-  double dif = difftime (end,start);
-  cout << "Tree compete : " << dif;
-  cout << endl;
+  constructTreeStack(LEFT);
+
+  if(settings->wireframe==1){
+    constructWireframe();
+  }
 }
 
 /**
  * Doing a stack implementation instead of a recursive approach because the call_stack may end up loosing some data
  * or giving corrupt data. This way we will never leave the method and therefor don't risk damaging the call_stack
  */
-void KDTreeDataStruct::constructTreeStack(){
+void KDTreeDataStruct::constructTreeStack(Side side){
 
   stack<int> depth_node;
   stack<size_t> size_node;

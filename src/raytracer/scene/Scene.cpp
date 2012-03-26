@@ -23,7 +23,7 @@ Scene::Scene(Settings* settings)
     m_acc_data_struct = new ArrayDataStruct();
     break;
   case 2:
-    m_acc_data_struct = new KDTreeDataStruct();
+    m_acc_data_struct = new KDTreeDataStruct(settings);
     break;
   }
   m_settings = settings;
