@@ -65,16 +65,16 @@ private:
   };
   class SortableTriangle {
   public:
-    SortableTriangle(Triangle* tri): triangle(tri)
+    SortableTriangle(Triangle* tri): triangle(tri),min(new float[3]),max(new float[3]),barycenter(new float[3])
     {
       vector<vec3*> vertices = triangle->getVertices();
-      barycenter = vec3((vertices[0]->x + vertices[1]->x + vertices[2]->x)/3
-          ,(vertices[0]->y + vertices[1]->y + vertices[2]->y)/3
-          ,(vertices[0]->z + vertices[1]->z + vertices[2]->z)/3);
+      barycenter[0]= (vertices[0]->x + vertices[1]->x + vertices[2]->x)/3;
+      barycenter[1]=(vertices[0]->y + vertices[1]->y + vertices[2]->y)/3;
+      barycenter[2]=(vertices[0]->z + vertices[1]->z + vertices[2]->z)/3;
 
-      min = vec3((*vertices[0])[0],(*vertices[0])[1],(*vertices[0])[2]);
+      min[0]=(*vertices[0])[0]; min[1] = (*vertices[0])[1]; min[2] = (*vertices[0])[2];
 
-      max = vec3((*vertices[0])[0],(*vertices[0])[1],(*vertices[0])[2]);
+      max[0] = (*vertices[0])[0]; max[1] = (*vertices[0])[1]; max[2] = (*vertices[0])[2];
       for(size_t j=1;j<3;j++){
         for(size_t i=0;i<3;i++){
           float _value = (*vertices[j])[i];
@@ -91,7 +91,7 @@ private:
     const float& getBarycenter(int axis){return barycenter[axis];}
     Triangle* getTriangle(){return triangle;}
   private:
-    vec3 min,max,barycenter;
+    float* min;float* max;float* barycenter;
     Triangle* triangle;
 
   };
