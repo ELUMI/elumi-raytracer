@@ -81,12 +81,13 @@ void Renderer::init() {
   renderthread = 0;
 }
 
-void Renderer::loadTriangles(vector<Triangle*> triangles, bool overwrite) {
+
+void Renderer::loadTriangles(vector<Triangle*> triangles,AABB* aabb, bool overwrite) {
   if(m_scene == NULL) {
     cout << "Render has no scene!\n";
     return;
   }
-  m_scene->loadTriangles(triangles, overwrite);
+  m_scene->loadTriangles(triangles,aabb, overwrite);
 }
 
 void Renderer::loadCamera(Camera& camera) {

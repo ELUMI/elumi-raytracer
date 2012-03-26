@@ -31,7 +31,7 @@ public:
   ITracer* getTracer();
 
   void loadSceneFromXML(const char* filename);
-  void loadTriangles(vector<Triangle*> triangles, bool overwrite=false);
+  void loadTriangles(vector<Triangle*> triangles,AABB* aabb, bool overwrite=false);
   void loadCamera(Camera& camera);
   void loadLights(ILight** lights, int length, bool overwrite=false);
   void setSettings(Settings* settings);

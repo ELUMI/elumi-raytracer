@@ -18,12 +18,13 @@ namespace raytracer {
 struct Settings {
 
   Settings() {
+    draw_data_struct = true;
     width = 400;
     height = 300;
     opengl_version = 2;
     background_color = vec4(0,0,0,0);
     use_first_bounce = false;
-    test=0;
+    test = 0 ;
     debug_mode=0;
     tracer = 2;
     max_recursion_depth = 5;
@@ -32,6 +33,7 @@ struct Settings {
 
   int width;
   int height;
+  bool draw_data_struct;
   int opengl_version;
   bool use_first_bounce;
   vec4 background_color;
