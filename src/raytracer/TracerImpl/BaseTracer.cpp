@@ -8,6 +8,7 @@
 #include <iostream>
 
 #include "BaseTracer.h"
+#include <omp.h>
 #include <glm/gtc/matrix_transform.hpp> //translate, rotate, scale, perspective
 
 #include "boost/thread.hpp"
@@ -117,10 +118,10 @@ void BaseTracer::traceImage(float *color_buffer)
 
   if (settings->use_first_bounce) {
     // For every pixel
-#pragma omp parallel for
+//#pragma omp parallel for
     for (size_t i = 0; i < number_of_rays; ++i) {
       //#pragma omp task
-#pragma omp flush (abort)
+//#pragma omp flush (abort)
       if (!abort) {
         vec4 c = trace(rays[i], first_intersections[i]);
         buffer[i * 4] = glm::min(1.0f, c.r);
@@ -153,9 +154,7 @@ void BaseTracer::traceImage(float *color_buffer)
       threads[i].join();
     }
     delete pattern;
-
   }
-
 }
 
 void BaseTracer::traceImageThread(int id) {
@@ -199,7 +198,7 @@ void BaseTracer::stopTracing() {
 }
 
 float BaseTracer::getPixelsLeft() {
-  return ((float)(nr_batches - next_batch)) / (float)nr_batches;
+  return (nr_batches - next_batch) / nr_batches;
 }
 
 int BaseTracer::spawnRays() {

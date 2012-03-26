@@ -13,7 +13,6 @@ namespace raytracer{
 
 Triangle::Triangle()
 :vertices(),normals(),texCoords(){
-
 }
 Triangle::Triangle(vector<vec3*> vertices, vector<vec3*> normals, vector<vec3*> texCoords,
     unsigned int material)
@@ -38,10 +37,16 @@ void Triangle::set(vector<vec3*> vertices, vector<vec3*> normals, vector<vec3*> 
 	Triangle::material = material;
 	Triangle::texture = texture;
 }
+void Triangle::set(Triangle* copy){
+  vertices.assign(copy->vertices.begin(),copy->vertices.end());
+  normals.assign(copy->normals.begin(),copy->normals.end());
+  texCoords.assign(copy->texCoords.begin(),copy->texCoords.end());
+  material = copy->material;
+}
 
-const vector<vec3*>& Triangle::getVertices() {return Triangle::vertices;}
-const vector<vec3*>& Triangle::getNormals() {return Triangle::normals;}
-const vector<vec3*>& Triangle::getTextures() {return Triangle::texCoords;}
+const vector<vec3*>& Triangle::getVertices() {return vertices;}
+const vector<vec3*>& Triangle::getNormals() {return normals;}
+const vector<vec3*>& Triangle::getTextures() {return texCoords;}
 unsigned int Triangle::getMaterial() {return Triangle::material;}
 unsigned int Triangle::getTexture() {return Triangle::texture;}
 
