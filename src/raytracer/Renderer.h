@@ -43,10 +43,7 @@ public:
   void stopRendering();// synchronic
   void tonemapImage(bool enable);
   
-  /*
-   * @return The number of pixels left to render
-   */
-  unsigned int renderComplete();
+  float renderComplete();
   
 private:
   void init();
