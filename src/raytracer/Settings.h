@@ -27,7 +27,7 @@ struct Settings {
     wireframe = 0;
     test = 0 ;
     debug_mode=0;
-    tracer = 2;
+    tracer = 3;
     tree = 2;
     max_recursion_depth = 5;
     recursion_attenuation_threshold = 0.015625;

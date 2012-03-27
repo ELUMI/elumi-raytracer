@@ -32,6 +32,7 @@ private:
   vec3 bumpMap(Material* material, IAccDataStruct::IntersectionData& idata, Ray incoming_ray);
   vec3 brdf(vec3 incoming_direction, vec3 outgoing_direction, vec3 normal, Material * material, vec3 texture_color = vec3(1,1,1));
   vec3 getTextureColor(Material* material, IAccDataStruct::IntersectionData & idata);
+    vec3 reflection_refraction(float attenuation, unsigned short  depth, Material *material, vec3 normal, Ray incoming_ray, IAccDataStruct::IntersectionData idata, vec3 color);
 
 };
 

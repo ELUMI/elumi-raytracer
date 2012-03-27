@@ -13,8 +13,8 @@ namespace raytracer {
 
 PhotonMapper::PhotonMapper(Scene* scene)
 : StandardTracer(scene) {
-  radius = 1;
-  photonmap = new HashPM(radius, 1024*128);
+  radius = 0.5f;
+  photonmap = new HashPM(radius, 1024*16);
 }
 
 PhotonMapper::~PhotonMapper() {
@@ -62,13 +62,13 @@ bool PhotonMapper::bounce(Photon& p) {
   float rand = gen_random_float(0,1);
   if (rand < reflection) {
     outgoing = glm::reflect(p.direction, p.normal);
-    p.power *= reflection * mat->getDiffuse();
+    p.power *= mat->getSpecular();
   } else if (rand < reflection+refraction) {
     outgoing = glm::refract(p.direction, p.normal, mat->getIndexOfRefraction());
-    p.power *= refraction * mat->getDiffuse();
+    p.power *= mat->getDiffuse();
   } else if(rand < reflection+refraction+diffuse) {  //diffuse interreflection
     outgoing = get_random_hemisphere(p.normal);
-    p.power *= diffuse    * mat->getDiffuse();
+    p.power *= mat->getDiffuse();
   } else { //absorbtion
     return false;
   }
@@ -144,7 +144,7 @@ vec3 PhotonMapper::getLuminance(Ray incoming_ray,
 
     { //advanced filter kernel (ISPM paper)
       float dist = length(idata.interPoint-p->position);
-      float rz = 0.1 * r;
+      float rz = 0.01 * r;
       float t = (dist/r)*(1-dot((idata.interPoint-p->position) / dist, p->normal)*(r+rz)/rz);
       float scale = 0.2;
       float sigma = r*scale;
@@ -160,6 +160,7 @@ vec3 PhotonMapper::getLuminance(Ray incoming_ray,
     //l += a;
   }
   l /= photonmap->getTotalPhotons();
+  l = 128.0f * l; //magic scaling
 
   return l;
 }

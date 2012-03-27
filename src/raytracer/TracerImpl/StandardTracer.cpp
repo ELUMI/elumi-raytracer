@@ -58,12 +58,20 @@ inline vec3 StandardTracer::bumpMap(Material* material,
 
 inline vec3 StandardTracer::brdf(vec3 incoming_direction, vec3 outgoing_direction, vec3 normal, Material * material, vec3 texture_color)
 {
-  vec3 color = texture_color;
-  color *= clamp(glm::dot(-incoming_direction, normal)) * material->getDiffuse();
+  //diffuse
+  vec3 color = clamp(glm::dot(-incoming_direction, normal)) * texture_color;
 
   //specular
   vec3 h = normalize(-outgoing_direction - incoming_direction);
   color += glm::pow(clamp(glm::dot(normal, h)), material->getShininess()) * material->getSpecular();
+
+  //maybe some fresnel
+  // Fresnel reflectance (with Schlick's approx.)
+  //      float fresnel_refl = reflectance
+  //          + (1 - reflectance)
+  //          * glm::pow( clamp(1.0f + glm::dot(incoming_ray.getDirection(), normal) ), 5.0f);
+  //      reflectance = fresnel_refl;
+
   return color;
 }
 
@@ -87,17 +95,65 @@ vec3 StandardTracer::getTextureColor(Material* material, IAccDataStruct::Interse
   if(false){
     float d = 0;
     if(d > 0){
-      Texture *mmp_bottom = scene->getTextureAt(material->getDiffuseMap() + (int)(((d))));
-      Texture *mmp_top = scene->getTextureAt(material->getDiffuseMap() + (int)(((d))) + 1);
+      Texture *mmp_bottom = scene->getTextureAt(material->getDiffuseMap() + (int)((((d)))));
+      Texture *mmp_top = scene->getTextureAt(material->getDiffuseMap() + (int)((((d)))) + 1);
       return ((1.0f - d - floor(d)) * mmp_bottom->getColorAt(tex_coords) + d - floor(d) * mmp_top->getInterpolatedColor(tex_coords));
     }else{
       return texture->getColorAt(tex_coords);
     }
     //float dv = 1.0f/(float)mipmap_levels;
-  } else{
+  }
+  else{
     return texture->getColorAt(tex_coords);
   }
   return texture_color;
+}
+
+inline vec3 StandardTracer::reflection_refraction(float attenuation,
+    unsigned short depth,Material *material, vec3 normal, Ray incoming_ray,
+    IAccDataStruct::IntersectionData idata, vec3 color) {
+  if(attenuation < ATTENUATION_THRESHOLD || depth > MAX_RECURSION_DEPTH){
+    return color;
+  }
+  float reflectance = material->getReflection();
+  float transmittance = (1 - material->getOpacity());
+  // REFRACTION_SIGN:
+  // Ray enters mesh => -1
+  // Ray leaves mesh => 1
+  float refraction_sign = glm::sign(glm::dot(normal, incoming_ray.getDirection()));
+  vec3 refr_normal = -normal * refraction_sign;
+  /**** REFLECTION RAY ****/
+  if(reflectance > 0.0f){
+    vec3 offset = refr_normal * 0.01f;
+    vec3 refl_dir = glm::reflect(incoming_ray.getDirection(), refr_normal);
+    Ray refl_ray = Ray(idata.interPoint + offset, glm::normalize(refl_dir));
+    vec3 refl_color = vec3(tracePrim(refl_ray, attenuation * reflectance, depth + 1));
+    refl_color *= reflectance;
+    // SVART BEROR PÅ ATT DEN STUDSAR MOT SIG SJÄLV OCH ALLTID BLIR REFLECTIVE TILLS MAXDJUP
+    //mix with output
+    color = color * (1 - reflectance) + vec3(refl_color);
+  }
+
+  /**** REFRACTION RAY ****/
+  if(transmittance > 0.0f && reflectance < 1.0f){
+    float eta = material->getIndexOfRefraction();
+    if(refraction_sign == -1.0f)
+      eta = 1 / eta;
+
+    vec3 offset = -refr_normal * 0.01f;
+    vec3 refr_dir = glm::refract(incoming_ray.getDirection(), refr_normal, eta);
+    if(refr_dir == vec3(0, 0, 0)){
+      transmittance = 0.0f;
+    }else{
+      Ray refr_ray = Ray(idata.interPoint + offset, refr_dir);
+      vec4 refr_color = tracePrim(refr_ray, attenuation * (transmittance), depth + 1) * (transmittance);
+      // SVART BEROR PÅ SELF SHADOWING
+      //mix with output
+      color = color * (1 - transmittance) + vec3(refr_color);
+    }
+  } // end refraction
+
+  return color;
 }
 
 vec4 StandardTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata, float attenuation, unsigned short  depth)
@@ -108,16 +164,9 @@ vec4 StandardTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData id
   }
   assert(idata.material < scene->getMaterialVector().size());
   // Intersection!
-  vec3 ambient = vec3(0, 0, 0);
-  vec3 diffuse = vec3(0, 0, 0);
-  vec3 specular = vec3(0, 0, 0);
-  vec4 refl_color = vec4(0, 0, 0, 0);
-  vec4 refr_color = vec4(0, 0, 0, 0);
   Material *material = scene->getMaterialVector()[idata.material];
-
   vec3 normal = bumpMap(material, idata, incoming_ray);
   vec3 texture_color = getTextureColor(material, idata);
-
   vec3 color = vec3(0);
   /**** For each light source in the scene ****/
   for(unsigned int i = 0;i < lights->size();++i){
@@ -130,68 +179,13 @@ vec4 StandardTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData id
       if(in_light > 0.0f){
         // NOT ENTIRELY IN SHADOW! SHADE!
         Ray light_ray = Ray::generateRay(light->getPosition(), idata.interPoint);
-        color += light->getColor() * in_light
-            * brdf(light_ray.getDirection(), incoming_ray.getDirection(), normal, material, texture_color);
+        color += light->getColor() * in_light * brdf(light_ray.getDirection(), incoming_ray.getDirection(), normal, material, texture_color);
       } // end in light
     } // end non abmient
+
   } // for each light
 
-
-  float reflectance = material->getReflection();
-  float transmittance = (1-material->getOpacity());
-
-  if (attenuation > ATTENUATION_THRESHOLD && depth < MAX_RECURSION_DEPTH) {
-
-    // REFRACTION_SIGN:
-    // Ray enters mesh => -1
-    // Ray leaves mesh => 1
-    float refraction_sign = glm::sign(glm::dot(normal, incoming_ray.getDirection()));
-    vec3 refr_normal = -normal * refraction_sign;
-
-    /**** REFLECTION RAY ****/
-    if(reflectance > 0.0f) {
-
-      // Fresnel reflectance (with Schlick's approx.)
-      //      float fresnel_refl = reflectance
-      //          + (1 - reflectance)
-      //          * glm::pow( clamp(1.0f + glm::dot(incoming_ray.getDirection(), normal) ), 5.0f);
-      //      reflectance = fresnel_refl;
-
-
-      vec3 offset = refr_normal * 0.01f;
-      vec3 refl_dir = glm::reflect(incoming_ray.getDirection(), refr_normal);
-      Ray refl_ray = Ray(idata.interPoint + offset, glm::normalize(refl_dir));
-      refl_color = tracePrim(refl_ray, attenuation*reflectance, depth+1) * reflectance;
-
-      // SVART BEROR PÅ ATT DEN STUDSAR MOT SIG SJÄLV OCH ALLTID BLIR REFLECTIVE TILLS MAXDJUP
-
-    }
-
-    /**** REFRACTION RAY ****/
-    if(transmittance > 0.0f && reflectance < 1.0f) {
-
-      float eta = material->getIndexOfRefraction();
-      if(refraction_sign == -1.0f)
-        eta = 1/eta;
-
-      vec3 offset = -refr_normal * 0.01f;
-      vec3 refr_dir = glm::refract(incoming_ray.getDirection(), refr_normal, eta);
-      if (refr_dir == vec3(0,0,0)) {
-        transmittance = 0.0f;
-      } else {
-
-        Ray refr_ray = Ray(idata.interPoint + offset, refr_dir);
-        refr_color = tracePrim(refr_ray, attenuation*(transmittance), depth+1) * (transmittance);
-
-        // SVART BEROR PÅ SELF SHADOWING
-      }
-
-    } // end refraction
-  } // end annutation
-
-  // Mix the output colors
-  color = color * (1-transmittance) + vec3(refr_color);
-  color = color * (1-reflectance)  + vec3(refl_color);
+  color = reflection_refraction(attenuation, depth, material, normal, incoming_ray, idata, color);
 
   return vec4(color,1.0f);
 }
