@@ -137,7 +137,7 @@ vec3 PhotonMapper::getLuminance(Ray incoming_ray,
     return vec3(0);
   for(size_t i=0; i<photons.size(); ++i){
     Photon* p = photons[i];
-    float b = brdf(idata.interPoint, p->direction, incoming_ray.getDirection());
+    float b = 1.0f;//brdf(idata.interPoint, p->direction, incoming_ray.getDirection());
 
     float k;
     //k = 1/(M_PI*r*r); //simple filter kernel

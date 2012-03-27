@@ -29,7 +29,10 @@ protected:
   const unsigned short MAX_RECURSION_DEPTH;
   const float ATTENUATION_THRESHOLD;
 private:
-  void bumpMap(vec3 & normal, Material* material, IAccDataStruct::IntersectionData& idata, Ray incoming_ray);
+  vec3 bumpMap(Material* material, IAccDataStruct::IntersectionData& idata, Ray incoming_ray);
+  vec3 brdf(vec3 incoming_direction, vec3 outgoing_direction, vec3 normal, Material * material, vec3 texture_color = vec3(1,1,1));
+  vec3 getTextureColor(Material* material, IAccDataStruct::IntersectionData & idata);
+
 };
 
 }
