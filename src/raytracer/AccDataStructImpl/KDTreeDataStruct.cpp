@@ -176,56 +176,43 @@ KDTreeDataStruct::findClosestIntersection(Ray ray) {
 
 void KDTreeDataStruct::build(){
   // Launch threads
-  int nr_threads = boost::thread::hardware_concurrency();
+  int nr_threads = 1;//boost::thread::hardware_concurrency();
+  boost::thread* threads;
+  int depth = 0;
+  KDNode** nodes;
   if(nr_threads==1){
     KDTreeDataStruct::constructTreeStack(root,0);
+    nr_threads = 0;
   }
   else if(nr_threads<4){ // Less than 4 threads
     nr_threads = 2;
+    depth = 1;
     constructTreeNode(root,0);
-    KDNode** nodes= new KDNode*[2];
+    nodes= new KDNode*[2];
     nodes[0] = root->getLeft();
     nodes[1] = root->getRight();
-
-    boost::thread threads[nr_threads];
-    for (int i = 0; i < 2; ++i) {
-      threads[i] = boost::thread(
-          boost::bind(&KDTreeDataStruct::constructTreeStack, this,nodes[i],1));
-    }
-    for (int i = 0; i < nr_threads; ++i) {
-          threads[i].join();
-    }
   }
   else{ // More than/or equal to 4 threads
-    int current_threads = 0;
+    nr_threads = 4;
+    depth = 2;
     constructTreeNode(root,0);
     constructTreeNode(root->getLeft(),1);
     constructTreeNode(root->getRight(),1);
-    KDNode** nodes= new KDNode*[4];
-    if(root->getLeft()->getLeft() !=NULL){
-      nodes[current_threads] = root->getLeft()->getLeft();
-      current_threads++;
-    }
-    if(root->getLeft()->getRight() !=NULL){
-      nodes[current_threads] = root->getLeft()->getRight();
-      current_threads++;
-    }
-    if(root->getRight()->getLeft() !=NULL){
-      nodes[current_threads] = root->getRight()->getLeft();
-      current_threads++;
-    }
-    if(root->getRight()->getRight() !=NULL){
-      nodes[current_threads] = root->getRight()->getRight();
-      current_threads++;
-    }
+    nodes= new KDNode*[4];
+    nodes[0] = root->getLeft()->getLeft();
+    nodes[1] = root->getLeft()->getRight();
+    nodes[2] = root->getRight()->getLeft();
+    nodes[3] = root->getRight()->getRight();
+  }
 
-    boost::thread threads[current_threads];
-    for (int i = 0; i < current_threads; ++i) {
+  if(nr_threads>0){
+    threads = new boost::thread[nr_threads];
+    for (int i = 0; i < nr_threads; ++i) {
       threads[i] = boost::thread(
-          boost::bind(&KDTreeDataStruct::constructTreeStack, this,nodes[i],2));
+          boost::bind(&KDTreeDataStruct::constructTreeStack, this,nodes[i],depth));
     }
-    for (int i = 0; i < current_threads; ++i) {
-          threads[i].join();
+    for (int i = 0; i < nr_threads; ++i) {
+      threads[i].join();
     }
   }
 
@@ -239,7 +226,6 @@ void KDTreeDataStruct::constructTreeNode(KDNode* node,int depth){
   int* triangles_pos = node->getTriangles();
   size_t size = node->getSize();
 
-  // TODO: Should make size and depth check values so they can be set from a easier location. TODO: test different values for size and depth
   if(size<=min_size){
     node->setSize(size);
     node->setTriangles(triangles_pos);
@@ -290,11 +276,11 @@ void KDTreeDataStruct::constructTreeNode(KDNode* node,int depth){
     left->setSide(KDTreeDataStruct::LEFT);
     right->setSide(KDTreeDataStruct::RIGHT);
 
-    left->setSize(right_tri.size());
-    right->setSize(left_tri.size());
+    left->setSize(left_tri.size());
+    right->setSize(right_tri.size());
 
-    left->setTriangles(right_triangles);
-    right->setTriangles(left_triangles);
+    left->setTriangles(left_triangles);
+    right->setTriangles(right_triangles);
 
     node->setLeft(left);
     node->setRight(right);
@@ -306,7 +292,7 @@ void KDTreeDataStruct::constructTreeNode(KDNode* node,int depth){
  * or giving corrupt data. This way we will never leave the method and therefor don't risk damaging the call_stack
  */
 void KDTreeDataStruct::constructTreeStack(KDNode* node,int depth){
-  if(node->isLeaf())
+  if(node==NULL||node->isLeaf())
     return;
   stack<int> depth_node;
   stack<size_t> size_node;

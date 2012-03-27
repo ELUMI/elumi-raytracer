@@ -66,7 +66,8 @@ private:
   };
   class SortableTriangle {
   public:
-    SortableTriangle(Triangle* tri): triangle(tri),min(new float[3]),max(new float[3]),barycenter(new float[3])
+    SortableTriangle(Triangle* tri): min(new float[3]),max(new float[3]),
+    barycenter(new float[3]),triangle(tri)
     {
       vector<vec3*> vertices = triangle->getVertices();
       barycenter[0]= (vertices[0]->x + vertices[1]->x + vertices[2]->x)/3;
@@ -92,7 +93,7 @@ private:
     const float& getBarycenter(int axis){return barycenter[axis];}
     Triangle* getTriangle(){return triangle;}
   private:
-    float* min;float* max;float* barycenter;
+    float* min,*max,*barycenter;
     Triangle* triangle;
 
   };
@@ -113,7 +114,7 @@ private:
   int* root_triangles;
   size_t triangle_count;
   Settings* settings;
-  int min_size;
+  size_t min_size;
 
 };
 
