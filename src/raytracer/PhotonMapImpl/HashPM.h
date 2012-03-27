@@ -9,6 +9,7 @@
 #define HASHPM_H_
 
 #include "../IPhotonMap.h"
+#include "../utilities/HashPoint.h"
 #include <vector>
 
 using namespace std;
@@ -21,20 +22,18 @@ public:
   virtual ~HashPM();
 
   void balance();
-  void addItem(vec3 point, Photon p);
-  void gatherFromG(vec3 point, float r, Photon* p, size_t g);
+  void addPhoton(Photon p);
+  //void gatherFromG(vec3 point, float r, Photon* p, size_t g);
   vector<Photon> gatherFromR(vec3 point, float r);
+  void draw();
 
   Photon* getBucket(vec3 point);
 
-protected:
-  virtual size_t hash(vec3 point);
-
-  float bucketsize;
-  size_t n_buckets;
+  void write(const char* filename);
+  void read(const char* filename);
 
 private:
-  vector<Photon>* buckets;
+  HashPoint<Photon> hashpoint;
 };
 
 }

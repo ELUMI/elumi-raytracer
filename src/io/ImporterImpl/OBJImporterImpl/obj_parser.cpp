@@ -314,6 +314,11 @@ int obj_parse_mtl_file(char *filename, list *material_list)
 		{
 		  strncpy(current_mtl->bump_filename, strtok(NULL, " \t"), OBJ_FILENAME_LENGTH);
 		}
+		//Specular map
+		else if( strequal(current_token, "map_Ks") && material_open)
+		{
+		  strncpy(current_mtl->ks_filename, strtok(NULL, " \t"), OBJ_FILENAME_LENGTH);
+		}
 		else
 		{
 			fprintf(stderr, "Unknown command '%s' in material file %s at line %i:\n\t%s\n",

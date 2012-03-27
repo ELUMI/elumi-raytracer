@@ -6,60 +6,85 @@
  */
 
 #include "HashPM.h"
-#include <set>
+#include <fstream>
 
 namespace raytracer {
 
-HashPM::HashPM(float bucketsize, size_t n_buckets) {
-  this->bucketsize = bucketsize;
-  this->n_buckets = n_buckets;
+HashPM::HashPM(float bucketsize, size_t n_buckets)
+  : hashpoint(bucketsize, n_buckets) {
 
-  buckets = new vector<Photon>[n_buckets];
 }
 
 HashPM::~HashPM() {
-  delete [] buckets;
 }
 
-size_t HashPM::hash(vec3 point){
-  size_t h = int(point.x/bucketsize)*17;
-  h += int(point.y/bucketsize)*101;
-  h += int(point.z/bucketsize)*67;
-  return h % n_buckets;
+void HashPM::addPhoton(Photon p){
+  hashpoint.addItem(p.position, p);
+}
+
+vector<Photon> HashPM::gatherFromR(vec3 point, float r){
+  return hashpoint.gatherFromR(point, r);
 }
 
 void HashPM::balance(){
 }
 
-void HashPM::addItem(vec3 point, Photon i){
-  size_t pos = hash(point);
-  buckets[pos].push_back(i);
-}
-
-
-void HashPM::gatherFromG(vec3 point, float r, Photon* p, size_t g){
-}
-
-vector<Photon> HashPM::gatherFromR(vec3 point, float r){
-  set<size_t> positions;
-  for(float x=point.x-r; x<point.x+r+bucketsize; x+=bucketsize){
-    for(float y=point.y-r; y<point.y+r+bucketsize; y+=bucketsize){
-      for(float z=point.z-r; z<point.z+r+bucketsize; z+=bucketsize){
-        positions.insert(hash(vec3(x,y,z)));
-      }
+void HashPM::draw(){
+  glBegin(GL_POINTS);
+  for(size_t j=0; j<hashpoint.getNumberOfBuckets(); ++j){
+    vector<Photon> photons = hashpoint.getBucket(j);
+    for(size_t i=0; i<photons.size(); ++i){
+      Photon p = photons[i];
+      vec3 c = p.power;
+      //c = vec4(0,1,0,0);
+      vec3 v = p.position;
+      glColor3f(c.r, c.b, c.g);
+      glVertex3f(v.x, v.y, v.z);
     }
   }
+  glEnd();
+}
 
-  vector<Photon> found;
-  for(set<size_t>::iterator pos=positions.begin(); pos != positions.end(); ++pos){
-    for(size_t i=0; i<buckets[*pos].size(); ++i){
-      Photon p = buckets[*pos][i];
-      if(length(p.position-point) < r) {
-        found.push_back(p);
-      }
+void HashPM::write(const char* filename){
+  ofstream file;
+  file.open (filename);
+  for(size_t j=0; j<hashpoint.getNumberOfBuckets(); ++j){
+    vector<Photon> photons = hashpoint.getBucket(j);
+    for(size_t i=0; i<photons.size(); ++i){
+      Photon p = photons[i];
+      vec3 c = p.position;
+      file << c.x << "\t" << c.y << "\t" << c.z << "\t";
+      c = p.direction;
+      file << c.x << "\t" << c.y << "\t" << c.z << "\t";
+      c = p.normal;
+      file << c.x << "\t" << c.y << "\t" << c.z << "\t";
+      c = p.power;
+      file << c.x << "\t" << c.y << "\t" << c.z << "\t";
     }
   }
-  return found;
+  file.close();
 }
+
+void HashPM::read(const char* filename){
+  ifstream file;
+  file.open (filename);
+
+  while(!file.eof()) {
+    Photon p;
+    vec3 c;
+    file >> c.x >> c.y >> c.z;
+    p.position = c;
+    file >> c.x >> c.y >> c.z;
+    p.direction = c;
+    file >> c.x >> c.y >> c.z;
+    p.normal = c;
+    file >> c.x >> c.y >> c.z;
+    p.power = c;
+
+    addPhoton(p);
+  }
+  file.close();
+}
+
 
 }

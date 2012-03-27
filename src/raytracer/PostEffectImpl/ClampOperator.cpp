@@ -12,12 +12,12 @@ namespace raytracer {
 ClampOperator::ClampOperator() {
 }
 
-float* ClampOperator::run(float* buffer, int length) {
-  for(int i = 0; i < length; i++) {
-    buffer[i] = buffer[i] > 1.0f ? 1.0f : buffer[i];
+void ClampOperator::run(float* buffer, int pixels, int channels) {
+  for(int i = 0; i < pixels * channels; i += channels) {
+    buffer[i]   = buffer[i]   > 1.0f ? 1.0f : buffer[i];
+    buffer[i+1] = buffer[i+1] > 1.0f ? 1.0f : buffer[i+1];
+    buffer[i+2] = buffer[i+2] > 1.0f ? 1.0f : buffer[i+2];
   }
-
-  return buffer;
 }
 
 }

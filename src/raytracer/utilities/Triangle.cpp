@@ -13,7 +13,6 @@ namespace raytracer{
 
 Triangle::Triangle()
 :vertices(),normals(),texCoords(){
-
 }
 Triangle::Triangle(vector<vec3*> vertices, vector<vec3*> normals, vector<vec3*> texCoords,
     unsigned int material)
@@ -22,8 +21,12 @@ Triangle::Triangle(vector<vec3*> vertices, vector<vec3*> normals, vector<vec3*> 
 }
 
 Triangle::~Triangle() {
-  //TODO ta bort alla verts etc.
-	//delete(Triangle::material); //TODO: Add delete in scene
+  for(size_t i=0; i<vertices.size(); ++i)
+    delete vertices.at(i);
+  for(size_t i=0; i<normals.size(); ++i)
+      delete normals.at(i);
+  for(size_t i=0; i<texCoords.size(); ++i)
+      delete texCoords.at(i);
 }
 
 void Triangle::set(vector<vec3*> vertices, vector<vec3*> normals, vector<vec3*> texCoords,
@@ -34,10 +37,16 @@ void Triangle::set(vector<vec3*> vertices, vector<vec3*> normals, vector<vec3*> 
 	Triangle::material = material;
 	Triangle::texture = texture;
 }
+void Triangle::set(Triangle* copy){
+  vertices.assign(copy->vertices.begin(),copy->vertices.end());
+  normals.assign(copy->normals.begin(),copy->normals.end());
+  texCoords.assign(copy->texCoords.begin(),copy->texCoords.end());
+  material = copy->material;
+}
 
-const vector<vec3*>& Triangle::getVertices() {return Triangle::vertices;}
-const vector<vec3*>& Triangle::getNormals() {return Triangle::normals;}
-const vector<vec3*>& Triangle::getTextures() {return Triangle::texCoords;}
+const vector<vec3*>& Triangle::getVertices() {return vertices;}
+const vector<vec3*>& Triangle::getNormals() {return normals;}
+const vector<vec3*>& Triangle::getTextures() {return texCoords;}
 unsigned int Triangle::getMaterial() {return Triangle::material;}
 unsigned int Triangle::getTexture() {return Triangle::texture;}
 

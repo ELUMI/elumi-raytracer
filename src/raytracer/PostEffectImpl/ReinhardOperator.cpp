@@ -25,7 +25,7 @@ ReinhardOperator::ReinhardOperator(float _key, float _white, int _range,
   high = _high;
 }
 
-float* ReinhardOperator::run(float* color_buffer, int length) {
+void ReinhardOperator::run(float* color_buffer, int pixels, int channels) {
 
   cout << "ReinhardOperator: Currently only supports local operator!" << endl;
 
@@ -35,11 +35,11 @@ float* ReinhardOperator::run(float* color_buffer, int length) {
 
   RGB2XYZ = transpose(RGB2XYZ);
 
-  int pixels = length / 4;
+  int length = pixels * 4;
 
-  vec3 buffer[pixels];
-  cout << "ReinhardOperator: Assuming buffer format RGBA." << endl;
-  for( int i = 0; i < length; i += 4) {
+  //vec3 buffer[pixels];
+
+  for( int i = 0; i < length; i += channels) {
     vec3 v = vec3(color_buffer[i],
                   color_buffer[i+1],
                   color_buffer[i+2]);
@@ -48,7 +48,7 @@ float* ReinhardOperator::run(float* color_buffer, int length) {
     v = RGB2XYZ * v;
 
     // Convert from XYZ to Yxy
-    float nom = v.x + v.y + v.z;
+    float nom = v.x + v.y + v.z;  // nominator
     if(nom > 0.f) {
       float Y = v.y;        // Y
       float x = v.x / nom;  // x
@@ -62,15 +62,17 @@ float* ReinhardOperator::run(float* color_buffer, int length) {
       v.z = 0;
     }
 
-    buffer[i/4] = v;
+    color_buffer[i]   = v.x;
+    color_buffer[i+1] = v.y;
+    color_buffer[i+2] = v.z;
   }
 
-  float log_avg = logAverage(buffer, pixels);
+  float log_avg = logAverage(color_buffer, pixels, channels);
   float scale_factor = key / log_avg;
 //  cout << "ReinhardOperator: log_avg: " << log_avg << endl;
 //  cout << "ReinhardOperator: scale_factor: " << scale_factor << endl;
-  for(int i = 0; i < pixels; i++) {       // Eq. 2
-    buffer[i].x *= scale_factor;
+  for(int i = 0; i < length; i += channels) {       // Eq. 2
+    color_buffer[i] *= scale_factor;
   }
 
 
@@ -78,16 +80,16 @@ float* ReinhardOperator::run(float* color_buffer, int length) {
   if(white < 1e20) {
     lmax2 = white * white;
   } else {
-    lmax2 = getMaxValue(buffer, pixels);
+    lmax2 = getMaxValue(color_buffer, pixels, channels);
     lmax2 *= lmax2;
   }
 
 //  cout << "ReinhardOperator: lmax2: " << lmax2 << endl;
-  for(int i = 0; i < pixels; i++) {         // Eq. 4 (if white is big enough, eq 3)
+  for(int i = 0; i < length; i += channels) {         // Eq. 4 (if white is big enough, eq 3)
     //buffer[i].x = buffer[i].x / (1.0f + buffer[i].x);
 
-    buffer[i].x = (buffer[i].x * ( 1.0f + buffer[i].x / lmax2)) /
-                  (1.0f + buffer[i].x);
+    color_buffer[i] = (color_buffer[i] * ( 1.0f + color_buffer[i] / lmax2)) /
+                  (1.0f + color_buffer[i]);
   }
 
   mat3 XYZ2RGB = mat3(2.5651,   -1.1665,   -0.3986,
@@ -97,7 +99,9 @@ float* ReinhardOperator::run(float* color_buffer, int length) {
   XYZ2RGB = transpose(XYZ2RGB);
 
   for(int i = 0; i < length; i += 4) {
-    vec3 v = buffer[i/4];
+    vec3 v = vec3(color_buffer[i],
+                  color_buffer[i+1],
+                  color_buffer[i+2]);
 
     // Convert from Yxy to XYZ
     if(v.x > 0.f && v.y > 0.f && v.z > 0.f) {
@@ -120,15 +124,15 @@ float* ReinhardOperator::run(float* color_buffer, int length) {
     color_buffer[i+1]  = v.y;
     color_buffer[i+2]  = v.z;
   }
-
-  return color_buffer;
 }
 
-float ReinhardOperator::getMaxValue(vec3* buf, int pixels) {
+float ReinhardOperator::getMaxValue(float* buf, int pixels, int channels) {
   float max = 0;
-  for(int i = 0; i < pixels; i++) {
-    if(buf[i].x > max)
-      max = buf[i].x;
+  for(int i = 0; i < pixels * channels; i += channels) {
+    if(channels == 4 && buf[i+3] == 0)
+      continue;
+    if(buf[i] > max)
+      max = buf[i];
   }
   if(max == 0)    // Prevent division by zero.
     max = 1e20;
@@ -136,10 +140,12 @@ float ReinhardOperator::getMaxValue(vec3* buf, int pixels) {
   return max;
 }
 
-float ReinhardOperator::logAverage(vec3* buf, int pixels) { // Eq. 1
+float ReinhardOperator::logAverage(float* buf, int pixels, int channels) { // Eq. 1
   double sum = 0;
-  for(int i = 0; i < pixels; i++) {
-    sum += log(0.00001 + (double)buf[i].x);
+  for(int i = 0; i < pixels * channels; i += channels) {
+    if(channels == 4 && buf[i+3] == 0)
+      continue;
+    sum += log(0.00001 + (double)buf[i]);
   }
   double res = sum / (double)pixels;  // OBS! Wrong in paper! division by pixels
   return exp(res);                    // should be done before! exp-function

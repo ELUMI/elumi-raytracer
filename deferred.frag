@@ -6,8 +6,8 @@ precision highp float;
 uniform sampler2D colortexture;
 
 in float	fmaterial;
-varying vec3 fnormal;
-varying vec2 ftexcoord;
+in vec3 fnormal;
+in vec2 ftexcoord;
 
 out vec4 onormal;
 out vec2 otexcoord;

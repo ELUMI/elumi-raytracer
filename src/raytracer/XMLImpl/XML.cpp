@@ -34,7 +34,7 @@ XML::XML(int open_gl_version) {
   importer = new OBJImporter();
 }
 
-IXML::~IXML() {
+XML::~XML() {
   delete importer;
 }
 
@@ -93,7 +93,7 @@ Scene* XML::importScene(const char* fileName) {
 
     if (!triangles.empty()) {
       scene->loadMaterials(materials); //load materials BEFORE triangles!
-      scene->loadTriangles(triangles);
+      scene->loadTriangles(triangles,importer->getAABB());
       scene->loadTextures(textures);
     }
   }
@@ -192,5 +192,3 @@ void XML::exportScene(Scene scene, const char* fileName) {
 }
 
 }
-
-

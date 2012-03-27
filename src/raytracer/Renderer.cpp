@@ -27,6 +27,7 @@ namespace raytracer {
 
 Renderer::Renderer(int open_gl_version) {
   this->open_gl_version = open_gl_version;
+  abort = false;
 
   Settings* set = new Settings();
   set->opengl_version = open_gl_version;
@@ -38,20 +39,8 @@ Renderer::Renderer(int open_gl_version) {
   init();
 }
 
-//Renderer::Renderer(Settings* settings) {
-//  m_scene = new Scene(settings);
-//  m_settings = settings;
-//  init();
-//}
-
-
-
-//Renderer::Renderer(Scene* scene) {
-//  m_scene = scene;
-//  init();
-//}
-
 Renderer::~Renderer() {
+  stopRendering();
   delete m_tracer;
   delete [] color_buffer;
   delete m_scene;
@@ -67,16 +56,24 @@ void Renderer::init() {
   switch (m_scene->getSettings()->tracer) {
   case -1:
     m_tracer = new DebugTracer(m_scene);
+    cout << "Using debug tracer\n";
     break;
   case 0:
     m_tracer = new BaseTracer(m_scene);
+    cout << "Using base tracer\n";
     break;
   case 1:
     m_tracer = new SimpleTracer(m_scene);
+    cout << "Using simple tracer\n";
     break;
   case 2:
   default:
     m_tracer = new StandardTracer(m_scene);
+    cout << "Using standard tracer\n";
+    break;
+  case 3:
+    m_tracer = new PhotonMapper(m_scene);
+    cout << "Using photon mapper tracer\n";
     break;
   }
   buffer_length = m_scene->getSettings()->width * m_scene->getSettings()->height * 4;
@@ -84,12 +81,13 @@ void Renderer::init() {
   renderthread = 0;
 }
 
-void Renderer::loadTriangles(vector<Triangle*> triangles, bool overwrite) {
+
+void Renderer::loadTriangles(vector<Triangle*> triangles,AABB* aabb, bool overwrite) {
   if(m_scene == NULL) {
     cout << "Render has no scene!\n";
     return;
   }
-  m_scene->loadTriangles(triangles, overwrite);
+  m_scene->loadTriangles(triangles,aabb, overwrite);
 }
 
 void Renderer::loadCamera(Camera& camera) {
@@ -151,6 +149,7 @@ void Renderer::asyncRender() {
 
 void Renderer::stopRendering() {
   if(renderthread) {
+    abort = true;
     if(m_tracer)
       m_tracer->stopTracing();
     renderthread->join();
@@ -161,6 +160,7 @@ void Renderer::stopRendering() {
 
 
 void Renderer::render() {
+  abort = false;
 
   if(m_scene == NULL) {
     cout << "Render has no scene!\n";
@@ -169,13 +169,16 @@ void Renderer::render() {
 
   m_tracer->traceImage(color_buffer);
 
+  if(abort)
+    return;
+
   ReinhardOperator reinhard = ReinhardOperator();
   GammaEncode gamma = GammaEncode();
   ClampOperator clamp = ClampOperator();
 
-  reinhard.run(color_buffer,buffer_length);
+  reinhard.run(color_buffer,buffer_length / 4, 4);
   //gamma.run(color_buffer,buffer_length);
-  clamp.run(color_buffer,buffer_length);
+  clamp.run(color_buffer,buffer_length / 4, 4);
 
 }
 

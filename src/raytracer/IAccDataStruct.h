@@ -10,6 +10,7 @@
 
 #include <stdexcept>
 
+#include "common.hpp"
 #include "utilities/Triangle.h"
 #include "utilities/Ray.h"
 using std::runtime_error;
@@ -44,9 +45,10 @@ public:
   };
 
 
-	virtual ~IAccDataStruct()= 0;
+	virtual ~IAccDataStruct() {};
 	virtual IntersectionData findClosestIntersection(Ray ray)=0;
-	virtual void setData(std::vector<Triangle*> triangles) = 0;
+	virtual void setData(Triangle** triangles,size_t size,AABB* aabb) = 0;
+	virtual vector<AABB*>& getAABBList() = 0;
 
 };
 

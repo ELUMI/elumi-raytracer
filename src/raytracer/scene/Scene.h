@@ -25,7 +25,7 @@ public:
 	Scene(Settings* settings);
 	virtual ~Scene();
 
-	void loadTriangles(vector<Triangle*> triangles, bool overwrite=false);
+	void loadTriangles(vector<Triangle*> triangles,AABB* aabb, bool overwrite=false);
 	void loadCamera(Camera camera);
 	void loadLights(ILight** lights, size_t length, bool overwrite=false);
 	void loadMaterials(Material* materials, size_t length);
@@ -49,6 +49,7 @@ public:
 
 private:
 	Camera m_camera;
+  std::vector<Triangle*> m_triangles;
 	IAccDataStruct* m_acc_data_struct;
 	std::vector<ILight*>* m_lights;
 	std::vector<Material*> m_materials;

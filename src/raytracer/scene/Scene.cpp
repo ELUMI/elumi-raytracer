@@ -8,6 +8,8 @@
 #include "Scene.h"
 #include "../AccDataStructImpl/VertexArrayDataStruct.h"
 #include "../AccDataStructImpl/ArrayDataStruct.h"
+#include "../AccDataStructImpl/KDTreeDataStruct.hpp"
+#include "../AccDataStructImpl/HashDataStruct.h"
 #include "../AccDataStructImpl/TriangleArray.h"
 #include "../AccDataStructImpl/TestHeightMapDataStruct.h"
 
@@ -15,22 +17,43 @@ namespace raytracer {
 
 
 Scene::Scene(Settings* settings)
-  : m_camera(), m_materials() {
+: m_camera(), m_materials() {
   m_lights = new std::vector<ILight*>;
-  m_acc_data_struct = new TestHeightMapDataStruct();
+  m_acc_data_struct = new TestHeightMapDataStruct(); // new HashDataStruct(0.1f, 1024);
   m_settings = settings;
+  m_drawable = NULL;
 }
 
 
 Scene::~Scene() {
-  // TODO AAAAASMYCKET SKRÄPHANTERING FRÅN ALLTING!!!!
-  delete m_lights;
+  // Deletes all scene data
   delete m_settings;
+
+  for(size_t i=0; i<m_lights->size(); ++i)
+    delete m_lights->at(i);
+  delete m_lights;
+
+  for(size_t i=0; i<m_textures.size(); ++i)
+    delete m_textures[i];
+
+  for(size_t i=0; i<m_materials.size(); ++i)
+    delete m_materials[i];
+
+  for(size_t i=0; i<m_triangles.size(); ++i)
+    delete m_triangles[i];
+
   delete m_acc_data_struct;
+
+  if (m_drawable!=NULL)
+    delete m_drawable;
 }
 
-void Scene::loadTriangles(vector<Triangle*> triangles, bool overwrite) {
-  m_acc_data_struct->setData(triangles);
+void Scene::loadTriangles(vector<Triangle*> triangles,AABB* aabb, bool overwrite) {
+  m_triangles = triangles;
+  m_acc_data_struct->setData(triangles.data(),triangles.size(),aabb);
+
+  if (m_drawable!=NULL)
+    delete m_drawable;
   if(m_settings->opengl_version == 3){
     m_drawable = new VertexArrayDataStruct(this, triangles);
   } else if(m_settings->opengl_version == 2){

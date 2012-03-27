@@ -8,6 +8,7 @@
 #include <iostream>
 
 #include "BaseTracer.h"
+#include <omp.h>
 #include <glm/gtc/matrix_transform.hpp> //translate, rotate, scale, perspective
 
 #include "boost/thread.hpp"
@@ -97,16 +98,15 @@ void BaseTracer::initTracing()
   lights = scene->getLightVector();
   pixelsLeft = settings->width * settings->height;
   abort = false;
-  cout << "camera.set(vec3(" << scene->getCamera().getPosition().x
-      << "," << scene->getCamera().getPosition().y
-      << "," << scene->getCamera().getPosition().z
-      << "), vec3(" << scene->getCamera().getDirection().x
-      << "," << scene->getCamera().getDirection().y
-      << "," << scene->getCamera().getDirection().z
-      << "), vec3(" << scene->getCamera().getUpVector().x
-      << "," << scene->getCamera().getUpVector().y
-      << "," << scene->getCamera().getUpVector().z
-      << "), 0.7845f, settings.width/settings.height);\n";
+  cout << "<Position x=\"" << scene->getCamera().getPosition().x
+      << "\" y=\"" << scene->getCamera().getPosition().y
+      << "\" z=\"" << scene->getCamera().getPosition().z
+      << "\"/>\n<Direction x=\"" << scene->getCamera().getDirection().x
+      << "\" y=\"" << scene->getCamera().getDirection().y
+      << "\" z=\"" << scene->getCamera().getDirection().z
+      << "\"/>\n<Normal x=\"" << scene->getCamera().getUpVector().x
+      << "\" y=\"" << scene->getCamera().getUpVector().y
+      << "\" z=\"" << scene->getCamera().getUpVector().z << "\"/>\n";
 }
 
 void BaseTracer::traceImage(float *color_buffer)
@@ -118,10 +118,10 @@ void BaseTracer::traceImage(float *color_buffer)
 
   if (settings->use_first_bounce) {
     // For every pixel
-#pragma omp parallel for
+//#pragma omp parallel for
     for (size_t i = 0; i < number_of_rays; ++i) {
       //#pragma omp task
-#pragma omp flush (abort)
+//#pragma omp flush (abort)
       if (!abort) {
         vec4 c = trace(rays[i], first_intersections[i]);
         buffer[i * 4] = glm::min(1.0f, c.r);
@@ -154,9 +154,7 @@ void BaseTracer::traceImage(float *color_buffer)
       threads[i].join();
     }
     delete pattern;
-
   }
-
 }
 
 void BaseTracer::traceImageThread(int id) {
@@ -174,22 +172,20 @@ void BaseTracer::traceImageThread(int id) {
     int* batch = pattern->getBatch(my_batch, &length);
 
     for (size_t i = 0; i < length; ++i) {
-      if (!abort) {
-        IAccDataStruct::IntersectionData intersection_data =
-            scene->getAccDataStruct()->findClosestIntersection(rays[batch[i]]);
-        vec4 c = trace(rays[batch[i]], intersection_data);
-
-        buffer[batch[i] * 4] = c.r;
-        buffer[batch[i] * 4 + 1] = c.g;
-        buffer[batch[i] * 4 + 2] = c.b;
-        buffer[batch[i] * 4 + 3] = c.a;
-        //--pixelsLeft;
-      } else {
-        break;
+      if (abort) {
+        return;
       }
+      IAccDataStruct::IntersectionData intersection_data =
+          scene->getAccDataStruct()->findClosestIntersection(rays[batch[i]]);
+      vec4 c = trace(rays[batch[i]], intersection_data);
+
+      buffer[batch[i] * 4] = c.r;
+      buffer[batch[i] * 4 + 1] = c.g;
+      buffer[batch[i] * 4 + 2] = c.b;
+      buffer[batch[i] * 4 + 3] = c.a;
+
+      --pixelsLeft;
     }
-    if (abort)
-      break;
 
     pattern_mutex.lock();
     my_batch = next_batch++;
@@ -201,8 +197,8 @@ void BaseTracer::stopTracing() {
   abort = true;
 }
 
-unsigned int BaseTracer::getPixelsLeft() {
-  return pixelsLeft;
+float BaseTracer::getPixelsLeft() {
+  return (nr_batches - next_batch) / nr_batches;
 }
 
 int BaseTracer::spawnRays() {

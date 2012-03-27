@@ -35,7 +35,7 @@ public:
   virtual void first_bounce();
 
   void         stopTracing();
-  unsigned int getPixelsLeft();
+  float getPixelsLeft();
 
   vec3* posbuff;
 protected:

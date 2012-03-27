@@ -59,6 +59,7 @@ vec4 StandardTracer::shade(Ray incoming_ray
   Material* material = scene->getMaterialVector()[idata.material];
 
   vec3 texture_color = vec3(0,0,0);
+  vec3 specularity = vec3(0,0,0);
 
   vec3 bump_normal = vec3(0,0,0);
   vec3 normal = idata.normal;
@@ -95,6 +96,11 @@ vec4 StandardTracer::shade(Ray incoming_ray
       texture_color = texture->getColorAt(tex_coords);
     }
 
+  }
+
+  if(material->getSpecularMap() != -1) {
+    Texture* specularmap = scene->getTextureAt(material->getSpecularMap());
+    specularity = specularmap->getColorAt(tex_coords);
   }
 
   /**** Bump mapping ****/
@@ -145,8 +151,13 @@ vec4 StandardTracer::shade(Ray incoming_ray
         vec3 h = normalize(-incoming_ray.getDirection() - light_ray.getDirection());
         specular += in_light
             * glm::pow( clamp( glm::dot(normal, h) ), material->getShininess() )
-        * material->getSpecular()
         * light->getColor();
+
+        if(material->getSpecularMap() == -1) {
+          specular *= material->getSpecular();
+        } else {
+          specular *= specularity;
+        }
 
       } // end in light
     } // end non abmient
