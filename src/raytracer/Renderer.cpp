@@ -7,7 +7,6 @@
 
 #include "Renderer.h"
 #include "TracerImpl/DebugTracer.h"
-#include "TracerImpl/SimpleTracer.h"
 #include "TracerImpl/StandardTracer.h"
 
 #include "XMLImpl/XML.h"
@@ -61,10 +60,6 @@ void Renderer::init() {
   case 0:
     m_tracer = new BaseTracer(m_scene);
     cout << "Using base tracer\n";
-    break;
-  case 1:
-    m_tracer = new SimpleTracer(m_scene);
-    cout << "Using simple tracer\n";
     break;
   case 2:
   default:

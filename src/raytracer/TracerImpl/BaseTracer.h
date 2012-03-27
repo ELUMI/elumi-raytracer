@@ -51,7 +51,6 @@ protected:
   std::vector<ILight*>* lights;
 
   bool abort;
-  unsigned int pixelsLeft;
 
   DeferredProcesser* first_pass;
   IAccDataStruct::IntersectionData* first_intersections;

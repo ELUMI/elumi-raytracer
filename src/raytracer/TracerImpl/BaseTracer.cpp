@@ -96,7 +96,6 @@ void BaseTracer::first_bounce() {
 void BaseTracer::initTracing()
 {
   lights = scene->getLightVector();
-  pixelsLeft = settings->width * settings->height;
   abort = false;
   cout << "<Position x=\"" << scene->getCamera().getPosition().x
       << "\" y=\"" << scene->getCamera().getPosition().y
@@ -133,8 +132,6 @@ void BaseTracer::traceImage(float *color_buffer)
     for(size_t i = 0;i < number_of_rays;++i){
       if(!abort){
         tracePixel(rays[i], i, first_intersections[i]);
-
-        --pixelsLeft;
       }
     }
 
@@ -174,8 +171,6 @@ void BaseTracer::traceImageThread(int id)
       Ray ray = rays[batch[i]];
       IAccDataStruct::IntersectionData intersection_data = scene->getAccDataStruct()->findClosestIntersection(ray);
       tracePixel(ray, batch[i], intersection_data);
-
-      --pixelsLeft;
     }
 
     pattern_mutex.lock();
