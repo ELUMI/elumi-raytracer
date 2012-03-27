@@ -27,6 +27,7 @@ protected:
   vector<Photon*> gather(float& r, vec3 point);
   virtual vec4 shade(Ray ray, IAccDataStruct::IntersectionData idata, float attenuation, unsigned short depth);
   virtual void initTracing();
+  vec3 getLuminance(Ray incoming_ray, IAccDataStruct::IntersectionData idata);
 
   float radius;
 };

@@ -171,8 +171,9 @@ void BaseTracer::traceImageThread(int id)
       if(abort){
         return;
       }
-      IAccDataStruct::IntersectionData intersection_data = scene->getAccDataStruct()->findClosestIntersection(rays[batch[i]]);
-      tracePixel(rays[batch[i]], batch[i], intersection_data);
+      Ray ray = rays[batch[i]];
+      IAccDataStruct::IntersectionData intersection_data = scene->getAccDataStruct()->findClosestIntersection(ray);
+      tracePixel(ray, batch[i], intersection_data);
 
       --pixelsLeft;
     }

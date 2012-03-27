@@ -14,7 +14,7 @@ namespace raytracer {
 PhotonMapper::PhotonMapper(Scene* scene)
 : StandardTracer(scene) {
   radius = 1;
-  photonmap = new HashPM(radius, 1024);
+  photonmap = new HashPM(radius, 1024*128);
 }
 
 PhotonMapper::~PhotonMapper() {
@@ -24,7 +24,7 @@ PhotonMapper::~PhotonMapper() {
 
 void PhotonMapper::initTracing(){
   StandardTracer::initTracing();
-  //getPhotons();
+  getPhotons();
   photonmap->balance();
 }
 
@@ -125,14 +125,8 @@ float inline brdf(vec3 point, vec3 idir, vec3 odir){
   return 1.0;
 }
 
-vec4 PhotonMapper::shade(Ray incoming_ray,
-    IAccDataStruct::IntersectionData idata,
-    float attenuation, unsigned short depth) {
-  if (idata.material == IAccDataStruct::IntersectionData::NOT_FOUND) {
-    // No intersection
-    return settings->background_color;
-  }
-
+vec3 PhotonMapper::getLuminance(Ray incoming_ray,
+    IAccDataStruct::IntersectionData idata) {
   vec3 l = vec3(0);
 
   size_t g; //number of photons
@@ -140,7 +134,7 @@ vec4 PhotonMapper::shade(Ray incoming_ray,
 
   vector<Photon*> photons = gather(r, idata.interPoint);
   if(photons.size() == 0)
-    return vec4(0,0,0,1);
+    return vec3(0);
   for(size_t i=0; i<photons.size(); ++i){
     Photon* p = photons[i];
     float b = brdf(idata.interPoint, p->direction, incoming_ray.getDirection());
@@ -166,6 +160,32 @@ vec4 PhotonMapper::shade(Ray incoming_ray,
     //l += a;
   }
   l /= photonmap->getTotalPhotons();
+
+  return l;
+}
+
+
+vec4 PhotonMapper::shade(Ray incoming_ray,
+    IAccDataStruct::IntersectionData idata,
+    float attenuation, unsigned short depth) {
+  if (idata.material == IAccDataStruct::IntersectionData::NOT_FOUND) {
+    // No intersection
+    return settings->background_color;
+  }
+
+  vec3 l=vec3(0);
+  if(false) { //final gather
+    l=vec3(0);
+    const size_t final_gather_samples = 8;
+    for(size_t i=0; i<final_gather_samples; ++i){
+      Ray ray = Ray(idata.interPoint, get_random_hemisphere(idata.normal));
+      IAccDataStruct::IntersectionData idata2 = datastruct->findClosestIntersection(ray);
+      l += getLuminance(ray, idata2);
+    }
+    l /= final_gather_samples;
+  } else {
+    l = getLuminance(incoming_ray, idata);
+  }
 
   vec3 color = scene->getMaterialVector()[idata.material]->getDiffuse();
   return vec4(l*color,0);
