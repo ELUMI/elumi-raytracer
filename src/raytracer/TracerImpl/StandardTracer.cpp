@@ -240,7 +240,6 @@ vec4 StandardTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData id
   float reflect_spread  = material->getReflectionSpread();
   int   reflect_samples = material->getReflectionSamples();
 
-  float transmittance   = (1-material->getOpacity());
   float refract_spread  = material->getRefractionSpread();
   int   refract_samples = material->getRefractionSamples();
 
