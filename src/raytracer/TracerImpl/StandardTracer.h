@@ -29,7 +29,8 @@ protected:
   const unsigned short MAX_RECURSION_DEPTH;
   const float ATTENUATION_THRESHOLD;
 private:
-  void bumpMap(vec3 & normal, Material* material, IAccDataStruct::IntersectionData& idata, Ray incoming_ray);
+  void bumpMap(vec3 & normal, Material* material, IAccDataStruct::IntersectionData& idata,
+      Ray incoming_ray, vec2 & tex_coords, vec3 & texture_color);
 };
 
 }

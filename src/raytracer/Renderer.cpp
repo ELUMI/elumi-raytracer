@@ -228,8 +228,6 @@ void Renderer::render() {
 
   if(abort)
     return;
-
-
 }
 
 float Renderer::renderComplete() {

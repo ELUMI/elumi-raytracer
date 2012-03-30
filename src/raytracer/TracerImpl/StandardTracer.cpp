@@ -44,15 +44,69 @@ vec4 StandardTracer::tracePrim(Ray ray, float attenuation, unsigned short depth)
 }
 
 inline void StandardTracer::bumpMap(vec3 & normal, Material* material,
-    IAccDataStruct::IntersectionData& idata, Ray incoming_ray){
+    IAccDataStruct::IntersectionData& idata, Ray incoming_ray, vec2 &tex_coords, vec3 &texture_color){
   /**** Bump mapping ****/
-  if(material->getBumpMap() != -1){
-    vec3 bump_normal = vec3(0, 0, 0);
-    Texture *bumpmap = scene->getTextureAt(material->getBumpMap());
-    vec2 coords = bumpmap->getUVCoordinates(idata.interPoint, idata.e1, idata.e2);
-    bump_normal = bumpmap->getColorAt(coords);
-    bump_normal = normalize(faceforward(bump_normal, incoming_ray.getDirection(), normal));
-    normal = normalize(normal + bump_normal);
+//  if(material->getBumpMap() != -1){
+//    vec3 bump_normal = vec3(0, 0, 0);
+//    Texture *bumpmap = scene->getTextureAt(material->getBumpMap());
+//    vec2 coords = bumpmap->getUVCoordinates(idata.interPoint, idata.e1, idata.e2);
+//    bump_normal = bumpmap->getColorAt(coords);
+//    bump_normal = normalize(faceforward(bump_normal, incoming_ray.getDirection(), normal));
+//    normal = normalize(normal + bump_normal);
+//  }
+
+  vec3 perturbed_normal = vec3(0,0,0);
+
+  //Normal mappping
+  if(material->getNormalMap() != -1) {
+    Texture* normal_map = scene->getTextureAt(material->getNormalMap());
+    //vec2 coords  = normal_map->getUVCoordinates(idata.interPoint,idata.e1,idata.e2);
+
+    //Parallax mapping
+    if(material->getBumpMap() != -1 && material->getDiffuseMap() != -1) {
+      Texture* bump_map = scene->getTextureAt(material->getBumpMap());
+      float height = glm::length(bump_map->getColorAt(tex_coords));
+      vec3 p = -height*scene->getCamera().getPosition()-idata.interPoint;
+      p = normalize(p);
+      p = p*0.2f;
+
+      tex_coords.x += p.x;
+      tex_coords.y += p.z;
+
+      Texture* t = scene->getTextureAt(material->getDiffuseMap());
+
+      texture_color = t->getColorAt(tex_coords);
+    }
+
+    perturbed_normal = normal_map->getColorAt(tex_coords);
+    perturbed_normal = normalize(faceforward(perturbed_normal,incoming_ray.getDirection(),normal));
+    normal = normalize(normal+perturbed_normal);
+  } else if (material->getBumpMap() != -1) { //Bump mapping WIP
+    Texture* bump_map = scene->getTextureAt(material->getBumpMap());
+    vec2 c = vec2();
+    c.x = 1.0f/bump_map->getWidth();
+    c.y = 1.0f/bump_map->getHeight();
+
+    vec2 t1 = tex_coords;
+    t1.x = t1.x+c.x;
+    vec2 t2 = tex_coords;
+    t2.x = t2.x - c.x;
+    vec2 t3 = tex_coords;
+    t3.y = t3.y + c.y;
+    vec2 t4 = tex_coords;
+    t4.y = t4.y - c.y;
+
+    vec3 t0 = vec3(0,0,length(bump_map->getColorAt(tex_coords)));
+
+    vec3 v1 = t0 - vec3(0,0,length(bump_map->getColorAt(t1)));
+    vec3 v2 = t0 - vec3(length(bump_map->getColorAt(t2)));
+    vec3 v3 = t0 - vec3(length(bump_map->getColorAt(t3)));
+    vec3 v4 = t0 - vec3(length(bump_map->getColorAt(t4)));
+
+    perturbed_normal = v1+v2+v3+v4;
+    perturbed_normal = normalize(faceforward(perturbed_normal,incoming_ray.getDirection(),normal));
+
+    normal = normalize(normal+perturbed_normal);
   }
 }
 
@@ -60,6 +114,23 @@ vec4 StandardTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData id
 {
   if(idata.material == IAccDataStruct::IntersectionData::NOT_FOUND){
     // No intersection
+
+//    vec3 light_color = vec3(0,0,0);
+//
+//    for(unsigned int i=0; i<lights->size(); ++i) {
+//      ILight* light  = lights->at(i);
+//      light_color += light->getColor();
+//      Ray light_ray = Ray::generateRay(light->getPosition(), scene->getCamera().getPosition());
+//      vec3 l = normalize(light_ray.getDirection());
+//      vec3 r = normalize(incoming_ray.getDirection());
+//      float li = dot(l,r);
+//      light_color *= li*li;
+//      //vec3 lc = light->getPosition()-scene->getCamera().getPosition();
+//      //light_color *= light->getIntensity(lc.length());
+//    }
+//
+//    return settings->background_color + vec4(light_color.r,light_color.g,light_color.b,1.0f);
+
     return settings->background_color;
   }
   assert(idata.material < scene->getMaterialVector().size());
@@ -73,12 +144,13 @@ vec4 StandardTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData id
   vec3 texture_color = vec3(0, 0, 0);
   vec3 normal = idata.normal;
   vec2 tex_coords = vec2(0, 0);
+
   if(material->getDiffuseMap() != -1){
     Texture *texture = scene->getTextureAt(material->getDiffuseMap());
     int mipmap_levels = texture->getMipmapLevels();
     if(true){
       //tex_coords  = texture->getUVCoordinates(idata.interPoint,idata.e1,idata.e2);
-      tex_coords = texture->getUVCoordinates(idata.interPoint, YAXIS);
+      tex_coords = texture->getUVCoordinates(idata.interPoint/4.0f, YAXIS);
     }else{
       //We have texture coordinates
       tex_coords = idata.texcoord;
@@ -99,7 +171,16 @@ vec4 StandardTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData id
     }
   }
 
-  bumpMap(normal, material, idata, incoming_ray);
+  float transmittance = (1-material->getOpacity());
+
+  //Transparency map
+  if(material->getTransparencyMap() != -1) {
+    Texture* transparencymap = scene->getTextureAt(material->getTransparencyMap());
+    transmittance = glm::length(transparencymap->getColorAt(tex_coords));
+
+  }
+
+  bumpMap(normal, material, idata, incoming_ray, tex_coords,texture_color);
 
   /**** For each light source in the scene ****/
   for(unsigned int i=0; i<lights->size(); ++i) {
@@ -139,8 +220,14 @@ vec4 StandardTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData id
         vec3 h = normalize(-incoming_ray.getDirection() - light_ray.getDirection());
         specular += in_light
             * glm::pow( clamp( glm::dot(normal, h) ), material->getShininess() )
-        * material->getSpecular()
         * light->getColor();
+
+        if(material->getSpecularMap() == -1) {
+          specular *= material->getSpecular();
+        } else {
+          Texture *spec = scene->getTextureAt(material->getSpecularMap());
+          specular *= length(spec->getColorAt(tex_coords));
+        }
 
       } // end in light
     } // end non abmient
@@ -153,7 +240,6 @@ vec4 StandardTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData id
   float reflect_spread  = material->getReflectionSpread();
   int   reflect_samples = material->getReflectionSamples();
 
-  float transmittance   = (1-material->getOpacity());
   float refract_spread  = material->getRefractionSpread();
   int   refract_samples = material->getRefractionSamples();
 
