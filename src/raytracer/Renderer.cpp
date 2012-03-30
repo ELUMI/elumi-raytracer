@@ -204,7 +204,7 @@ void Renderer::render() {
 
 }
 
-unsigned int Renderer::renderComplete() {
+float Renderer::renderComplete() {
   if(m_tracer == NULL) {
     cout << "Render has no tracer!\n";
     return -1;

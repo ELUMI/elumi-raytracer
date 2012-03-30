@@ -46,7 +46,7 @@ public:
   /*
    * @return The number of pixels left to render
    */
-  unsigned int renderComplete();
+  float renderComplete();
   
 private:
   void init();

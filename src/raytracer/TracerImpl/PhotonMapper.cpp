@@ -175,21 +175,22 @@ vec4 PhotonMapper::shade(Ray incoming_ray,
   }
 
   vec3 l=vec3(0);
-  if(false) { //final gather
+  if(true) { //final gather
     l=vec3(0);
-    const size_t final_gather_samples = 8;
+    const size_t final_gather_samples = 1024;
     for(size_t i=0; i<final_gather_samples; ++i){
       Ray ray = Ray(idata.interPoint, get_random_hemisphere(idata.normal));
       IAccDataStruct::IntersectionData idata2 = datastruct->findClosestIntersection(ray);
       l += getLuminance(ray, idata2);
     }
+
     l /= final_gather_samples;
   } else {
     l = getLuminance(incoming_ray, idata);
   }
 
   vec3 color = scene->getMaterialVector()[idata.material]->getDiffuse();
-  return vec4(l*color,0);
+  return vec4(l*color,1);
 }
 
 

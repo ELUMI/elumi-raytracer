@@ -26,6 +26,9 @@ Scene::Scene(Settings* settings)
   default:
     m_acc_data_struct = new KDTreeDataStruct(settings);
     break;
+  case 3:
+    m_acc_data_struct = new HashDataStruct(0.1f, 1024);
+    break;
   }
   m_settings = settings;
   m_drawable = NULL;

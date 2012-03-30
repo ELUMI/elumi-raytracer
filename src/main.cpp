@@ -529,6 +529,9 @@ void timedCallback() {
   if (glfwGetKey('P')) {
     writePhotonMap();
   }
+  if (glfwGetKey('Q')) {
+    cout << "Percent left: " << myRenderer->renderComplete() << "\n";
+  }
 
 }
 
