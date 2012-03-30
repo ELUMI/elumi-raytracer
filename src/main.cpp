@@ -18,6 +18,7 @@ namespace po = boost::program_options;
 
 #include "raytracer/IXML.h"
 #include "raytracer/XMLImpl/XML.h"
+
 #include "raytracer/common.hpp"
 #include "raytracer/AccDataStructImpl/LineArrayDataStruct.hpp"
 
@@ -88,12 +89,16 @@ int main(int argc, char* argv[]) {
     cout << "Not using OpenGL" << endl;
   }
   cout << "OpenGL version: " << open_gl_version << "\n";
+
+
+
   // CREATE RENDERER AND LOAD SCENE DATA
   myRenderer = new Renderer(open_gl_version);
   myRenderer->loadSceneFromXML(inputFileName.c_str());
   Scene* myScene = myRenderer->getScene();
   settings = myScene->getSettings();
   camera = myScene->getCamera();
+
   // RESIZE
   if (open_gl_version) {
     glfwSetWindowSize(settings->width, settings->height);
@@ -133,6 +138,7 @@ int main(int argc, char* argv[]) {
     if(settings->wireframe==1){
       data_struct_drawable= new LineArrayDataStruct(myRenderer->getScene()->getAccDataStruct()->getAABBList());
     }
+
     while (running) {
       //OpenGl rendering goes here...d
       glViewport(0, 0, win_width, win_height);
@@ -144,6 +150,7 @@ int main(int argc, char* argv[]) {
       glDisable(GL_CULL_FACE);
 
       int light_size = myRenderer->getScene()->getLightVector()->size();
+
       IDraw* drawables[1+light_size+settings->wireframe];
       drawables[0] = myRenderer->getScene()->getDrawable();
       for(int i=0; i<light_size; ++i)
@@ -201,6 +208,7 @@ int main(int argc, char* argv[]) {
 
   /* EXPORTER
    ***************** */
+
   if (myRenderer->renderComplete() == 0.0f) {
     raytracer::IExporter* exporter = new raytracer::PNGExporter;
     exporter->exportImage(outputFileName.c_str(), settings->width, settings->height, buffer);

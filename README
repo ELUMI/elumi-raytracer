@@ -1,0 +1,76 @@
+Raytracer project for the Bachelor Thesis
+
+Some cool introduction text.
+
+############################################################
+
+                         Usage
+
+raytracer [options]
+
+Allowed options:
+  -h [ --help ]              produce help message
+  --no_opengl                Do not use OpenGL
+  -i [ --input-file ] arg    Input file
+  -o [ --output-file ] arg   Output file
+  -s [ --settings-file ] arg Settings file
+  
+
+############################################################
+
+                     Settings-file
+Each row in the settings file specifies the value for one
+option. Option name is separated by a colon:
+
+    option_name : value
+
+Available options are:
+
+width:int
+height:int
+opengl_version:int
+use_first_bounce:bool
+
+############################################################
+
+          Build instructions (BETA, not tested)
+
+eclipse
+* import / projects from git
+* new / convert to cpp
+
+* properties
+ * settings
+  * GCC C++ compiler
+   * Includes
+     * glm
+     * glfw
+     * glew
+     * devil
+   * Miscellaneous
+    * -fopenmp
+  * GCC C++ Linker
+   * Libraries
+    * -l (libraries)
+     * png
+     * IL (devil)
+     * boost_program_options
+     * boost_thread
+     * gomp (openmp)
+     * GLEW
+     * GL
+     * GLU
+     * glfw
+    * -L (search path)
+     * glfw
+     * glew
+     * devil
+ * Run/Debug settings
+  * Edit
+   * Arguments
+    * sword2.obj test.png
+   * Enviroment
+    * LD_LIBRARY_PATH (separate with ;)
+     * glfw
+     * glew
+     * devil

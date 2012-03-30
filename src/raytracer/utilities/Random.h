@@ -25,6 +25,7 @@ void init_generator();
 float gen_random_float(float min, float max);
 vec3 get_random_dir();
 vec3 get_random_hemisphere(vec3 normal);
+vec3 get_random_cone(vec3 normal, float max_angle);
 
 }
 

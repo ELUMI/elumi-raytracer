@@ -44,6 +44,7 @@ private:
 		std::vector<Texture*> textures;
 
 		Camera* camera;
+
     AABB* aabb;
 
 		std::vector<ILight*> point_lights;

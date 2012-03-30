@@ -140,7 +140,9 @@ void BaseTracer::traceImage(float *color_buffer)
     nr_batches = pattern->getNumberBatches();
     next_batch = 0;
     // Launch threads
-    int nr_threads = boost::thread::hardware_concurrency();
+    int nr_threads = settings->threads;
+    if(nr_threads == 0)
+      nr_threads= boost::thread::hardware_concurrency();
     boost::thread threads[nr_threads];
     for(int i = 0;i < nr_threads;++i){
       threads[i] = boost::thread(boost::bind(&BaseTracer::traceImageThread, this, i));

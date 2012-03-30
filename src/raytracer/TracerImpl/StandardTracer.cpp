@@ -5,14 +5,15 @@
  *      Author: irri
  */
 
-
+#include <iostream>
 
 
 #include "StandardTracer.h"
+#include "../utilities/Random.h"
 
 namespace raytracer {
 
-// TODO rapport ändra threshold jämförelsebilder
+// TODO report, change threshold comparison images
 StandardTracer::StandardTracer(Scene* scene)
 : BaseTracer(scene)
 , MAX_RECURSION_DEPTH(settings->max_recursion_depth)
@@ -36,6 +37,7 @@ vec4 StandardTracer::trace(Ray ray, IAccDataStruct::IntersectionData idata) {
   return shade(ray, idata, 1.0f, 0);
 }
 
+// Recursive trace method (trace')
 vec4 StandardTracer::tracePrim(Ray ray, float attenuation, unsigned short depth) {
   IAccDataStruct::IntersectionData idata = datastruct->findClosestIntersection(ray);
   return shade(ray, idata, attenuation, depth);
@@ -234,7 +236,13 @@ vec4 StandardTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData id
   // Multiply the accumelated ambient light colors with ambient material color
   ambient *= material->getAmbient();
 
-  float reflectance = material->getReflection();
+  float reflectance     = material->getReflection();
+  float reflect_spread  = material->getReflectionSpread();
+  int   reflect_samples = material->getReflectionSamples();
+
+  float transmittance   = (1-material->getOpacity());
+  float refract_spread  = material->getRefractionSpread();
+  int   refract_samples = material->getRefractionSamples();
 
   if (attenuation > ATTENUATION_THRESHOLD && depth < MAX_RECURSION_DEPTH) {
 
@@ -257,9 +265,27 @@ vec4 StandardTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData id
       vec3 offset = refr_normal * 0.01f;
       vec3 refl_dir = glm::reflect(incoming_ray.getDirection(), refr_normal);
       Ray refl_ray = Ray(idata.interPoint + offset, glm::normalize(refl_dir));
-      refl_color = tracePrim(refl_ray, attenuation*reflectance, depth+1) * reflectance;
 
-      // SVART BEROR PÅ ATT DEN STUDSAR MOT SIG SJÄLV OCH ALLTID BLIR REFLECTIVE TILLS MAXDJUP
+
+      if(reflect_spread > 0.0f && reflect_samples > 0) { // Glossy reflections
+        for(int i = 0; i < reflect_samples; ++i) {
+
+          vec3 sample_dir = glm::normalize(
+              get_random_cone(refl_dir, reflect_spread));
+
+          Ray sample_ray = Ray(idata.interPoint + offset, sample_dir);
+
+          refl_color +=
+              tracePrim(sample_ray, attenuation*reflectance / reflect_samples, depth+1)
+              * reflectance / reflect_samples;
+
+        }
+      } else {  // Non glossy
+        refl_color =
+            tracePrim(refl_ray, attenuation*reflectance, depth+1) * reflectance;
+      }
+
+      // BLACK BECAUSE OF BOUNCES AGAINTS ITSELF AND ALLWAYS REFLECTIVE UNTILL MAX DEPTH
 
     }
 
@@ -272,18 +298,35 @@ vec4 StandardTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData id
 
       vec3 offset = -refr_normal * 0.01f;
       vec3 refr_dir = glm::refract(incoming_ray.getDirection(), refr_normal, eta);
-      if (refr_dir == vec3(0,0,0)) {
+      if (refr_dir == vec3(0,0,0)) {  // Total reflectionr returns vec3(0,0,0)
         transmittance = 0.0f;
       } else {
 
         Ray refr_ray = Ray(idata.interPoint + offset, refr_dir);
-        refr_color = tracePrim(refr_ray, attenuation*(transmittance), depth+1) * (transmittance);
 
-        // SVART BEROR PÅ SELF SHADOWING
+
+        if(refract_spread > 0.0f && refract_samples > 0) {  // Glossy refractions
+          for(int i = 0; i < refract_samples; ++i) {
+
+            vec3 sample_dir = glm::normalize(
+                          get_random_cone(refr_dir, refract_spread));
+
+            Ray sample_ray = Ray(idata.interPoint + offset, sample_dir);
+
+            refr_color += tracePrim(sample_ray, attenuation*(transmittance) / refract_samples, depth+1)
+                         * (transmittance) / refract_samples;
+
+          }
+        } else {  // Non glossy
+          refr_color = tracePrim(refr_ray, attenuation*(transmittance), depth+1)
+                       * (transmittance);
+        }
+
+        // BLACK IS BECAUSE OF SELF SHADOWING
       }
 
     } // end refraction
-  } // end annutation
+  } // end attenuation
 
   // Mix the output colors
   vec4 color = vec4((ambient + diffuse + specular),1.0f) * (1-transmittance) + refr_color;

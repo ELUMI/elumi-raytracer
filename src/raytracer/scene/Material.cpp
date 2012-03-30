@@ -13,18 +13,20 @@ Material::Material() {
 
 
   // Some default values
-  Material::name = "default_material";
-  Material::ambient = glm::vec3(0.2f,0.2f,0.2f);
-  Material::diffuse = glm::vec3(0.8f,0.8f,0.8f);
-  Material::specular = glm::vec3(0.2f,0.2f,0.2f);
-  Material::emissive = glm::vec3(1.0f,1.0f,1.0f); //?
-  Material::opacity = 1.0f;
-  Material::shininess = 0.0f;
-  Material::sharpness = 98; //glossy
+  Material::name                = "default_material";
+  Material::ambient             = glm::vec3(0.2f,0.2f,0.2f);
+  Material::diffuse             = glm::vec3(0.8f,0.8f,0.8f);
+  Material::specular            = glm::vec3(0.2f,0.2f,0.2f);
+  Material::emissive            = glm::vec3(1.0f,1.0f,1.0f); //?
+  Material::opacity             = 1.0f;
+  Material::shininess           = 0.0f;
+  Material::sharpness           = 98; //glossy
   Material::index_of_refraction = 1.0f;
-  Material::reflection = 0.0f;
-  Material::diffuse_map = -1;
-  Material::bump_map = -1;
+  Material::reflection          = 0.0f;
+  Material::diffuse_map         = -1;
+  Material::bump_map            = -1;
+  Material::reflect_spread      = 0;
+  Material::refract_spread      = 0;
   Material::specular_map = -1;
   Material::transparency_map = -1;
 }
@@ -32,24 +34,30 @@ Material::Material() {
 Material::Material(std::string name,glm::vec3 ambient,glm::vec3 diffuse,glm::vec3 specular,
     glm::vec3 emissive,glm::vec3 _opacity,float shininess,float sharpness,
     float reflection ,float index_of_refraction, int diffuse_map, int bump_map,
-    int norm_map, int specular_map,int d_map){
+    int norm_map, int specular_map, int d_map,
+    float reflect_spread, int reflect_samples,
+    float refract_spread, int refract_samples){
 
-  Material::name = name;
-  Material::ambient = ambient;
-  Material::diffuse = diffuse;
-  Material::specular = specular;
-  Material::emissive = emissive;
-  Material::opacity = (_opacity.x + _opacity.y + _opacity.z) / 3.0f;
-  Material::shininess = shininess;
-  Material::sharpness = sharpness;
+  Material::name                = name;
+  Material::ambient             = ambient;
+  Material::diffuse             = diffuse;
+  Material::specular            = specular;
+  Material::emissive            = emissive;
+  Material::opacity             = (_opacity.x + _opacity.y + _opacity.z) / 3.0f;
+  Material::shininess           = shininess;
+  Material::sharpness           = sharpness;
   Material::index_of_refraction = index_of_refraction;
-  Material::reflection = reflection;
+  Material::reflection          = reflection;
   //Material::alpha_texture_map = alpha_texture_map;
   Material::diffuse_map = diffuse_map;
   Material::bump_map = bump_map;
   Material::normal_map = norm_map;
   Material::specular_map = specular_map;
   Material::transparency_map = d_map;
+  Material::reflect_spread      = reflect_spread;
+  Material::reflect_samples     = reflect_samples;
+  Material::refract_spread      = refract_spread;
+  Material::refract_samples     = refract_samples;
 }
 
 Material::~Material() {
@@ -113,5 +121,20 @@ float Material::getOpacity() const {
   return opacity;
 }
 
+float Material::getReflectionSpread() const {
+  return reflect_spread;
+}
+
+int Material::getReflectionSamples() const {
+  return reflect_samples;
+}
+
+float Material::getRefractionSpread() const {
+  return refract_spread;
+}
+
+int Material::getRefractionSamples() const {
+  return refract_samples;
+}
 
 }
