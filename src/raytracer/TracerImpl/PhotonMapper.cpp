@@ -136,7 +136,7 @@ vec3 PhotonMapper::getLuminance(Ray incoming_ray,
   for(size_t i=0; i<photons.size(); ++i){
     Photon* p = photons[i];
 
-    vec3 b = brdf(p->direction, incoming_ray.getDirection(), idata.normal, material);
+    vec3 b = brdf(-p->direction, incoming_ray.getDirection(), idata.normal, material);
 
     float k;
     //k = 1/(M_PI*r*r); //simple filter kernel
@@ -159,7 +159,7 @@ vec3 PhotonMapper::getLuminance(Ray incoming_ray,
     //l += a;
   }
   l /= photonmap->getTotalPhotons();
-  l = 128.0f * l; //magic scaling
+  l *= 128.0f; //magic scaling
 
   return l;
 }
