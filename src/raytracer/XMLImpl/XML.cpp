@@ -16,6 +16,7 @@ using namespace glm;
 #include "../scene/LightImpl/OmniLight.h"
 #include "../scene/LightImpl/AreaLight.h"
 #include <exception>
+#include <iostream>
 using namespace std;
 
 namespace raytracer {
@@ -85,7 +86,11 @@ Scene* XML::importScene(const char* fileName) {
         settings->threads = threading.attribute("threads").as_int();
       }
       if(tonemapping) {
-        settings->key = tonemapping.attribute("key").as_float();
+        if(!tonemapping.attribute("key").empty())
+          settings->key = tonemapping.attribute("key").as_float();
+
+        if(!tonemapping.attribute("white").empty())
+          settings->white = tonemapping.attribute("white").as_float();
       }
       if(tree){
         settings->tree = tree.attribute("version").as_int();

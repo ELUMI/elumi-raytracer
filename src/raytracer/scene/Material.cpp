@@ -27,11 +27,14 @@ Material::Material() {
   Material::bump_map            = -1;
   Material::reflect_spread      = 0;
   Material::refract_spread      = 0;
+  Material::specular_map = -1;
+  Material::transparency_map = -1;
 }
 
 Material::Material(std::string name,glm::vec3 ambient,glm::vec3 diffuse,glm::vec3 specular,
     glm::vec3 emissive,glm::vec3 _opacity,float shininess,float sharpness,
     float reflection ,float index_of_refraction, int diffuse_map, int bump_map,
+    int norm_map, int specular_map, int d_map,
     float reflect_spread, int reflect_samples,
     float refract_spread, int refract_samples){
 
@@ -46,8 +49,11 @@ Material::Material(std::string name,glm::vec3 ambient,glm::vec3 diffuse,glm::vec
   Material::index_of_refraction = index_of_refraction;
   Material::reflection          = reflection;
   //Material::alpha_texture_map = alpha_texture_map;
-  Material::diffuse_map         = diffuse_map;
-  Material::bump_map            = bump_map;
+  Material::diffuse_map = diffuse_map;
+  Material::bump_map = bump_map;
+  Material::normal_map = norm_map;
+  Material::specular_map = specular_map;
+  Material::transparency_map = d_map;
   Material::reflect_spread      = reflect_spread;
   Material::reflect_samples     = reflect_samples;
   Material::refract_spread      = refract_spread;
@@ -61,8 +67,21 @@ Material::~Material() {
 int Material::getDiffuseMap() {
   return diffuse_map;
 }
+
+int Material::getSpecularMap() {
+  return specular_map;
+}
+
 int Material::getBumpMap() {
   return bump_map;
+}
+
+int Material::getTransparencyMap() {
+  return transparency_map;
+}
+
+int Material::getNormalMap() {
+  return normal_map;
 }
 
 glm::vec3 Material::getAmbient() const {
