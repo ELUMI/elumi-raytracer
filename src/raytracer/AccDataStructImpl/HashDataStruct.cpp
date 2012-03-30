@@ -104,7 +104,7 @@ IAccDataStruct::IntersectionData HashDataStruct::findClosestIntersection(Ray ray
     if(goodlist.size()){
       ads.setData(goodlist.data(),goodlist.size(),NULL);
       IAccDataStruct::IntersectionData idata = ads.findClosestIntersection(Ray(point,dir));
-      if(idata.material != IAccDataStruct::IntersectionData::NOT_FOUND){
+      if(idata.missed()){
         return idata;
       }
     }
@@ -129,7 +129,7 @@ IAccDataStruct::IntersectionData HashDataStruct::findClosestIntersection(Ray ray
   }
 
   //not found
-  return IntersectionData(IntersectionData::NOT_FOUND, vec3(), vec3(), vec2(),vec3(),vec3());
+  return IntersectionData::miss();
 }
 
 

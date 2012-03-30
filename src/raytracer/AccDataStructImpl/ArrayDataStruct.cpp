@@ -67,7 +67,7 @@ ArrayDataStruct::findClosestIntersection(Ray ray) {
   }
 
   if(closest_t == numeric_limits<float>::infinity( )) {
-    return IntersectionData(IntersectionData::NOT_FOUND, vec3(), vec3(), vec2(),vec3(),vec3());
+    return IntersectionData::miss();
   }
 
   vec3 v1v0 = *(closest_tri->getVertices()[1]) - *(closest_tri->getVertices()[0]);

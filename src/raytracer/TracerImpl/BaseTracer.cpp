@@ -80,7 +80,7 @@ void BaseTracer::first_bounce() {
 
       //see comment in deferred.frag
       unsigned int material = ceil(normals[i].w - 0.5); //alpha channel is noisy, but this works!
-      assert(material == IAccDataStruct::IntersectionData::NOT_FOUND || material < scene->getMaterialVector().size());
+      assert(material == IAccDataStruct::IntersectionData::NOT_FOUND_INTERNAL || material < scene->getMaterialVector().size());
 
       first_intersections[i] = IAccDataStruct::IntersectionData(material,
           vec3(pos) / pos.w, vec3(normals[i]), texcoords[i],vec3(),vec3());
@@ -218,7 +218,7 @@ int BaseTracer::spawnRays() {
 vec4 BaseTracer::trace(Ray ray, IAccDataStruct::IntersectionData idata) {
   vec4 color;
 
-  if (idata.material == IAccDataStruct::IntersectionData::NOT_FOUND) {
+  if (idata.missed()) {
     // No intersection
     color = settings->background_color;
   } else {

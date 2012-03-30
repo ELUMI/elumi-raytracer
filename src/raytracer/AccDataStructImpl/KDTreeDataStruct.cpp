@@ -157,7 +157,7 @@ IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(
             v1,v2);
     }
   }
-  return IntersectionData(IntersectionData::NOT_FOUND, vec3(), vec3(), vec2(),vec3(),vec3());
+  return IntersectionData::miss();
 }
 
 IAccDataStruct::IntersectionData
@@ -166,7 +166,7 @@ KDTreeDataStruct::findClosestIntersection(Ray ray) {
   if(aabb->intersect(ray,min,max)){ //TODO: Bugg när kameran ligger på linjen för första splitting planet
     return findClosestIntersectionStack(&ray,min,max);
   }
-  return IntersectionData(IntersectionData::NOT_FOUND, vec3(), vec3(), vec2(),vec3(),vec3());
+  return IntersectionData::miss();
 }
 
 void KDTreeDataStruct::build(){

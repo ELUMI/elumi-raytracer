@@ -158,7 +158,7 @@ inline vec3 StandardTracer::reflection_refraction(float attenuation,
 
 vec4 StandardTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata, float attenuation, unsigned short  depth)
 {
-  if(idata.material == IAccDataStruct::IntersectionData::NOT_FOUND){
+  if(idata.missed()){
     // No intersection
     return settings->background_color;
   }

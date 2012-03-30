@@ -39,7 +39,7 @@ bool PhotonMapper::bounce(Photon& p) {
   IAccDataStruct::IntersectionData idata = datastruct->findClosestIntersection(ray);
   p.position = idata.interPoint;
   p.normal = idata.normal;
-  if(idata.material == idata.NOT_FOUND){
+  if(idata.missed()){
     return false;
   }
 
@@ -121,12 +121,10 @@ vector<Photon*> PhotonMapper::gather(float& r, vec3 point){
   return photonmap->gatherFromR(point, r);
 }
 
-float inline brdf(vec3 point, vec3 idir, vec3 odir){
-  return 1.0;
-}
-
 vec3 PhotonMapper::getLuminance(Ray incoming_ray,
     IAccDataStruct::IntersectionData idata) {
+  Material *material = scene->getMaterialVector()[idata.material];
+
   vec3 l = vec3(0);
 
   size_t g; //number of photons
@@ -137,7 +135,8 @@ vec3 PhotonMapper::getLuminance(Ray incoming_ray,
     return vec3(0);
   for(size_t i=0; i<photons.size(); ++i){
     Photon* p = photons[i];
-    float b = 1.0f;//brdf(idata.interPoint, p->direction, incoming_ray.getDirection());
+
+    vec3 b = brdf(p->direction, incoming_ray.getDirection(), idata.normal, material);
 
     float k;
     //k = 1/(M_PI*r*r); //simple filter kernel
@@ -169,19 +168,21 @@ vec3 PhotonMapper::getLuminance(Ray incoming_ray,
 vec4 PhotonMapper::shade(Ray incoming_ray,
     IAccDataStruct::IntersectionData idata,
     float attenuation, unsigned short depth) {
-  if (idata.material == IAccDataStruct::IntersectionData::NOT_FOUND) {
+  if (idata.missed()) {
     // No intersection
     return settings->background_color;
   }
 
+  const size_t final_gather_samples = 0;
   vec3 l=vec3(0);
-  if(true) { //final gather
+  if(final_gather_samples != 0) { //final gather
     l=vec3(0);
-    const size_t final_gather_samples = 1024;
     for(size_t i=0; i<final_gather_samples; ++i){
       Ray ray = Ray(idata.interPoint, get_random_hemisphere(idata.normal));
       IAccDataStruct::IntersectionData idata2 = datastruct->findClosestIntersection(ray);
-      l += getLuminance(ray, idata2);
+      if(!idata2.missed()) {
+        l += getLuminance(ray, idata2);
+      }
     }
 
     l /= final_gather_samples;

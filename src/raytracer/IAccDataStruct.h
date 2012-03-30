@@ -41,7 +41,10 @@ public:
     vec3 normal;
     vec2 texcoord;
     vec3 e1,e2;
-    const static unsigned int NOT_FOUND = -1;
+    const static unsigned int NOT_FOUND_INTERNAL = -1;
+
+    bool missed() { return material == NOT_FOUND_INTERNAL; }
+    static IntersectionData miss() { return IntersectionData(NOT_FOUND_INTERNAL, vec3(), vec3(), vec2(),vec3(),vec3()); }
   };
 
 
