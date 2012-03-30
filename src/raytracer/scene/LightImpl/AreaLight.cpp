@@ -63,15 +63,6 @@ void AreaLight::setDistanceFalloff(FalloffType falloff_type) {
   }
 }
 
-vec3 AreaLight::getPosition() {
-  return position;
-}
-
-float AreaLight::getIntensity() {
-  //TODO
-  return intensity;
-}
-
 float AreaLight::getFalloff(float distance) {
   //TODO
   return 1.0f;
@@ -101,9 +92,6 @@ void AreaLight::draw() {
   }
 }
 
-vec3 AreaLight::getColor() const {
-  return color;
-}
 
 void AreaLight::setPosition(vec3 position) {
   this->position = position;
@@ -133,16 +121,23 @@ void AreaLight::getRays(Ray* rays, size_t n) {
 }
 
 
-float AreaLight::calcLight(IAccDataStruct* datastruct, vec3 point, vec3 HEJ) {
+float AreaLight::calcLight(IAccDataStruct* datastruct, vec3 point, vec3 NOREPLY, int thread_id) {
   float in_light = 0.0f;
 
   BaseLight* light = light_sources;
   for (unsigned int i=0; i<samples; ++i,light++) {
     vec3 offset = gen_random_float(0.0f, 1.0f) * delta1 + gen_random_float(0.0f, 1.0f) * delta2;
-    in_light += light->calcLight(datastruct,point,offset) / samples;
+    in_light += light->calcLight(datastruct,point,offset, thread_id) / samples;
   }
 
   return in_light;
+}
+
+void AreaLight::initCaches(size_t nr_of_threads) {
+  BaseLight* light = light_sources;
+  for (unsigned int i=0; i<samples; ++i,light++) {
+    light->initCaches(nr_of_threads);
+  }
 }
 
 }

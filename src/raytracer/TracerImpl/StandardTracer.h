@@ -20,9 +20,9 @@ public:
   virtual void traceImage(float* color_buffer);
 
 protected:
-  virtual vec4 trace(Ray ray, IAccDataStruct::IntersectionData idata);
-  virtual vec4 tracePrim(Ray ray, float attenuation, unsigned short depth);
-  virtual vec4 shade(Ray ray, IAccDataStruct::IntersectionData idata, float attenuation, unsigned short depth);
+  virtual vec4 trace(Ray ray, IAccDataStruct::IntersectionData idata, int thread_id=-1);
+  virtual vec4 tracePrim(Ray ray, float attenuation, unsigned short depth, int thread_id=-1);
+  virtual vec4 shade(Ray ray, IAccDataStruct::IntersectionData idata, float attenuation, unsigned short depth, int thread_id=-1);
   virtual void initTracing();
 
 

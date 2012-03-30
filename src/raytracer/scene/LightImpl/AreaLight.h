@@ -19,10 +19,7 @@ public:
   AreaLight(vec3 position, vec3 axis1, vec3 axis2, unsigned int sample1, unsigned int sample2);
   virtual ~AreaLight();
 
-  vec3 getPosition();
-  float getIntensity();
   float getFalloff(float distance);
-  vec3 getColor() const;
   FalloffType getFalloffType() const;
 
   void setPosition(vec3 position);
@@ -34,7 +31,9 @@ public:
 
   void draw();
 
-  float calcLight(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f));
+  void initCaches(size_t nr_of_threads);
+
+  float calcLight(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f), int thread_id=-1);
 
 private:
   vec3 axis1, axis2;

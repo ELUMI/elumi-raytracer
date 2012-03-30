@@ -82,7 +82,7 @@ void BaseTracer::first_bounce() {
       unsigned int material = ceil(normals[i].w - 0.5); //alpha channel is noisy, but this works!
       assert(material == IAccDataStruct::IntersectionData::NOT_FOUND || material < scene->getMaterialVector().size());
 
-      first_intersections[i] = IAccDataStruct::IntersectionData(material,
+      first_intersections[i] = IAccDataStruct::IntersectionData(NULL, material,
           vec3(pos) / pos.w, vec3(normals[i]), texcoords[i],vec3(),vec3());
 
     }
@@ -108,11 +108,12 @@ void BaseTracer::initTracing()
       << "\" z=\"" << scene->getCamera().getUpVector().z << "\"/>\n";
 }
 
-void BaseTracer::tracePixel(Ray ray, size_t i,
-    IAccDataStruct::IntersectionData intersection_data){
+void BaseTracer::tracePixel(Ray ray, size_t i
+    , IAccDataStruct::IntersectionData intersection_data
+    , int thread_id){
 
   posbuff[i] = intersection_data.interPoint;
-  vec4 c = trace(ray, intersection_data);
+  vec4 c = trace(ray, intersection_data, thread_id);
   buffer[i * 4] = c.r;
   buffer[i * 4 + 1] = c.g;
   buffer[i * 4 + 2] = c.b;
@@ -141,6 +142,13 @@ void BaseTracer::traceImage(float *color_buffer)
     next_batch = 0;
     // Launch threads
     int nr_threads = boost::thread::hardware_concurrency();
+
+    // TODO detta ska även göras i first bounce
+    // Init shadow caches
+    for(size_t i=0; i<lights->size(); ++i) {
+      lights->at(i)->initCaches(nr_threads);
+    }
+
     boost::thread threads[nr_threads];
     for(int i = 0;i < nr_threads;++i){
       threads[i] = boost::thread(boost::bind(&BaseTracer::traceImageThread, this, i));
@@ -170,7 +178,7 @@ void BaseTracer::traceImageThread(int id)
       }
       Ray ray = rays[batch[i]];
       IAccDataStruct::IntersectionData intersection_data = scene->getAccDataStruct()->findClosestIntersection(ray);
-      tracePixel(ray, batch[i], intersection_data);
+      tracePixel(ray, batch[i], intersection_data, id);
     }
 
     pattern_mutex.lock();
@@ -215,7 +223,7 @@ int BaseTracer::spawnRays() {
   return number_of_rays;
 }
 
-vec4 BaseTracer::trace(Ray ray, IAccDataStruct::IntersectionData idata) {
+vec4 BaseTracer::trace(Ray ray, IAccDataStruct::IntersectionData idata, int thread_id) {
   vec4 color;
 
   if (idata.material == IAccDataStruct::IntersectionData::NOT_FOUND) {
@@ -223,13 +231,13 @@ vec4 BaseTracer::trace(Ray ray, IAccDataStruct::IntersectionData idata) {
     color = settings->background_color;
   } else {
     // Intersection!
-    color = shade(ray, idata);
+    color = shade(ray, idata, thread_id);
   }
 
   return color;
 }
 
-vec4 BaseTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata) {
+vec4 BaseTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata, int thread_id) {
   float light = 0;
   for(size_t i = 0; i < lights->size(); ++i){
     //if(!lights->at(i)->isBlocked(datastruct, idata.interPoint)){

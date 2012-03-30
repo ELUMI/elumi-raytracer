@@ -67,7 +67,7 @@ ArrayDataStruct::findClosestIntersection(Ray ray, int thread_id) {
   }
 
   if(closest_t == numeric_limits<float>::infinity( )) {
-    return IntersectionData(IntersectionData::NOT_FOUND, vec3(), vec3(), vec2(),vec3(),vec3());
+    return IntersectionData(NULL, IntersectionData::NOT_FOUND, vec3(), vec3(), vec2(),vec3(),vec3());
   }
 
   vec3 v1v0 = *(closest_tri->getVertices()[1]) - *(closest_tri->getVertices()[0]);
@@ -100,7 +100,7 @@ ArrayDataStruct::findClosestIntersection(Ray ray, int thread_id) {
     v2 = v2v0;
   }
 
-  return IntersectionData(closest_tri->getMaterial(), closest_pos, glm::normalize(inter_normal), vec2(inter_tex),
+  return IntersectionData(closest_tri, closest_tri->getMaterial(), closest_pos, glm::normalize(inter_normal), vec2(inter_tex),
       v1,v2);
 }
 

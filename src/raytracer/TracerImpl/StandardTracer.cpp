@@ -32,13 +32,13 @@ void StandardTracer::traceImage(float* color_buffer) {
   BaseTracer::traceImage(color_buffer);
 }
 
-vec4 StandardTracer::trace(Ray ray, IAccDataStruct::IntersectionData idata) {
-  return shade(ray, idata, 1.0f, 0);
+vec4 StandardTracer::trace(Ray ray, IAccDataStruct::IntersectionData idata, int thread_id) {
+  return shade(ray, idata, 1.0f, 0, thread_id);
 }
 
-vec4 StandardTracer::tracePrim(Ray ray, float attenuation, unsigned short depth) {
+vec4 StandardTracer::tracePrim(Ray ray, float attenuation, unsigned short depth, int thread_id) {
   IAccDataStruct::IntersectionData idata = datastruct->findClosestIntersection(ray);
-  return shade(ray, idata, attenuation, depth);
+  return shade(ray, idata, attenuation, depth, thread_id);
 }
 
 inline void StandardTracer::bumpMap(vec3 & normal, Material* material,
@@ -54,7 +54,7 @@ inline void StandardTracer::bumpMap(vec3 & normal, Material* material,
   }
 }
 
-vec4 StandardTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata, float attenuation, unsigned short  depth)
+vec4 StandardTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata, float attenuation, unsigned short  depth, int thread_id)
 {
   if(idata.material == IAccDataStruct::IntersectionData::NOT_FOUND){
     // No intersection
@@ -111,7 +111,7 @@ vec4 StandardTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData id
       //     if (light_idata.material != IAccDataStruct::IntersectionData::NOT_FOUND
       //         && (distance_between_light_and_first_hit + 0.0001f) < distance_to_light) {
       //if(light->isBlocked(datastruct, idata.interPoint)) {
-      float in_light = light->calcLight(datastruct, idata.interPoint);
+      float in_light = light->calcLight(datastruct, idata.interPoint,vec3(0,0,0), thread_id);
       if (in_light > 0.0f) {
         // NOT ENTIRELY IN SHADOW! SHADE!
         Ray light_ray = Ray::generateRay(light->getPosition(), idata.interPoint);

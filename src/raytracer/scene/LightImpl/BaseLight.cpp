@@ -92,14 +92,29 @@ void BaseLight::draw() {
   gluDeleteQuadric(quadobj);
 }
 
-float BaseLight::distanceToBlocker(IAccDataStruct* datastruct, vec3 point, vec3 offset){
+float BaseLight::distanceToBlocker(IAccDataStruct* datastruct, vec3 point, vec3 offset, int thread_id){
   Ray light_ray = Ray::generateRay(position+offset, point);
+
+
+  // Shadow cache
+  if(thread_id!=-1 && cache[thread_id] != NULL) {
+    if( IAccDataStruct::instersects(&light_ray, cache[thread_id]) )
+      return 1.0f;
+  }
+
   IAccDataStruct::IntersectionData light_idata = datastruct->findClosestIntersection(light_ray);
+
+
 
   float distance_to_light = length(point - (position+offset));
   float distance_between_light_and_first_hit = length(light_idata.interPoint - (position+offset));
+  float dtb = distance_to_light - distance_between_light_and_first_hit;
 
-  return distance_to_light - distance_between_light_and_first_hit;
+  // Shadow cache
+  if(thread_id!=-1 && dtb > EPSILON)
+    cache[thread_id] = light_idata.triangle;
+
+  return dtb;
 }
 
 void BaseLight::getRays(Ray* rays, size_t n){
@@ -108,8 +123,8 @@ void BaseLight::getRays(Ray* rays, size_t n){
   }
 }
 
-float BaseLight::calcLight(IAccDataStruct* datastruct, vec3 point, vec3 offset) {
-  if (isBlocked(datastruct, point, offset))
+float BaseLight::calcLight(IAccDataStruct* datastruct, vec3 point, vec3 offset, int thread_id) {
+  if (isBlocked(datastruct, point, offset, thread_id))
     return 0.0f;
   return getIntensity() * getFalloff( length(point - (position)) );
 }

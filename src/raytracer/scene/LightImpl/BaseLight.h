@@ -35,9 +35,9 @@ public:
   virtual void getRays(Ray* rays, size_t n);
 
   virtual void draw();
-  virtual float calcLight(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f));
+  virtual float calcLight(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f), int thread_id=-1);
 
-  void initCaches(size_t nr_of_threads);
+  virtual void initCaches(size_t nr_of_threads);
 
 protected:
   vec3 position;
@@ -45,10 +45,12 @@ protected:
   vec3 color;
   FalloffType falloff_type;
 
+  static const float EPSILON = 0.0001f;
+
 private:
-  float distanceToBlocker(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f));
-  bool isBlocked(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f)) {
-    return distanceToBlocker(datastruct, point, offset) > 0.0001f;
+  float distanceToBlocker(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f), int thread_id=-1);
+  bool isBlocked(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f), int thread_id=-1) {
+    return distanceToBlocker(datastruct, point, offset, thread_id) > EPSILON;
   }
 
   size_t nr_of_caches;

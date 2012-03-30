@@ -123,7 +123,7 @@ IAccDataStruct::IntersectionData HashDataStruct::findClosestIntersection(Ray ray
   }
 
   //not found
-  return IntersectionData(IntersectionData::NOT_FOUND, vec3(), vec3(), vec2(),vec3(),vec3());
+  return IntersectionData(NULL, IntersectionData::NOT_FOUND, vec3(), vec3(), vec2(),vec3(),vec3());
 }
 
 

@@ -39,8 +39,8 @@ public:
 
   vec3* posbuff;
 protected:
-  virtual vec4 trace(Ray ray, IAccDataStruct::IntersectionData idata);
-  virtual vec4 shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata);
+  virtual vec4 trace(Ray ray, IAccDataStruct::IntersectionData idata, int thread_id=-1);
+  virtual vec4 shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata, int thread_id=-1);
 
   Scene* scene;
   Settings* settings;
@@ -59,7 +59,7 @@ protected:
 
 private:
   void traceImageThread(int id);
-  void tracePixel(Ray ray, size_t i, IAccDataStruct::IntersectionData intersection_data);
+  void tracePixel(Ray ray, size_t i, IAccDataStruct::IntersectionData intersection_data, int thread_id=-1);
 
   IRenderPattern* pattern;
   int nr_batches;

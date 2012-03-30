@@ -6,15 +6,10 @@ namespace po = boost::program_options;
 #include <boost/algorithm/string.hpp>
 
 #include "io/ExporterImpl/PNGExporter.h"
-#include "io/ImporterImpl/OBJImporter.h"
 #include "raytracer/Renderer.h"
-#include "raytracer/TracerImpl/BaseTracer.h"
-#include "raytracer/TracerImpl/PhotonMapper.h"
-#include "raytracer/scene/ILight.h"
-#include "raytracer/scene/LightImpl/BaseLight.h"
-#include "raytracer/scene/LightImpl/AreaLight.h"
 #include "raytracer/utilities/glutil.h"
 #include "raytracer/utilities/Random.h"
+#include "raytracer/TracerImpl/PhotonMapper.h"
 
 #include "raytracer/IXML.h"
 #include "raytracer/XMLImpl/XML.h"
@@ -201,7 +196,6 @@ int main(int argc, char* argv[]) {
 
   /* EXPORTER
    ***************** */
-  cout << "APA: " << myRenderer->renderComplete();
   if (myRenderer->renderComplete() == 0.0f) {
     raytracer::IExporter* exporter = new raytracer::PNGExporter;
     exporter->exportImage(outputFileName.c_str(), settings->width, settings->height, buffer);
