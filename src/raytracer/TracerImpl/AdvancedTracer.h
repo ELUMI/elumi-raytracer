@@ -16,7 +16,10 @@ class AdvancedTracer: public PhotonMapper {
 public:
   AdvancedTracer(Scene* scene);
   virtual ~AdvancedTracer();
-private:
+
+protected:
+  virtual void tracePhoton(Photon p);
+  vec4 shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata, float attenuation, unsigned short  depth);
 };
 
 }

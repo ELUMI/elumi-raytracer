@@ -8,6 +8,8 @@
 #include "Renderer.h"
 #include "TracerImpl/DebugTracer.h"
 #include "TracerImpl/StandardTracer.h"
+#include "TracerImpl/PhotonMapper.h"
+#include "TracerImpl/AdvancedTracer.h"
 
 #include "XMLImpl/XML.h"
 
@@ -16,7 +18,6 @@
 #include "PostEffectImpl/ClampOperator.h"
 #include "PostEffectImpl/GammaEncode.h"
 
-#include "TracerImpl/PhotonMapper.h"
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
 
@@ -69,6 +70,10 @@ void Renderer::init() {
   case 3:
     m_tracer = new PhotonMapper(m_scene);
     cout << "Using photon mapper tracer\n";
+    break;
+  case 4:
+    m_tracer = new AdvancedTracer(m_scene);
+    cout << "Using advanced tracer\n";
     break;
   }
   buffer_length = m_scene->getSettings()->width * m_scene->getSettings()->height * 4;

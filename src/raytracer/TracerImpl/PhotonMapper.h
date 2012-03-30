@@ -23,11 +23,14 @@ protected:
   Photon* photons;
   void getPhotons();
   void storeInMap(Photon p);
-  bool bounce(Photon& p);
+  bool bounce(Photon& p, bool store=true);
+  virtual void tracePhoton(Photon p);
+
   vector<Photon*> gather(float& r, vec3 point);
   virtual vec4 shade(Ray ray, IAccDataStruct::IntersectionData idata, float attenuation, unsigned short depth);
   virtual void initTracing();
   vec3 getLuminance(Ray incoming_ray, IAccDataStruct::IntersectionData idata);
+  virtual vec3 getAmbient(Ray incoming_ray, IAccDataStruct::IntersectionData idata);
 
   float radius;
 };

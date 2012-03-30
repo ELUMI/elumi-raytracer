@@ -32,7 +32,7 @@ void PhotonMapper::storeInMap(Photon p){
   photonmap->addPhoton(p);
 }
 
-bool PhotonMapper::bounce(Photon& p) {
+bool PhotonMapper::bounce(Photon& p, bool store) {
   Ray ray(p.position, -p.direction);
   //cout << p.direction.x << " " << p.direction.y << " " << p.direction.z << "\n";
 
@@ -43,9 +43,9 @@ bool PhotonMapper::bounce(Photon& p) {
     return false;
   }
 
-  storeInMap(p);
-
-  //return false;
+  if(store) {
+    storeInMap(p);
+  }
 
   Material* mat = scene->getMaterialVector()[idata.material];
 
@@ -81,37 +81,42 @@ bool PhotonMapper::bounce(Photon& p) {
   return true;
 }
 
-void PhotonMapper::getPhotons() {
-  size_t n = 1024*32; //NUMBER_OF_PHOTONS;
-  size_t max_recursion_depth = settings->max_recursion_depth;
+void PhotonMapper::tracePhoton(Photon p)
+{
+  for(size_t k = 0;k < settings->max_recursion_depth;++k){
+    if(abort)
+      break;
+
+    if(!bounce(p))
+      break;
+  }
+}
+
+void PhotonMapper::getPhotons()
+{
+  size_t n = 1024 * 32; //NUMBER_OF_PHOTONS;
   float totalpower = 0;
-  for(size_t i=0; i<lights->size(); ++i){
+  for(size_t i = 0;i < lights->size();++i){
     totalpower += lights->at(i)->getPower();
   }
-
-  for(size_t i=0; i<lights->size(); ++i){
-    ILight* light = lights->at(i);
+  for(size_t i = 0;i < lights->size();++i){
+    ILight *light = lights->at(i);
     float npe = n * light->getPower() / totalpower;
     size_t m = size_t(npe); //photons per light
-    Ray* rays = new Ray[m];
+    Ray *rays = new Ray[m];
     light->getRays(rays, m);
+    vec3 power = (1 / (light->getPower() / totalpower)) * light->getColor() * light->getIntensity();
+    for(size_t j = 0;j < m;++j){
+      if(abort)
+        return;
 
-    vec3 power = (1/(light->getPower() / totalpower)) * light->getColor() * light->getIntensity();
-
-    for(size_t j=0; j<m; ++j){
       Ray ray = rays[j];
-
       Photon p;
       p.power = power;
       p.direction = -ray.getDirection();
       p.position = ray.getPosition();
 
-      for(size_t k=0; k<max_recursion_depth; ++k) {
-        if(abort)
-          return;
-        if(!bounce(p))
-          break;
-      }
+      tracePhoton(p);
     }
   }
 }
@@ -144,7 +149,7 @@ vec3 PhotonMapper::getLuminance(Ray incoming_ray,
     { //advanced filter kernel (ISPM paper)
       float dist = length(idata.interPoint-p->position);
       float rz = 0.01 * r;
-      float t = (dist/r)*(1-dot((idata.interPoint-p->position) / dist, p->normal)*(r+rz)/rz);
+      float t = (dist/r)*(1-dot((idata.interPoint-p->position) / dist, idata.normal)*(r+rz)/rz);
       float scale = 0.2;
       float sigma = r*scale;
       float a = 1/(sqrt(2*M_PI)*sigma);
@@ -165,22 +170,17 @@ vec3 PhotonMapper::getLuminance(Ray incoming_ray,
 }
 
 
-vec4 PhotonMapper::shade(Ray incoming_ray,
-    IAccDataStruct::IntersectionData idata,
-    float attenuation, unsigned short depth) {
-  if (idata.missed()) {
-    // No intersection
-    return settings->background_color;
-  }
-
+vec3 PhotonMapper::getAmbient(Ray incoming_ray,
+    IAccDataStruct::IntersectionData idata) {
   const size_t final_gather_samples = 0;
-  vec3 l=vec3(0);
-  if(final_gather_samples != 0) { //final gather
-    l=vec3(0);
-    for(size_t i=0; i<final_gather_samples; ++i){
+  vec3 l = vec3(0);
+  if(final_gather_samples != 0){
+    //final gather
+    l = vec3(0);
+    for(size_t i = 0;i < final_gather_samples;++i){
       Ray ray = Ray(idata.interPoint, get_random_hemisphere(idata.normal));
       IAccDataStruct::IntersectionData idata2 = datastruct->findClosestIntersection(ray);
-      if(!idata2.missed()) {
+      if(!idata2.missed()){
         l += getLuminance(ray, idata2);
       }
     }
@@ -189,7 +189,18 @@ vec4 PhotonMapper::shade(Ray incoming_ray,
   } else {
     l = getLuminance(incoming_ray, idata);
   }
+  return l;
+}
 
+vec4 PhotonMapper::shade(Ray incoming_ray,
+    IAccDataStruct::IntersectionData idata,
+    float attenuation, unsigned short  depth) {
+  if(idata.missed()){
+    // No intersection
+    return settings->background_color;
+  }
+
+  vec3 l = getAmbient(incoming_ray, idata);
   vec3 color = scene->getMaterialVector()[idata.material]->getDiffuse();
   return vec4(l*color,1);
 }
