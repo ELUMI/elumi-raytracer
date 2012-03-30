@@ -96,12 +96,12 @@ inline void StandardTracer::bumpMap(vec3 & normal, Material* material,
     vec2 t4 = tex_coords;
     t4.y = t4.y - c.y;
 
-    vec3 t0 = bump_map->getColorAt(tex_coords);
+    vec3 t0 = vec3(0,0,length(bump_map->getColorAt(tex_coords)));
 
-    vec3 v1 = t0 - bump_map->getColorAt(t1);
-    vec3 v2 = t0 - bump_map->getColorAt(t2);
-    vec3 v3 = t0 - bump_map->getColorAt(t3);
-    vec3 v4 = t0 - bump_map->getColorAt(t4);
+    vec3 v1 = t0 - vec3(0,0,length(bump_map->getColorAt(t1)));
+    vec3 v2 = t0 - vec3(length(bump_map->getColorAt(t2)));
+    vec3 v3 = t0 - vec3(length(bump_map->getColorAt(t3)));
+    vec3 v4 = t0 - vec3(length(bump_map->getColorAt(t4)));
 
     perturbed_normal = v1+v2+v3+v4;
     perturbed_normal = normalize(faceforward(perturbed_normal,incoming_ray.getDirection(),normal));
