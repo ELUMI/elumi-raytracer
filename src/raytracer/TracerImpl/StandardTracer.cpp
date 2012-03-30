@@ -125,7 +125,7 @@ vec4 StandardTracer::shade(Ray incoming_ray
       float height = glm::length(bump_map->getColorAt(tex_coords));
       vec3 p = -height*scene->getCamera().getPosition()-idata.interPoint;
       p = normalize(p);
-      p = p*0.25f;
+      p = p*0.2f;
 
       tex_coords.x += p.x;
       tex_coords.y += p.z;
