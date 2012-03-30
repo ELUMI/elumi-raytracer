@@ -85,6 +85,7 @@ void OBJImporter::loadFile(const char* filename){
 		int diff_map_index = -1, bump_map = -1, ks_map = -1, norm_map = -1,
 		    d_map = -1;
 
+
 		//Texture
     if(!_diffuse_map.empty()) {
 
@@ -102,6 +103,7 @@ void OBJImporter::loadFile(const char* filename){
 
         textures.push_back(new Texture(w,h,ilGetData()));
         diff_map_index = textures.size()-1;
+
         //Mip maps
         /*if(iluBuildMipmaps()) {
           for(int i = 0;ilActiveMipmap(i);i++) {

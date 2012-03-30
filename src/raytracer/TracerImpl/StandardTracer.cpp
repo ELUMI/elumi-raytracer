@@ -24,6 +24,9 @@ StandardTracer::~StandardTracer() {
 
 }
 
+void StandardTracer::initTracing(){
+  BaseTracer::initTracing();
+}
 
 void StandardTracer::traceImage(float* color_buffer) {
   BaseTracer::traceImage(color_buffer);
@@ -38,81 +41,19 @@ vec4 StandardTracer::tracePrim(Ray ray, float attenuation, unsigned short depth)
   return shade(ray, idata, attenuation, depth);
 }
 
-vec4 StandardTracer::shade(Ray incoming_ray
-    , IAccDataStruct::IntersectionData idata
-    , float attenuation
-    , unsigned short depth) {
-
-  if (idata.material == IAccDataStruct::IntersectionData::NOT_FOUND) {
-    // No intersection
-
-    vec3 light_color = vec3(0,0,0);
-
-    for(unsigned int i=0; i<lights->size(); ++i) {
-      ILight* light  = lights->at(i);
-      light_color += light->getColor();
-      Ray light_ray = Ray::generateRay(light->getPosition(), scene->getCamera().getPosition());
-      vec3 l = normalize(light_ray.getDirection());
-      vec3 r = normalize(incoming_ray.getDirection());
-      float li = dot(l,r);
-      light_color *= li*li;
-      //vec3 lc = light->getPosition()-scene->getCamera().getPosition();
-      //light_color *= light->getIntensity(lc.length());
-    }
-
-    return settings->background_color + vec4(light_color.r,light_color.g,light_color.b,1.0f);
-  }
-  assert(idata.material < scene->getMaterialVector().size());
-
-  // Intersection!
-
-  vec3 ambient    = vec3(0,0,0);
-  vec3 diffuse    = vec3(0,0,0);
-  vec3 specular   = vec3(0,0,0);
-  vec4 refl_color = vec4(0,0,0,0);
-  vec4 refr_color = vec4(0,0,0,0);
-  Material* material = scene->getMaterialVector()[idata.material];
-
-  vec3 texture_color = vec3(0,0,0);
-  vec3 specularity = vec3(0,0,0);
+inline void StandardTracer::bumpMap(vec3 & normal, Material* material,
+    IAccDataStruct::IntersectionData& idata, Ray incoming_ray, vec2 &tex_coords, vec3 &texture_color){
+  /**** Bump mapping ****/
+//  if(material->getBumpMap() != -1){
+//    vec3 bump_normal = vec3(0, 0, 0);
+//    Texture *bumpmap = scene->getTextureAt(material->getBumpMap());
+//    vec2 coords = bumpmap->getUVCoordinates(idata.interPoint, idata.e1, idata.e2);
+//    bump_normal = bumpmap->getColorAt(coords);
+//    bump_normal = normalize(faceforward(bump_normal, incoming_ray.getDirection(), normal));
+//    normal = normalize(normal + bump_normal);
+//  }
 
   vec3 perturbed_normal = vec3(0,0,0);
-  vec3 normal = idata.normal;
-  vec2 tex_coords = vec2(0,0);
-  vec3 light_color = vec3(0,0,0);
-
-  if(material->getDiffuseMap() != -1) {
-
-    Texture* texture = scene->getTextureAt(material->getDiffuseMap());
-    int mipmap_levels = texture->getMipmapLevels();
-
-    if(true) {
-      //tex_coords  = texture->getUVCoordinates(idata.interPoint,idata.e1,idata.e2);
-      tex_coords = texture->getUVCoordinates(idata.interPoint/4.0f,YAXIS);
-    } else { //We have texture coordinates
-      tex_coords = idata.texcoord;
-    }
-
-    if(false) {
-
-      float d = 0;
-
-      if(d > 0) {
-        Texture* mmp_bottom = scene->getTextureAt(material->getDiffuseMap()+(int)d);
-        Texture* mmp_top = scene->getTextureAt(material->getDiffuseMap()+(int)d+1);
-
-        texture_color = ( (1.0f-d-floor(d))*mmp_bottom->getColorAt(tex_coords) + d-floor(d)*mmp_top->getInterpolatedColor(tex_coords) );
-      } else {
-        texture_color = texture->getColorAt(tex_coords);
-      }
-
-      //float dv = 1.0f/(float)mipmap_levels;
-
-    } else {
-      texture_color = texture->getColorAt(tex_coords);
-    }
-
-  }
 
   //Normal mappping
   if(material->getNormalMap() != -1) {
@@ -165,6 +106,79 @@ vec4 StandardTracer::shade(Ray incoming_ray
 
     normal = normalize(normal+perturbed_normal);
   }
+}
+
+vec4 StandardTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata, float attenuation, unsigned short  depth)
+{
+  if(idata.material == IAccDataStruct::IntersectionData::NOT_FOUND){
+    // No intersection
+
+//    vec3 light_color = vec3(0,0,0);
+//
+//    for(unsigned int i=0; i<lights->size(); ++i) {
+//      ILight* light  = lights->at(i);
+//      light_color += light->getColor();
+//      Ray light_ray = Ray::generateRay(light->getPosition(), scene->getCamera().getPosition());
+//      vec3 l = normalize(light_ray.getDirection());
+//      vec3 r = normalize(incoming_ray.getDirection());
+//      float li = dot(l,r);
+//      light_color *= li*li;
+//      //vec3 lc = light->getPosition()-scene->getCamera().getPosition();
+//      //light_color *= light->getIntensity(lc.length());
+//    }
+//
+//    return settings->background_color + vec4(light_color.r,light_color.g,light_color.b,1.0f);
+
+    return settings->background_color;
+  }
+  assert(idata.material < scene->getMaterialVector().size());
+  // Intersection!
+  vec3 ambient = vec3(0, 0, 0);
+  vec3 diffuse = vec3(0, 0, 0);
+  vec3 specular = vec3(0, 0, 0);
+  vec4 refl_color = vec4(0, 0, 0, 0);
+  vec4 refr_color = vec4(0, 0, 0, 0);
+  Material *material = scene->getMaterialVector()[idata.material];
+  vec3 texture_color = vec3(0, 0, 0);
+  vec3 normal = idata.normal;
+  vec2 tex_coords = vec2(0, 0);
+
+  if(material->getDiffuseMap() != -1){
+    Texture *texture = scene->getTextureAt(material->getDiffuseMap());
+    int mipmap_levels = texture->getMipmapLevels();
+    if(true){
+      //tex_coords  = texture->getUVCoordinates(idata.interPoint,idata.e1,idata.e2);
+      tex_coords = texture->getUVCoordinates(idata.interPoint/4.0f, YAXIS);
+    }else{
+      //We have texture coordinates
+      tex_coords = idata.texcoord;
+    }
+    if(false){
+      float d = 0;
+      if(d > 0){
+        Texture *mmp_bottom = scene->getTextureAt(material->getDiffuseMap() + (int)(d));
+        Texture *mmp_top = scene->getTextureAt(material->getDiffuseMap() + (int)(d) + 1);
+        texture_color = ((1.0f - d - floor(d)) * mmp_bottom->getColorAt(tex_coords) + d - floor(d) * mmp_top->getInterpolatedColor(tex_coords));
+      }else{
+        texture_color = texture->getColorAt(tex_coords);
+      }
+      //float dv = 1.0f/(float)mipmap_levels;
+    }
+    else{
+      texture_color = texture->getColorAt(tex_coords);
+    }
+  }
+
+  float transmittance = (1-material->getOpacity());
+
+  //Transparency map
+  if(material->getTransparencyMap() != -1) {
+    Texture* transparencymap = scene->getTextureAt(material->getTransparencyMap());
+    transmittance = glm::length(transparencymap->getColorAt(tex_coords));
+
+  }
+
+  bumpMap(normal, material, idata, incoming_ray, tex_coords,texture_color);
 
   /**** For each light source in the scene ****/
   for(unsigned int i=0; i<lights->size(); ++i) {
@@ -182,11 +196,11 @@ vec4 StandardTracer::shade(Ray incoming_ray
       if (in_light > 0.0f) {
         // NOT ENTIRELY IN SHADOW! SHADE!
         Ray light_ray = Ray::generateRay(light->getPosition(), idata.interPoint);
-//        float distance_to_light = length(idata.interPoint - light->getPosition());
-//
-//        // Falloff intensity
-//        float intensity = light->getIntensity(distance_to_light);
-//in_light = intensity;
+        //        float distance_to_light = length(idata.interPoint - light->getPosition());
+        //
+        //        // Falloff intensity
+        //        float intensity = light->getIntensity(distance_to_light);
+        //in_light = intensity;
 
 
         //Diffuse
@@ -209,7 +223,8 @@ vec4 StandardTracer::shade(Ray incoming_ray
         if(material->getSpecularMap() == -1) {
           specular *= material->getSpecular();
         } else {
-          specular *= specularity;
+          Texture *spec = scene->getTextureAt(material->getSpecularMap());
+          specular *= length(spec->getColorAt(tex_coords));
         }
 
       } // end in light
@@ -220,15 +235,6 @@ vec4 StandardTracer::shade(Ray incoming_ray
   ambient *= material->getAmbient();
 
   float reflectance = material->getReflection();
-
-  float transmittance = (1-material->getOpacity());
-
-  //Transparency map
-  if(material->getTransparencyMap() != -1) {
-    Texture* transparencymap = scene->getTextureAt(material->getTransparencyMap());
-    transmittance = glm::length(transparencymap->getColorAt(tex_coords));
-
-  }
 
   if (attenuation > ATTENUATION_THRESHOLD && depth < MAX_RECURSION_DEPTH) {
 
@@ -280,7 +286,7 @@ vec4 StandardTracer::shade(Ray incoming_ray
   } // end annutation
 
   // Mix the output colors
-  vec4 color = vec4((ambient + diffuse + specular + light_color),1.0f) * (1-transmittance) + refr_color;
+  vec4 color = vec4((ambient + diffuse + specular),1.0f) * (1-transmittance) + refr_color;
   color *= (1-reflectance);
   color += refl_color;
   color.a = 1.0f;

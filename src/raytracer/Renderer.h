@@ -41,21 +41,21 @@ public:
   void render();       // synchronic
   void asyncRender();  // asynchronic
   void stopRendering();// synchronic
+  void tonemapImage(bool enable);
   
-  /*
-   * @return The number of pixels left to render
-   */
-  unsigned int renderComplete();
+  float renderComplete();
   
 private:
   void init();
   Scene* m_scene;
-  int buffer_length;
+  size_t buffer_length;
   ITracer* m_tracer;
   bool abort;
   int open_gl_version;
+  float* color_buffer_other;
   float* color_buffer;
 
+  bool tonemapped;
   boost::thread* renderthread;
 };
 

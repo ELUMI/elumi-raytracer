@@ -31,7 +31,8 @@ Material::Material() {
 
 Material::Material(std::string name,glm::vec3 ambient,glm::vec3 diffuse,glm::vec3 specular,
     glm::vec3 emissive,glm::vec3 _opacity,float shininess,float sharpness,
-    float reflection ,float index_of_refraction, int diffuse_map, int bump_map, int norm_map, int specular_map,int d_map){
+    float reflection ,float index_of_refraction, int diffuse_map, int bump_map,
+    int norm_map, int specular_map,int d_map){
 
   Material::name = name;
   Material::ambient = ambient;
@@ -74,7 +75,6 @@ int Material::getTransparencyMap() {
 int Material::getNormalMap() {
   return normal_map;
 }
-
 
 glm::vec3 Material::getAmbient() const {
   return ambient;

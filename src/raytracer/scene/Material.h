@@ -63,8 +63,6 @@ private:
   int normal_map;
   int specular_map;
   int transparency_map;
-
-
 };
 
 }

@@ -15,12 +15,13 @@
 #include "../utilities/Ray.h"
 #include "../IAccDataStruct.h"
 #include "../common.hpp"
+#include "../Settings.h"
 
 namespace raytracer {
 
 class KDTreeDataStruct : public IAccDataStruct {
 public:
-  KDTreeDataStruct();
+  KDTreeDataStruct(Settings* settings);
   KDTreeDataStruct(std::vector<Triangle*> triangles);
   virtual ~KDTreeDataStruct();
 
@@ -95,8 +96,7 @@ private:
     Triangle* triangle;
 
   };
-//  KDNode* constructTree(vector<Triangle*> triangles,int size,int depth);
-  void constructTreeStack();
+  void constructTreeStack(Side side);
   void constructWireframe();
   IAccDataStruct::IntersectionData findClosestIntersectionR(KDNode* node,Ray* ray,float min,float max,int depth);
 
@@ -111,6 +111,7 @@ private:
   SortableTriangle** triangles;
   int* root_triangles;
   size_t triangle_count;
+  Settings* settings;
 
 };
 

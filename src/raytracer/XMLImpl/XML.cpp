@@ -64,6 +64,8 @@ Scene* XML::importScene(const char* fileName) {
     } else {
       xml_node screen = settings_doc.child("Screen");
       xml_node tracer = settings_doc.child("Tracer");
+      xml_node tree = settings_doc.child("Tree");
+      xml_node wireframe = settings_doc.child("Wireframe");
       xml_node recursion = settings_doc.child("Recursion");
 
       if(screen) {
@@ -76,6 +78,15 @@ Scene* XML::importScene(const char* fileName) {
       if(recursion) {
         settings->max_recursion_depth = recursion.attribute("maxDepth").as_int();
         settings->recursion_attenuation_threshold = recursion.attribute("attenuationThreshold").as_float();
+      }
+      if(tree){
+        settings->tree = tree.attribute("version").as_int();
+      }
+      if(wireframe){
+        settings->wireframe = wireframe.attribute("enable").as_int();
+      }
+      if(settings->opengl_version<3){
+        settings->wireframe = 0;
       }
     }
   }

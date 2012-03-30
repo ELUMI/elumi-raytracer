@@ -20,7 +20,8 @@ public:
   virtual ~AreaLight();
 
   vec3 getPosition();
-  float getIntensity(float distance);
+  float getIntensity();
+  float getFalloff(float distance);
   vec3 getColor() const;
   FalloffType getFalloffType() const;
 
@@ -31,8 +32,7 @@ public:
 
   void getRays(Ray* rays, size_t n);
 
-
-  virtual void draw();
+  void draw();
 
   float calcLight(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f));
 

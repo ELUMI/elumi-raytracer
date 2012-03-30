@@ -39,20 +39,22 @@ void OmniLight::setPosition(vec3 position) {
   m_position = position;
 }
 
-float OmniLight::getIntensity(float distance) {
+float OmniLight::getIntensity() {
+  return m_intensity;
+}
+
+float OmniLight::getFalloff(float distance) {
   switch (m_falloff_type) {
     case NONE:
-      return m_intensity;
-      break;
-    case LINEAR:
-      //return min((1/distance)*m_intensity,1.0f);
-      return (1.0f/distance) * m_intensity;
-    case QUADRATIC:
-      // return min((1/(distance*distance))*m_intensity,1.0f);
-      return (1.0f/(distance*distance)) * m_intensity;
     default:
       return 1.0f;
       break;
+    case LINEAR:
+      //return min((1/distance)*m_intensity,1.0f);
+      return (1.0f/distance);
+    case QUADRATIC:
+      // return min((1/(distance*distance))*m_intensity,1.0f);
+      return (1.0f/(distance*distance));
   }
 }
 
@@ -98,11 +100,10 @@ void OmniLight::getRays(Ray* rays, size_t n){
   }
 }
 
-
 float OmniLight::calcLight(IAccDataStruct* datastruct, vec3 point, vec3 offset) {
   if (isBlocked(datastruct, point, offset))
     return 0.0f;
-  return getIntensity( length(point - (m_position)) );
+  return getIntensity() * getFalloff( length(point - (m_position)) );
 }
 
 
