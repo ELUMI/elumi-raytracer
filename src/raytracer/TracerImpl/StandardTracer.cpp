@@ -41,8 +41,8 @@ vec4 StandardTracer::tracePrim(Ray ray, float attenuation, unsigned short depth)
   return shade(ray, idata, attenuation, depth);
 }
 
-inline vec3 StandardTracer::bumpMap(Material* material,
-    IAccDataStruct::IntersectionData& idata, Ray incoming_ray){
+inline vec3 StandardTracer::bumpMap(Ray incoming_ray,
+    IAccDataStruct::IntersectionData idata, Material* material){
   if(material->getBumpMap() == -1){
     return idata.normal;
   }
@@ -56,7 +56,9 @@ inline vec3 StandardTracer::bumpMap(Material* material,
   return normalize(idata.normal + bump_normal);
 }
 
-inline vec3 StandardTracer::brdf(vec3 incoming_direction, vec3 outgoing_direction, vec3 normal, Material * material, vec3 texture_color)
+inline vec3 StandardTracer::brdf(vec3 incoming_direction,
+    vec3 outgoing_direction, vec3 normal,
+    Material * material, vec3 texture_color)
 {
   //diffuse
   vec3 color = clamp(glm::dot(-incoming_direction, normal)) * texture_color;
@@ -75,7 +77,8 @@ inline vec3 StandardTracer::brdf(vec3 incoming_direction, vec3 outgoing_directio
   return color;
 }
 
-vec3 StandardTracer::getTextureColor(Material* material, IAccDataStruct::IntersectionData & idata)
+vec3 StandardTracer::getTextureColor(Material* material,
+    IAccDataStruct::IntersectionData idata)
 {
   if(material->getDiffuseMap() == -1){
     return material->getDiffuse();
@@ -95,8 +98,8 @@ vec3 StandardTracer::getTextureColor(Material* material, IAccDataStruct::Interse
   if(false){
     float d = 0;
     if(d > 0){
-      Texture *mmp_bottom = scene->getTextureAt(material->getDiffuseMap() + (int)((((d)))));
-      Texture *mmp_top = scene->getTextureAt(material->getDiffuseMap() + (int)((((d)))) + 1);
+      Texture *mmp_bottom = scene->getTextureAt(material->getDiffuseMap() + (int)(((((d))))));
+      Texture *mmp_top = scene->getTextureAt(material->getDiffuseMap() + (int)(((((d))))) + 1);
       return ((1.0f - d - floor(d)) * mmp_bottom->getColorAt(tex_coords) + d - floor(d) * mmp_top->getInterpolatedColor(tex_coords));
     }else{
       return texture->getColorAt(tex_coords);
@@ -109,9 +112,11 @@ vec3 StandardTracer::getTextureColor(Material* material, IAccDataStruct::Interse
   return texture_color;
 }
 
-inline vec3 StandardTracer::reflection_refraction(float attenuation,
-    unsigned short depth,Material *material, vec3 normal, Ray incoming_ray,
-    IAccDataStruct::IntersectionData idata, vec3 color) {
+inline vec3 StandardTracer::reflection_refraction(Ray incoming_ray,
+    IAccDataStruct::IntersectionData idata,
+    float attenuation, unsigned short depth,
+    Material *material, vec3 normal, vec3 color)
+{
   if(attenuation < ATTENUATION_THRESHOLD || depth > MAX_RECURSION_DEPTH){
     return color;
   }
@@ -133,7 +138,6 @@ inline vec3 StandardTracer::reflection_refraction(float attenuation,
     //mix with output
     color = color * (1 - reflectance) + vec3(refl_color);
   }
-
   /**** REFRACTION RAY ****/
   if(transmittance > 0.0f && reflectance < 1.0f){
     float eta = material->getIndexOfRefraction();
@@ -156,7 +160,50 @@ inline vec3 StandardTracer::reflection_refraction(float attenuation,
   return color;
 }
 
-vec4 StandardTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata, float attenuation, unsigned short  depth)
+vec3 StandardTracer::getAmbient(Ray incoming_ray,
+    IAccDataStruct::IntersectionData idata) {
+  Material *material = scene->getMaterialVector()[idata.material];
+  vec3 color = vec3(0);
+  for(unsigned int i = 0;i < lights->size();++i){
+    ILight *light = lights->at(i);
+    if(light->getFalloffType() == ILight::NONE){
+      //do nothing, handled in getAmbient()
+      color += light->getColor() * material->getAmbient();
+    }
+  }
+
+  return color;
+}
+
+vec3 StandardTracer::getLighting(Ray incoming_ray,
+    IAccDataStruct::IntersectionData idata,
+    vec3 normal, Material *material)
+{
+  vec3 texture_color = getTextureColor(material, idata);
+  vec3 color = vec3(0);
+
+  /**** For each light source in the scene ****/
+  for(unsigned int i = 0;i < lights->size();++i){
+    ILight *light = lights->at(i);
+    if(light->getFalloffType() == ILight::NONE){
+      //do nothing, handled in getAmbient()
+    }else{
+      /**** NON AMBIENT LIGHT, CALCULATE SHADOW RAYS ***/
+      float in_light = light->calcLight(datastruct, idata.interPoint);
+      if(in_light > 0.0f){
+        // NOT ENTIRELY IN SHADOW! SHADE!
+        Ray light_ray = Ray::generateRay(light->getPosition(), idata.interPoint);
+        color += light->getColor() * in_light * brdf(light_ray.getDirection(), incoming_ray.getDirection(), normal, material, texture_color);
+      }
+    }
+  }
+
+  return color;
+}
+
+vec4 StandardTracer::shade(Ray incoming_ray,
+    IAccDataStruct::IntersectionData idata,
+    float attenuation, unsigned short depth)
 {
   if(idata.missed()){
     // No intersection
@@ -165,27 +212,10 @@ vec4 StandardTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData id
   assert(idata.material < scene->getMaterialVector().size());
   // Intersection!
   Material *material = scene->getMaterialVector()[idata.material];
-  vec3 normal = bumpMap(material, idata, incoming_ray);
-  vec3 texture_color = getTextureColor(material, idata);
-  vec3 color = vec3(0);
-  /**** For each light source in the scene ****/
-  for(unsigned int i = 0;i < lights->size();++i){
-    ILight *light = lights->at(i);
-    if(light->getFalloffType() == ILight::NONE){
-      color += light->getColor() * material->getAmbient();
-    }else{
-      /**** NON AMBIENT LIGHT, CALCULATE SHADOW RAYS ***/
-      float in_light = light->calcLight(datastruct, idata.interPoint);
-      if(in_light > 0.0f){
-        // NOT ENTIRELY IN SHADOW! SHADE!
-        Ray light_ray = Ray::generateRay(light->getPosition(), idata.interPoint);
-        color += light->getColor() * in_light * brdf(light_ray.getDirection(), incoming_ray.getDirection(), normal, material, texture_color);
-      } // end in light
-    } // end non abmient
-
-  } // for each light
-
-  color = reflection_refraction(attenuation, depth, material, normal, incoming_ray, idata, color);
+  vec3 normal = bumpMap(incoming_ray, idata, material);
+  vec3 color = getAmbient(incoming_ray, idata);
+  color += getLighting(incoming_ray, idata, normal, material);
+  color = reflection_refraction(incoming_ray, idata, attenuation, depth, material, normal, color);
 
   return vec4(color,1.0f);
 }

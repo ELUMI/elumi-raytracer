@@ -27,9 +27,9 @@ vec4 DebugTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata
   case 2:
     return vec4(idata.normal,1);
   case 3:
-    return vec4(scene->getMaterialVector()[idata.material]->getDiffuse(),1);
+    return vec4(idata.normal*0.5f+0.5f,1);
   case 4:
-    return vec4(idata.normal,1);
+    return vec4(scene->getMaterialVector()[idata.material]->getDiffuse(),1);
   case 5:
     return vec4(idata.texcoord,0,1);
   case 6: {
