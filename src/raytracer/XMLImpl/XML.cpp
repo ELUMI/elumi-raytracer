@@ -13,7 +13,7 @@ using namespace glm;
 #include "../scene/Camera.h"
 #include "../Settings.h"
 #include "../scene/ILight.h"
-#include "../scene/LightImpl/OmniLight.h"
+#include "../scene/LightImpl/BaseLight.h"
 #include "../scene/LightImpl/AreaLight.h"
 #include <exception>
 using namespace std;
@@ -143,7 +143,7 @@ Scene* XML::importScene(const char* fileName) {
 
 
     if(type.compare("Point") == 0) {
-      newLight = new OmniLight();
+      newLight = new BaseLight();
 
     } else if(type.compare("Area") == 0) {
 

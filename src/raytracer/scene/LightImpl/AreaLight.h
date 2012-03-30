@@ -9,11 +9,11 @@
 #define AREALIGHT_H_
 
 #include "../ILight.h"
-#include "OmniLight.h"
+#include "BaseLight.h"
 
 namespace raytracer {
 
-class AreaLight: public ILight {
+class AreaLight: public BaseLight {
 public:
   AreaLight();
   AreaLight(vec3 position, vec3 axis1, vec3 axis2, unsigned int sample1, unsigned int sample2);
@@ -37,17 +37,13 @@ public:
   float calcLight(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f));
 
 private:
-  vec3 position;
   vec3 axis1, axis2;
   vec3 delta1, delta2;
   unsigned int sample1, sample2;
   unsigned int samples;
 
-  float intensity;
-  vec3 color;
-  FalloffType falloff_type;
 
-  OmniLight* light_sources;
+  BaseLight* light_sources;
 };
 
 }

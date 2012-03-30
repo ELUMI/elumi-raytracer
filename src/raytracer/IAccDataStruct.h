@@ -27,6 +27,7 @@ public:
   struct IntersectionData {
     IntersectionData() {}
     IntersectionData(unsigned int material, vec3 interPoint, vec3 normal, vec2 texcoord,vec3 e1, vec3 e2) {
+
       IntersectionData::material = material;
       IntersectionData::texture = texture;
       IntersectionData::interPoint = interPoint;
@@ -36,6 +37,7 @@ public:
       IntersectionData::e2 = e2;
     };
 
+    Triangle* triangle;
     unsigned int material,texture;
     vec3 interPoint;
     vec3 normal;
@@ -45,10 +47,40 @@ public:
   };
 
 
-	virtual ~IAccDataStruct() {};
-	virtual IntersectionData findClosestIntersection(Ray ray)=0;
-	virtual void setData(Triangle** triangles,size_t size,AABB* aabb) = 0;
-	virtual vector<AABB*>& getAABBList() = 0;
+  virtual ~IAccDataStruct() {};
+  virtual IntersectionData findClosestIntersection(Ray ray, int thread_id=-1)=0;
+  virtual void setData(Triangle** triangles,size_t size,AABB* aabb) = 0;
+  virtual vector<AABB*>& getAABBList() = 0;
+
+  static bool intersects(Ray* ray, Triangle* triangle) {
+    vec3 o = ray->getPosition();
+    vec3 d = ray->getDirection();
+    float closest_t = numeric_limits<float>::infinity( );
+    const vector<vec3*> vertices = triangle->getVertices();
+    vec3 v0 = *(vertices[0]);
+    vec3 v1 = *(vertices[1]);
+    vec3 v2 = *(vertices[2]);
+
+    vec3 e1 = v1 - v0;
+    vec3 e2 = v2 - v0;
+    vec3 s = o - v0;
+
+    vec3 dxe2 = cross(d, e2);
+    vec3 sxe1 = cross(s, e1);
+    vec3 res = ( 1.0f /  dot(dxe2, e1) ) *
+        vec3( dot(sxe1, e2), dot(dxe2, s), dot(sxe1, d) );
+
+    float t = res.x;
+    float u = res.y;
+    float v = res.z;
+
+    if(u >= 0 && v >= 0 && u + v <= 1) {  // Intersection!
+      if(t > 0 && t < closest_t) {
+        return true;
+      }
+    }
+    return false;
+  }
 
 };
 

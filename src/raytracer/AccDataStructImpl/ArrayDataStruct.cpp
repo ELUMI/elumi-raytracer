@@ -24,7 +24,7 @@ ArrayDataStruct::~ArrayDataStruct() {
 }
 
 IAccDataStruct::IntersectionData 
-ArrayDataStruct::findClosestIntersection(Ray ray) {
+ArrayDataStruct::findClosestIntersection(Ray ray, int thread_id) {
   vec3 o = ray.getPosition();
   vec3 d = ray.getDirection();
 

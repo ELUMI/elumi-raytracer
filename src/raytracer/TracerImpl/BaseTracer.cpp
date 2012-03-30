@@ -184,7 +184,7 @@ void BaseTracer::stopTracing() {
 }
 
 float BaseTracer::getPixelsLeft() {
-  return (float)(nr_batches - next_batch) / (float)nr_batches;
+  return clamp((float)(nr_batches - next_batch) / (float)nr_batches);
 }
 
 int BaseTracer::spawnRays() {

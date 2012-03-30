@@ -38,6 +38,8 @@ public:
 
   virtual void draw() = 0;
 
+  virtual void initCaches(size_t nr_of_threads) = 0;
+
   virtual float calcLight(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f)) = 0;
   virtual void getRays(Ray* rays, size_t n) = 0;
 };

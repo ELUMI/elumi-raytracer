@@ -161,7 +161,7 @@ IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(
 }
 
 IAccDataStruct::IntersectionData
-KDTreeDataStruct::findClosestIntersection(Ray ray) {
+KDTreeDataStruct::findClosestIntersection(Ray ray, int thread_id) {
   float min,max;
   if(aabb->intersect(ray,min,max)){ //TODO: Bugg när kameran ligger på linjen för första splitting planet
     return findClosestIntersectionStack(&ray,min,max);

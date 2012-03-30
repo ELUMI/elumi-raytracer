@@ -20,7 +20,7 @@ AreaLight::AreaLight() {
   intensity = 1.0f;
   color = vec3(1,1,1);
 
-  light_sources = new OmniLight[sample1*sample2];
+  light_sources = new BaseLight[sample1*sample2];
   setPosition(vec3(0,0,0));
   setDistanceFalloff(falloff_type);
 }
@@ -39,7 +39,7 @@ AreaLight::AreaLight(vec3 position, vec3 axis1, vec3 axis2, unsigned int sample1
   intensity = 1.0f;
   color = vec3(1,1,1);
 
-  light_sources = new OmniLight[samples];
+  light_sources = new BaseLight[samples];
   setPosition(position);
   setDistanceFalloff(falloff_type);
 
@@ -57,7 +57,7 @@ ILight::FalloffType AreaLight::getFalloffType() const {
 void AreaLight::setDistanceFalloff(FalloffType falloff_type) {
   this->falloff_type = falloff_type;
 
-  OmniLight* light = light_sources;
+  BaseLight* light = light_sources;
   for (unsigned int i=0; i<samples; ++i,light++) {
     light->setDistanceFalloff(falloff_type);
   }
@@ -80,7 +80,7 @@ float AreaLight::getFalloff(float distance) {
 void AreaLight::setIntensity(float intensity) {
   this->intensity = intensity;
 
-  OmniLight* light = light_sources;
+  BaseLight* light = light_sources;
   for (unsigned int i=0; i<samples; ++i,light++) {
     light->setIntensity(intensity);
   }
@@ -88,14 +88,14 @@ void AreaLight::setIntensity(float intensity) {
 
 void AreaLight::setColor(vec3 color) {
   this->color = color;
-  OmniLight* light = light_sources;
+  BaseLight* light = light_sources;
   for (unsigned int i=0; i<samples; ++i,light++) {
     light->setColor(color);
   }
 }
 
 void AreaLight::draw() {
-  OmniLight* light = light_sources;
+  BaseLight* light = light_sources;
   for (unsigned int i=0; i<samples; ++i,light++) {
     light->draw();
   }
@@ -112,7 +112,7 @@ void AreaLight::setPosition(vec3 position) {
   delta1 = axis1 * (1.0f/sample1);
   delta2 = axis2 * (1.0f/sample2);
 
-  OmniLight* light = light_sources;
+  BaseLight* light = light_sources;
   for (unsigned int x=0; x<sample1; ++x) {
     for (unsigned int y=0; y<sample2; ++y) {
       vec3 sample_pos = top_left + (float)x*delta1 + (float)y*delta2;
@@ -136,7 +136,7 @@ void AreaLight::getRays(Ray* rays, size_t n) {
 float AreaLight::calcLight(IAccDataStruct* datastruct, vec3 point, vec3 HEJ) {
   float in_light = 0.0f;
 
-  OmniLight* light = light_sources;
+  BaseLight* light = light_sources;
   for (unsigned int i=0; i<samples; ++i,light++) {
     vec3 offset = gen_random_float(0.0f, 1.0f) * delta1 + gen_random_float(0.0f, 1.0f) * delta2;
     in_light += light->calcLight(datastruct,point,offset) / samples;
