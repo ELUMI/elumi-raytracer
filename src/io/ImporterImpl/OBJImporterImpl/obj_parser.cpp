@@ -314,6 +314,16 @@ int obj_parse_mtl_file(char *filename, list *material_list)
 		{
 		  strncpy(current_mtl->bump_filename, strtok(NULL, " \t"), OBJ_FILENAME_LENGTH);
 		}
+		// bump map
+		else if( strequal(current_token, "map_Norm") && material_open)
+		{
+		  strncpy(current_mtl->norm_filename, strtok(NULL, " \t"), OBJ_FILENAME_LENGTH);
+		}
+		// transparency map
+		else if( strequal(current_token, "map_d") && material_open)
+		{
+		  strncpy(current_mtl->d_filename, strtok(NULL, " \t"), OBJ_FILENAME_LENGTH);
+		}
 		//Specular map
 		else if( strequal(current_token, "map_Ks") && material_open)
 		{

@@ -27,14 +27,14 @@ public:
   IAccDataStruct::IntersectionData getTriangle(Ray ray);
 
   unsigned char* data;
-  unsigned int max_elevation;
   size_t width,height;
   vec3 position;
 private:
-  IAccDataStruct::IntersectionData triangleIntersection(Ray ray, Triangle** triangle);
+  IAccDataStruct::IntersectionData triangleIntersection(Ray ray, Triangle* triangle1, Triangle* triangle2);
+  IAccDataStruct::IntersectionData createTrianglesAndIntersect(Ray ray, vec3 v0, vec3 v1, vec3 v2, vec3 v3);
   OBB bb;
   vec3 u,v,w;
-  float elevation;
+  float elevation,max_elevation;
   Texture* texture;
 };
 

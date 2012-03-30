@@ -1,15 +1,12 @@
 <Object fileName="cubeplane.obj"/>
 <Settings fileName="settings.xml"></Settings>
 <Camera>
-<Position x="0.1" y="0.0.f" z="5.5"/>
-<Direction x="0" y="0" z="-1"/>
+<Normal x="0" y="1" z="0"/>
+<Position x="3.98055" y="3.95909" z="8.69745"/>
+<Direction x="-0.40831" y="-0.71934" z="-0.561991"/>
 <Normal x="0" y="1" z="0"/>
 </Camera>
-<Light type="Point" intensity="100" falloff="Linear">
+<Light type="Point" intensity="300" falloff="Quadratic">
 <Position x="-5" y="8.5" z="0.5"/>
 <Color r="1" g="1" b="1"/>
-</Light>
-<Light type="Point" intensity="30" falloff="Quadratic">
-<Position x="5" y="6.5" z="5.5"/>
-<Color r="1" g="0" b="1"/>
 </Light>

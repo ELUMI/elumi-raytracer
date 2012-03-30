@@ -19,7 +19,7 @@ namespace raytracer {
 Scene::Scene(Settings* settings)
 : m_camera(), m_materials() {
   m_lights = new std::vector<ILight*>;
-  m_acc_data_struct = new TestHeightMapDataStruct(); // new HashDataStruct(0.1f, 1024);
+  m_acc_data_struct = new KDTreeDataStruct(); // new HashDataStruct(0.1f, 1024);
   m_settings = settings;
   m_drawable = NULL;
 }

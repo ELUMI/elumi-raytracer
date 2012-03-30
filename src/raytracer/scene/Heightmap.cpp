@@ -22,12 +22,22 @@ Heightmap::Heightmap(size_t width, size_t height, vec3 position, vec3 u, vec3 v,
   Heightmap::position = position;
   max_elevation = 0;
   Heightmap::elevation = elevation;
-  for(unsigned int i = 0; i < width*height; i++) {
-    max_elevation < data[i] ? max_elevation = data[i] : max_elevation;
+  Heightmap::texture = new Texture(width,height,data);
+
+  MathHelper mh = MathHelper();
+
+  max_elevation = 0;
+
+  for(unsigned int x = 0; x < width; x++) {
+    for(unsigned int y = 0; y < height; y++) {
+      float m = mh.lengthOfVector(texture->getColorAt(vec2(x,y)));
+      max_elevation < m ? max_elevation = m : max_elevation;
+    }
   }
 
+  cout << "max elevation " << max_elevation << endl;
+
   bb = OBB(vec3(0,0,0),u,v,vec3(0,elevation,0));
-  Heightmap::texture = new Texture(width,height,data);
 }
 
 Heightmap::~Heightmap() {}
@@ -38,9 +48,20 @@ IAccDataStruct::IntersectionData Heightmap::getTriangle(Ray ray) {
 
   OBB::IntersectionData id = bb.rayIntersection(ray);
 
+  vec3 v0,v1,v2,v3;
+
+  v0 = vec3(-1,1,0);
+  v1 = vec3(-1,-1,0);
+  v2 = vec3(1,-1,0);
+  v3 = vec3(1,1,0);
+  //v0 = vec3(cell.x*dx-x_max,cell.y*dy-y_max,0);
+  //v1 = vec3((cell.x+step_x)*dx-x_max,cell.y*dy-y_max,0);
+  //v2 = vec3(cell.x*dx-x_max,(cell.y+step_y)*dy-y_max,0);
+
+//  return createTrianglesAndIntersect(ray,v0,v1,v2,v3);
+
   if(!id.intersected)
     return IAccDataStruct::IntersectionData(IAccDataStruct::IntersectionData::NOT_FOUND, vec3(), vec3(), vec2(),vec3(),vec3());
-  //else return IAccDataStruct::IntersectionData(0, id.position, vec3(0,1,0), vec2(),vec3(),vec3());
 
   vec3 ip = id.position - position;
 
@@ -51,97 +72,218 @@ IAccDataStruct::IntersectionData Heightmap::getTriangle(Ray ray) {
   vec3 direction = normalize(ray.getDirection());
   direction = vec3(direction.x,direction.z,direction.y);
 
-  vec3 diff = normalize(vec3(direction.x,direction.y,direction.z));
+  vec3 diff = direction;
 
   float x_max = mh.lengthOfVector(u);
   float y_max = mh.lengthOfVector(v);
 
-  float  tDeltaX = (x_max*2) / width;
-  float tDeltaY = (y_max*2) / height;
+  float cX = x_max*2/width;
+  float cY = y_max*2/height;
 
+  float  tDeltaX = direction.x*cX;
+  float tDeltaY = direction.y*cY;
+
+//  float tDeltaX = width/abs(direction.x);
+//  float tDeltaY = height/abs(direction.y);
   //cout << "deltax: " << tDeltaX << " deltay: " << tDeltaY << endl;
 
   //z as function of x
-  float zasx = direction.z / direction.x;
+  //float zasx = tDeltaX*direction.z / direction.x;
+  float xy = sqrt(tDeltaX*tDeltaX+tDeltaY*tDeltaY);
+  float tDeltaZ = xy*direction.z;
 
   float nearZ = ip.z;
-  float farZ = zasx * tDeltaX;
+  float farZ = ip.z + tDeltaZ;
 
   vec2 pos = vec2(ip.x,ip.y);
   vec2 cell;
-  int step_x = diff.x >= 0 ? 1 : -1;
-  int step_y = diff.y >= 0 ? 1 : -1;
+  int signX = diff.x >= 0 ? 1 : -1;
+  int signY = diff.y >= 0 ? 1 : -1;
 
-  while(pos.x > -x_max && pos.x < x_max &&
-      pos.y > - y_max && pos.y < y_max) {
+  float e = 0.001;
 
-    cell = vec2(floor((pos.x-x_max)*width),floor((pos.y-y_max)*height));
+  while(pos.x >= -x_max - e && pos.x <= x_max + e &&
+      pos.y >= - y_max - e && pos.y <= y_max + e) {
 
-    float z0 = mh.lengthOfVector(texture->getColorAt(cell.x,cell.y));
-    float z1 = mh.lengthOfVector(texture->getColorAt(cell.x+step_x,cell.y));
-    float z2 = mh.lengthOfVector(texture->getColorAt(cell.x,cell.y+step_y));
-    float z3 = mh.lengthOfVector(texture->getColorAt(cell.x+step_x,cell.y+step_y));
+    //cell = vec2(floor(pos.x*(width/(x_max*2))),floor((pos.y/y_max*(height/(y_max*2)))));
+    //cell = vec2(floor(pos.x*(width/2)),floor((pos.y*(height/2))));
+    cell = vec2(pos.x/(2*x_max)-0.5,pos.y/(2*y_max)-0.5);
+//    vec2 c0 = vec2(pos.x/(2*x_max)-0.5,pos.y/(2*y_max)-0.5);
+//    vec2 c1 = vec2((pos.x+cX)/(2*x_max)-0.5,pos.y/(2*y_max)-0.5);
+//    vec2 c2 = vec2(pos.x/(2*x_max)-0.5,(pos.y+cY)/(2*y_max)-0.5);
+//    vec2 c3 = vec2((pos.x+cX)/(2*x_max)-0.5,(pos.y+cY)/(2*y_max)-0.5);
 
-    z0 = z0*elevation/max_elevation;
-    z1 = z1*elevation/max_elevation;
-    z2 = z2*elevation/max_elevation;
-    z3 = z3*elevation/max_elevation;
+    /*****NEW****/
+    //Pos to 2d
+
+    int halfWidth = width/2;
+    int halfHeight = height/2;
+
+    vec2 pos2d = vec2();
+    float x1 = (pos.x+1)/2;
+    float x2 = ((x1)*halfWidth+signX)/halfWidth;
+    float y1 = (pos.y+1)/2;
+    float y2 = (y1*halfHeight+signY)/halfHeight;
+
+    vec2 c0,c1,c2,c3;
+    c0 = vec2(x1,y1);
+    c1 = vec2(x2,y1);
+    c2 = vec2(x1,y2);
+    c3 = vec2(x2,y2);
+
+//    float z0 = mh.lengthOfVector(texture->getColorAt(cell.x,cell.y));
+//    float z1 = mh.lengthOfVector(texture->getColorAt(cell.x+signX,cell.y));
+//    float z2 = mh.lengthOfVector(texture->getColorAt(cell.x,cell.y+signY));
+//    float z3 = mh.lengthOfVector(texture->getColorAt(cell.x+signX,cell.y+signY));
+
+//    float z0 = mh.lengthOfVector(texture->getColorAt(vec2(cell.x,cell.y)));
+//    float z1 = mh.lengthOfVector(texture->getColorAt(vec2(cell.x+signX,cell.y)));
+//    float z2 = mh.lengthOfVector(texture->getColorAt(vec2(cell.x,cell.y+signY)));
+//    float z3 = mh.lengthOfVector(texture->getColorAt(vec2(cell.x+signX,cell.y+signY)));
+
+//    float z0 = mh.lengthOfVector(texture->getColorAt(vec2(cell.x,cell.y)));
+//    float z1 = mh.lengthOfVector(texture->getColorAt(vec2(cell.x+signX,cell.y)));
+//    float z2 = mh.lengthOfVector(texture->getColorAt(vec2(cell.x,cell.y+signY)));
+//    float z3 = mh.lengthOfVector(texture->getColorAt(vec2(cell.x+signX,cell.y+signY)));
+
+    float z0 = mh.lengthOfVector(texture->getColorAt(c0));
+    float z1 = mh.lengthOfVector(texture->getColorAt(c1));
+    float z2 = mh.lengthOfVector(texture->getColorAt(c2));
+    float z3 = mh.lengthOfVector(texture->getColorAt(c3));
+
+//    z0 = z0*elevation/max_elevation-elevation/2;
+//    z1 = z1*elevation/max_elevation-elevation/2;
+//    z2 = z2*elevation/max_elevation-elevation/2;
+//    z3 = z3*elevation/max_elevation-elevation/2;
+
+//    z0 = z0*elevation-elevation/2;
+//    z1 = z1*elevation-elevation/2;
+//    z2 = z2*elevation-elevation/2;
+//    z3 = z3*elevation-elevation/2;
+
+    z0 = z0*elevation-elevation;
+    z1 = z1*elevation-elevation;
+    z2 = z2*elevation-elevation;
+    z3 = z3*elevation-elevation;
+
+    float minz = glm::min(nearZ,farZ);
+    float minz2 = glm::min(glm::min(z0,z1),glm::min(z2,z3));
+
+//    cout << "minz " << minz  << endl;
+//
+//    cout << "minz2 " << minz2 << endl;
+
+//    z0 = z0*elevation;
+//    z1 = z1*elevation;
+//    z2 = z2*elevation;
+//    z3 = z3*elevation;
+
+//    cout << "cell: " << cell.x << " " << cell.y << endl;
+
+    if(glm::min(nearZ,farZ) <= glm::max(glm::min(z0,z1),glm::min(z2,z3))) {
+      //Intersection
+//
+//      cout << "intersection!" << endl;
+
+      vec3 v0,v1,v2,v3;
+
+      float dx = 2*x_max/width;
+      float dy = 2*y_max/height;
+
+//      v0 = vec3(cell.x*dx,z0,cell.y*dy);
+//      v1 = vec3((cell.x+signX)*dx,z1,cell.y*dy);
+//      v2 = vec3(cell.x*dx,z2,(cell.y+signY)*dy);
+//      v3 = vec3((cell.x+signX)*dx,z3,(cell.y+signY)*dy);
+
+      x1 = 2*pos.x-1;
+      x2 = 2*pos.x-1;
+      y1 = 2*pos.x-1;
+      y1 = 2*pos.x-1;
+
+      c0 = vec2(x1,y1);
+      c1 = vec2(x2,y1);
+      c2 = vec2(x1,y2);
+      c3 = vec2(x2,y2);
 
 
-     //cout << "cell: " << cell.x << " " << cell.y << endl;
+      v0 = vec3(c0.x,z0,c0.y);
+      v1 = vec3(c1.x,z1,c1.y);
+      v2 = vec3(c2.x,z2,c2.y);
+      v3 = vec3(c3.x,z3,c3.y);
 
-     if(glm::min(nearZ,farZ) <= glm::min(glm::min(z0,z1),glm::min(z2,z3))) {
-       //Intersection
+      cout << "NEARZ: " << nearZ << endl;
+      cout << "FARZ: " << farZ << endl;
 
-       vec3 v0,v1,v2;
+      cout << "v0: x=" << v0.x << " y=" << v0.y << " z=" << v0.z << endl;
+      cout << "v1: x=" << v1.x << " y=" << v1.y << " z=" << v1.z << endl;
+      cout << "v2: x=" << v2.x << " y=" << v2.y << " z=" << v2.z << endl;
+      cout << "v3: x=" << v3.x << " y=" << v3.y << " z=" << v3.z << endl;
 
-       float dx = (x_max*2)/width;
-       float dy = (y_max*2)/height;
+//      v0 = vec3(-1,1,0);
+//      v1 = vec3(-1,-1,0);
+//      v2 = vec3(1,-1,0);
+//      v3 = vec3(1,1,0);
 
-       v0 = vec3(-1,-1,0);
-       v1 = vec3(1,-1,0);
-       v2 = vec3(1,1,0);
-       //v0 = vec3(cell.x*dx-x_max,cell.y*dy-y_max,0);
-       //v1 = vec3((cell.x+step_x)*dx-x_max,cell.y*dy-y_max,0);
-       //v2 = vec3(cell.x*dx-x_max,(cell.y+step_y)*dy-y_max,0);
+      return IAccDataStruct::IntersectionData(0, vec3(pos.x,pos.y,z0), vec3(0,1,0), vec2(),vec3(),vec3());
 
-       vector<vec3*> vertices;
+      return createTrianglesAndIntersect(ray,v0,v1,v2,v3);
 
-       vertices.push_back(&v0);
-       vertices.push_back(&v1);
-       vertices.push_back(&v2);
+      //return IAccDataStruct::IntersectionData(0, vec3(pos.x,pos.y,0), vec3(0,1,0), vec2(),vec3(),vec3());
+      //cout << "test: " << pos.x/x_max << endl;
+    }
 
-       vec3 normal = vec3(cross(v1-v0,v2-v0));
-
-       vector<vec3*> normals;
-
-       normals.push_back(&normal);
-       normals.push_back(&normal);
-       normals.push_back(&normal);
-
-       vector<vec3*> tex_coords;
-
-       Triangle** triangles;
-       triangles[0] = new Triangle(vertices,normals,tex_coords,0);
-
-       return triangleIntersection(ray,triangles);
-
-
-       return IAccDataStruct::IntersectionData(0, vec3(pos.x,pos.y,0), vec3(0,1,0), vec2(),vec3(),vec3());
-       //cout << "test: " << pos.x/x_max << endl;
-     }
-
-     pos.x += tDeltaX;
-     pos.y += tDeltaY;
-     nearZ = farZ;
-     farZ *= tDeltaX;
+    pos.x += tDeltaX;
+    pos.y += tDeltaY;
+    nearZ = farZ;
+    farZ += tDeltaZ;
   }
 
   return IAccDataStruct::IntersectionData(IAccDataStruct::IntersectionData::NOT_FOUND, vec3(), vec3(), vec2(),vec3(),vec3());
 
 }
 
-IAccDataStruct::IntersectionData Heightmap::triangleIntersection(Ray ray, Triangle** triangles) {
+IAccDataStruct::IntersectionData Heightmap::createTrianglesAndIntersect(Ray ray, vec3 v0, vec3 v1, vec3 v2, vec3 v3) {
+
+  vector<vec3*> vertices;
+
+  vertices.push_back(&v0);
+  vertices.push_back(&v1);
+  vertices.push_back(&v2);
+
+  vec3 normal = vec3(cross(v1-v0,v2-v0));
+
+  vector<vec3*> normals;
+
+  normals.push_back(&normal);
+  normals.push_back(&normal);
+  normals.push_back(&normal);
+
+  vector<vec3*> tex_coords;
+
+  Triangle* triangle1 = new Triangle(vertices,normals,tex_coords,0);
+
+  vector<vec3*> vertices2;
+
+  vertices2.push_back(&v2);
+  vertices2.push_back(&v3);
+  vertices2.push_back(&v0);
+
+  vec3 normal2 = vec3(cross(v2-v3,v2-v0));
+
+  vector<vec3*> normals2;
+
+  normals2.push_back(&normal2);
+  normals2.push_back(&normal2);
+  normals2.push_back(&normal2);
+
+  vector<vec3*> tex_coords2;
+
+  Triangle* triangle2 = new Triangle(vertices2,normals2,tex_coords2,0);
+
+  return triangleIntersection(ray,triangle1,triangle2);
+}
+
+IAccDataStruct::IntersectionData Heightmap::triangleIntersection(Ray ray, Triangle* triangle1, Triangle* triangle2) {
   vec3 o = ray.getPosition();
   vec3 d = ray.getDirection();
 
@@ -151,8 +293,22 @@ IAccDataStruct::IntersectionData Heightmap::triangleIntersection(Ray ray, Triang
 
   float closest_t = numeric_limits<float>::infinity( );
 
-  for(int i = 0; i < 1; i++) {
-    Triangle* cur_triangle = triangles[i];
+  for(int i = 0; i < 2; i++) {
+
+    Triangle* cur_triangle;
+
+    switch (i) {
+      case 0:
+        cur_triangle = triangle1;
+        break;
+      case 1:
+        cur_triangle = triangle2;
+        break;
+      default:
+        cur_triangle = triangle1;
+        break;
+    }
+
     const vector<vec3*> vertices = cur_triangle->getVertices();
     vec3 v0 = *(vertices[0]);
     vec3 v1 = *(vertices[1]);
@@ -202,10 +358,6 @@ IAccDataStruct::IntersectionData Heightmap::triangleIntersection(Ray ray, Triang
       a1 * *(closest_tri->getNormals()[1]) +
       a2 * *(closest_tri->getNormals()[2]);
 
-  vec3 inter_tex =    a0 * *(closest_tri->getTextures()[0]) +
-      a1 * *(closest_tri->getTextures()[1]) +
-      a2 * *(closest_tri->getTextures()[2]);
-
   vec3 v1 = v1v0;
   vec3 v2 = v2v1;
 
@@ -217,7 +369,7 @@ IAccDataStruct::IntersectionData Heightmap::triangleIntersection(Ray ray, Triang
     v2 = v2v0;
   }
 
-  return IAccDataStruct::IntersectionData(closest_tri->getMaterial(), closest_pos, glm::normalize(inter_normal), vec2(inter_tex),
+  return IAccDataStruct::IntersectionData(0, closest_pos, glm::normalize(inter_normal), vec2(0,0),
       v1,v2);
 }
 

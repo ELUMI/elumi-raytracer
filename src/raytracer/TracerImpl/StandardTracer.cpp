@@ -45,7 +45,22 @@ vec4 StandardTracer::shade(Ray incoming_ray
 
   if (idata.material == IAccDataStruct::IntersectionData::NOT_FOUND) {
     // No intersection
-    return settings->background_color;
+
+    vec3 light_color = vec3(0,0,0);
+
+    for(unsigned int i=0; i<lights->size(); ++i) {
+      ILight* light  = lights->at(i);
+      light_color += light->getColor();
+      Ray light_ray = Ray::generateRay(light->getPosition(), scene->getCamera().getPosition());
+      vec3 l = normalize(light_ray.getDirection());
+      vec3 r = normalize(incoming_ray.getDirection());
+      float li = dot(l,r);
+      light_color *= li*li;
+      //vec3 lc = light->getPosition()-scene->getCamera().getPosition();
+      //light_color *= light->getIntensity(lc.length());
+    }
+
+    return settings->background_color + vec4(light_color.r,light_color.g,light_color.b,1.0f);
   }
   assert(idata.material < scene->getMaterialVector().size());
 
@@ -61,9 +76,10 @@ vec4 StandardTracer::shade(Ray incoming_ray
   vec3 texture_color = vec3(0,0,0);
   vec3 specularity = vec3(0,0,0);
 
-  vec3 bump_normal = vec3(0,0,0);
+  vec3 perturbed_normal = vec3(0,0,0);
   vec3 normal = idata.normal;
   vec2 tex_coords = vec2(0,0);
+  vec3 light_color = vec3(0,0,0);
 
   if(material->getDiffuseMap() != -1) {
 
@@ -72,7 +88,7 @@ vec4 StandardTracer::shade(Ray incoming_ray
 
     if(true) {
       //tex_coords  = texture->getUVCoordinates(idata.interPoint,idata.e1,idata.e2);
-      tex_coords = texture->getUVCoordinates(idata.interPoint,YAXIS);
+      tex_coords = texture->getUVCoordinates(idata.interPoint/4.0f,YAXIS);
     } else { //We have texture coordinates
       tex_coords = idata.texcoord;
     }
@@ -98,19 +114,56 @@ vec4 StandardTracer::shade(Ray incoming_ray
 
   }
 
-  if(material->getSpecularMap() != -1) {
-    Texture* specularmap = scene->getTextureAt(material->getSpecularMap());
-    specularity = specularmap->getColorAt(tex_coords);
-  }
+  //Normal mappping
+  if(material->getNormalMap() != -1) {
+    Texture* normal_map = scene->getTextureAt(material->getNormalMap());
+    //vec2 coords  = normal_map->getUVCoordinates(idata.interPoint,idata.e1,idata.e2);
 
-  /**** Bump mapping ****/
-  if(material->getBumpMap() != -1) {
-    Texture* bumpmap = scene->getTextureAt(material->getBumpMap());
-    vec2 coords  = bumpmap->getUVCoordinates(idata.interPoint,idata.e1,idata.e2);
-    bump_normal = bumpmap->getColorAt(coords);
-    bump_normal = normalize(faceforward(bump_normal,incoming_ray.getDirection(),normal));
+    //Parallax mapping
+    if(material->getBumpMap() != -1 && material->getDiffuseMap() != -1) {
+      Texture* bump_map = scene->getTextureAt(material->getBumpMap());
+      float height = glm::length(bump_map->getColorAt(tex_coords));
+      vec3 p = -height*scene->getCamera().getPosition()-idata.interPoint;
+      p = normalize(p);
+      p = p*0.25f;
 
-    normal = normalize(normal+bump_normal);
+      tex_coords.x += p.x;
+      tex_coords.y += p.z;
+
+      Texture* t = scene->getTextureAt(material->getDiffuseMap());
+
+      texture_color = t->getColorAt(tex_coords);
+    }
+
+    perturbed_normal = normal_map->getColorAt(tex_coords);
+    perturbed_normal = normalize(faceforward(perturbed_normal,incoming_ray.getDirection(),normal));
+    normal = normalize(normal+perturbed_normal);
+  } else if (material->getBumpMap() != -1) { //Bump mapping WIP
+    Texture* bump_map = scene->getTextureAt(material->getBumpMap());
+    vec2 c = vec2();
+    c.x = 1.0f/bump_map->getWidth();
+    c.y = 1.0f/bump_map->getHeight();
+
+    vec2 t1 = tex_coords;
+    t1.x = t1.x+c.x;
+    vec2 t2 = tex_coords;
+    t2.x = t2.x - c.x;
+    vec2 t3 = tex_coords;
+    t3.y = t3.y + c.y;
+    vec2 t4 = tex_coords;
+    t4.y = t4.y - c.y;
+
+    vec3 t0 = bump_map->getColorAt(tex_coords);
+
+    vec3 v1 = t0 - bump_map->getColorAt(t1);
+    vec3 v2 = t0 - bump_map->getColorAt(t2);
+    vec3 v3 = t0 - bump_map->getColorAt(t3);
+    vec3 v4 = t0 - bump_map->getColorAt(t4);
+
+    perturbed_normal = v1+v2+v3+v4;
+    perturbed_normal = normalize(faceforward(perturbed_normal,incoming_ray.getDirection(),normal));
+
+    normal = normalize(normal+perturbed_normal);
   }
 
   /**** For each light source in the scene ****/
@@ -167,7 +220,15 @@ vec4 StandardTracer::shade(Ray incoming_ray
   ambient *= material->getAmbient();
 
   float reflectance = material->getReflection();
+
   float transmittance = (1-material->getOpacity());
+
+  //Transparency map
+  if(material->getTransparencyMap() != -1) {
+    Texture* transparencymap = scene->getTextureAt(material->getTransparencyMap());
+    transmittance = glm::length(transparencymap->getColorAt(tex_coords));
+
+  }
 
   if (attenuation > ATTENUATION_THRESHOLD && depth < MAX_RECURSION_DEPTH) {
 
@@ -219,7 +280,7 @@ vec4 StandardTracer::shade(Ray incoming_ray
   } // end annutation
 
   // Mix the output colors
-  vec4 color = vec4((ambient + diffuse + specular),1.0f) * (1-transmittance) + refr_color;
+  vec4 color = vec4((ambient + diffuse + specular + light_color),1.0f) * (1-transmittance) + refr_color;
   color *= (1-reflectance);
   color += refl_color;
   color.a = 1.0f;
