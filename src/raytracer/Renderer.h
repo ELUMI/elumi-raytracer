@@ -52,7 +52,7 @@ private:
   ITracer* m_tracer;
   bool abort;
   int open_gl_version;
-  float* color_buffer_other;
+  float* color_buffer_org;
   float* color_buffer;
 
   bool tonemapped;
