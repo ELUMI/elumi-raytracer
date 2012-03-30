@@ -25,8 +25,13 @@ struct Settings {
     opengl_version = 2;
     background_color = vec4(0,0,0,0);
     use_first_bounce = false;
-    test=0;
+    wireframe = 0;
+    test = 0 ;
     debug_mode=0;
+
+    // Data acc
+    tree = 2;
+    draw_data_struct = true;
 
     // Tracer
     tracer = 2;
@@ -49,9 +54,14 @@ struct Settings {
 
   int opengl_version;
   bool use_first_bounce;
+  int wireframe;
   vec4 background_color;
   float test;
   int debug_mode;
+
+  // Data acc
+  int tree;
+  bool draw_data_struct;
 
   // Tracer
   int tracer;

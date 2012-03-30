@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <algorithm>
 #include "OBJImporterImpl/obj_loader.h"
+#include "../../raytracer/common.hpp"
 
 
 #include <IL/il.h>
@@ -156,6 +157,9 @@ void OBJImporter::loadFile(const char* filename){
 				_refract_samples));
 	}
 
+  float inf=std::numeric_limits<float>::infinity();
+  float min[3]={inf,inf,inf};
+  float max[3]={-inf,-inf,-inf};
 	// Start creating the triangles
 	for(int i=0; i<obj_data->faceCount; i++){
 		obj_face *face = obj_data->faceList[i];
@@ -174,6 +178,11 @@ void OBJImporter::loadFile(const char* filename){
 
 			_vertices.push_back(new vec3(_vec->e[0],_vec->e[1],_vec->e[2]));
 			_normals.push_back(new vec3(_norm->e[0],_norm->e[1],_norm->e[2]));
+
+		  for (int t = 0; t < 3; t++) {
+        testMax(&max[t], _vec->e[t]);
+        testMin(&min[t], _vec->e[t]);
+      } // IN BOTH
 
 			if(face->texture_index[j] != -1)
 			  _texCoords.push_back(new vec3(_text->e[0],_text->e[1],_text->e[2]));
@@ -199,6 +208,13 @@ void OBJImporter::loadFile(const char* filename){
 
 						_vertices.push_back(new vec3(_vec->e[0],_vec->e[1],_vec->e[2]));
 						_normals.push_back(new vec3(_norm->e[0],_norm->e[1],_norm->e[2]));
+
+
+						for (int t = 0; t < 3; t++) {
+						  testMax(&max[t], _vec->e[t]);
+						  testMin(&min[t], _vec->e[t]);
+						} // IN BOTH
+
 						if(face->texture_index[j] != -1)
 						  _textures.push_back(new vec3(_text->e[0],_text->e[1],_text->e[2]));
 						else _texCoords.push_back(new vec3(0,0,0));
@@ -210,6 +226,15 @@ void OBJImporter::loadFile(const char* filename){
 	}
 
 	delete(obj_data);
+  aabb = new AABB(min[0],min[1],min[2],max[0]-min[0],max[1]-min[1],max[2]-min[2]);
+}
+void OBJImporter::testMax(float* max,float value){
+  if(value>*(max))
+    *(max)=value;
+}
+void OBJImporter::testMin(float* min,float value){
+  if(value<*(min))
+      *(min)=value;
 }
 
 std::vector<Triangle*>& OBJImporter::getTriangleList(){
@@ -220,6 +245,15 @@ std::vector<Material*>& OBJImporter::getMaterialList(){
 }
 std::vector<Texture*>& OBJImporter::getTextures() {
   return textures;
+}
+
+AABB* OBJImporter::getAABB(){
+  if(aabb!=NULL){
+    return aabb;
+  }
+  else{
+    return NULL;
+  }
 }
 
 Camera* OBJImporter::getCamera(){

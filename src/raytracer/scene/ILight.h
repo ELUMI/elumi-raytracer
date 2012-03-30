@@ -25,7 +25,8 @@ public:
 
   virtual ~ILight() {};
   virtual vec3 getPosition() = 0;
-  virtual float getIntensity(float distance) = 0; //TODO make this protected
+  virtual float getIntensity() = 0; //TODO make this protected
+  virtual float getFalloff(float distance) = 0;
   virtual vec3 getColor() const = 0;
   virtual FalloffType getFalloffType() const {return NONE;}
   virtual float getPower() { vec3 c = getColor(); return (c.r+c.g+c.b)/3; }

@@ -51,16 +51,15 @@ protected:
   std::vector<ILight*>* lights;
 
   bool abort;
-  unsigned int pixelsLeft;
 
   DeferredProcesser* first_pass;
   IAccDataStruct::IntersectionData* first_intersections;
 
   virtual void initTracing();
 
-
 private:
   void traceImageThread(int id);
+  void tracePixel(Ray ray, size_t i, IAccDataStruct::IntersectionData intersection_data);
 
   IRenderPattern* pattern;
   int nr_batches;

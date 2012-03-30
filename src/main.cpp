@@ -19,6 +19,9 @@ namespace po = boost::program_options;
 #include "raytracer/IXML.h"
 #include "raytracer/XMLImpl/XML.h"
 
+#include "raytracer/common.hpp"
+#include "raytracer/AccDataStructImpl/LineArrayDataStruct.hpp"
+
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
@@ -88,6 +91,7 @@ int main(int argc, char* argv[]) {
   cout << "OpenGL version: " << open_gl_version << "\n";
 
 
+
   // CREATE RENDERER AND LOAD SCENE DATA
   myRenderer = new Renderer(open_gl_version);
   myRenderer->loadSceneFromXML(inputFileName.c_str());
@@ -129,6 +133,12 @@ int main(int argc, char* argv[]) {
     glfwEnable(GLFW_AUTO_POLL_EVENTS);
     glfwSetWindowSizeCallback(windowSize); // TODO: In settings
 
+
+    IDraw* data_struct_drawable = NULL;
+    if(settings->wireframe==1){
+      data_struct_drawable= new LineArrayDataStruct(myRenderer->getScene()->getAccDataStruct()->getAABBList());
+    }
+
     while (running) {
       //OpenGl rendering goes here...d
       glViewport(0, 0, win_width, win_height);
@@ -140,10 +150,13 @@ int main(int argc, char* argv[]) {
       glDisable(GL_CULL_FACE);
 
       int light_size = myRenderer->getScene()->getLightVector()->size();
-      IDraw* drawables[1+light_size];
+
+      IDraw* drawables[1+light_size+settings->wireframe];
       drawables[0] = myRenderer->getScene()->getDrawable();
       for(int i=0; i<light_size; ++i)
         drawables[1+i] = myScene->getLightVector()->at(i);
+      if(settings->wireframe==1)
+        drawables[1+light_size] = data_struct_drawable;
 
       switch (renderMode) {
       case 1:
@@ -195,7 +208,8 @@ int main(int argc, char* argv[]) {
 
   /* EXPORTER
    ***************** */
-  if (myRenderer->renderComplete() == 0) {
+
+  if (myRenderer->renderComplete() == 0.0f) {
     raytracer::IExporter* exporter = new raytracer::PNGExporter;
     exporter->exportImage(outputFileName.c_str(), settings->width, settings->height, buffer);
     delete exporter;
@@ -224,7 +238,7 @@ void readPhotonMap() {
 void getArguments(int argc, char *argv[]) {
   // Declare the supported options.
   po::options_description desc("Allowed options");
-  desc.add_options()("help,h", "produce help message")("gl-version,gl",po::value<int>(),
+  desc.add_options()("help,h", "produce help message")("gl-version,v",po::value<int>(),
       "Open GL version")("input-file,i", po::value<string>(), "Input file")(
           "output-file,o", po::value<string>(), "Output file")("settings-file,s",
               po::value<string>(), "Settings file");
@@ -411,8 +425,23 @@ void timedCallback() {
   if (glfwGetKey(' ')) {
     camera.translate(vec3(0, 0, speed));
   }
+  if (glfwGetKey('X')) {
+    camera.translate(vec3(0, 0, speed));
+  }
   if (glfwGetKey('Z')) {
     camera.translate(vec3(0, 0, -speed));
+  }
+  if (glfwGetKey(GLFW_KEY_UP)) {
+    camera.rotate(vec2(0,-1));
+  }
+  if (glfwGetKey(GLFW_KEY_DOWN)) {
+    camera.rotate(vec2(0,1));
+  }
+  if (glfwGetKey(GLFW_KEY_RIGHT)) {
+    camera.rotate(vec2(1,0));
+  }
+  if (glfwGetKey(GLFW_KEY_LEFT)) {
+    camera.rotate(vec2(-1,0));
   }
   if (glfwGetKey('1')) {
     renderMode = 1;
@@ -457,6 +486,12 @@ void timedCallback() {
   }
   if (glfwGetKey('Y')) {
     myRenderer->asyncRender();
+  }
+  if (glfwGetKey('U')) {
+    myRenderer->tonemapImage(true);
+  }
+  if (glfwGetKey('I')) {
+    myRenderer->tonemapImage(false);
   }
   if (glfwGetKey('F')) {
     myRenderer->stopRendering();

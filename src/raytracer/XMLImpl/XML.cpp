@@ -34,7 +34,7 @@ XML::XML(int open_gl_version) {
   importer = new OBJImporter();
 }
 
-IXML::~IXML() {
+XML::~XML() {
   delete importer;
 }
 
@@ -67,6 +67,8 @@ Scene* XML::importScene(const char* fileName) {
       xml_node recursion    = settings_doc.child("Recursion");
       xml_node threading    = settings_doc.child("Threading");
       xml_node tonemapping  = settings_doc.child("Tonemapping");
+      xml_node tree         = settings_doc.child("Tree");
+      xml_node wireframe    = settings_doc.child("Wireframe");
 
       if(screen) {
         settings->width = screen.attribute("width").as_int();
@@ -85,6 +87,15 @@ Scene* XML::importScene(const char* fileName) {
       if(tonemapping) {
         settings->key = tonemapping.attribute("key").as_float();
       }
+      if(tree){
+        settings->tree = tree.attribute("version").as_int();
+      }
+      if(wireframe){
+        settings->wireframe = wireframe.attribute("enable").as_int();
+      }
+      if(settings->opengl_version<3){
+        settings->wireframe = 0;
+      }
     }
   }
 
@@ -101,7 +112,7 @@ Scene* XML::importScene(const char* fileName) {
 
     if (!triangles.empty()) {
       scene->loadMaterials(materials); //load materials BEFORE triangles!
-      scene->loadTriangles(triangles);
+      scene->loadTriangles(triangles,importer->getAABB());
       scene->loadTextures(textures);
     }
   }
@@ -200,5 +211,3 @@ void XML::exportScene(Scene scene, const char* fileName) {
 }
 
 }
-
-
