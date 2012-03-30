@@ -11,6 +11,7 @@
 #include "../AccDataStructImpl/KDTreeDataStruct.hpp"
 #include "../AccDataStructImpl/HashDataStruct.h"
 #include "../AccDataStructImpl/TriangleArray.h"
+#include "../AccDataStructImpl/TestHeightMapDataStruct.h"
 
 namespace raytracer {
 

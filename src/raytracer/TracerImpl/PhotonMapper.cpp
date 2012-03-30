@@ -156,7 +156,6 @@ vec3 PhotonMapper::getLuminance(Ray incoming_ray,
       k = a*a*a*exp(-t*t/(2*sigma*sigma));
       k *= scale;
     }
-
     float a = glm::max(0.0f, glm::dot(p->direction, idata.normal));
     //cout << p.power.r << " " << p.power.g << " " << p.power.b << "\n";
     //cout << b << " " << a << " " << k << "\n";

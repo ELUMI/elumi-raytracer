@@ -290,6 +290,16 @@ int obj_parse_mtl_file(char *filename, list *material_list)
 		{
 			current_mtl->reflect = atof( strtok(NULL, " \t"));
 		}
+		//reflection spread
+		else if( strequal(current_token, "r_spread") && material_open)
+		{
+		  current_mtl->reflect_spread = atof( strtok(NULL, " \t"));
+		}
+    //reflection samples
+    else if( strequal(current_token, "r_samples") && material_open)
+    {
+      current_mtl->reflect_samples= atof( strtok(NULL, " \t"));
+    }
 		//glossy
 		else if( strequal(current_token, "sharpness") && material_open)
 		{
@@ -300,6 +310,16 @@ int obj_parse_mtl_file(char *filename, list *material_list)
 		{
 			current_mtl->refract_index = atof( strtok(NULL, " \t"));
 		}
+		//refract spread
+		else if( strequal(current_token, "Ni_spread") && material_open)
+		{
+		  current_mtl->refract_spread = atof( strtok(NULL, " \t"));
+		}
+		//refract samples
+		else if( strequal(current_token, "Ni_samples") && material_open)
+		{
+		  current_mtl->refract_samples = atof( strtok(NULL, " \t"));
+		}
 		// illumination type
 		else if( strequal(current_token, "illum") && material_open)
 		{
@@ -309,10 +329,25 @@ int obj_parse_mtl_file(char *filename, list *material_list)
 		{
 			strncpy(current_mtl->diffuse_map, strtok(NULL, " \t"), OBJ_FILENAME_LENGTH);
 		}
-		// bump map
+		// Normal map
+		else if( strequal(current_token, "map_Norm") && material_open)
+		{
+		  strncpy(current_mtl->norm_filename, strtok(NULL, " \t"), OBJ_FILENAME_LENGTH);
+		}
+		// Bump map
 		else if( strequal(current_token, "map_Bump") && material_open)
 		{
 		  strncpy(current_mtl->bump_filename, strtok(NULL, " \t"), OBJ_FILENAME_LENGTH);
+		}
+		// transparency map
+		else if( strequal(current_token, "map_d") && material_open)
+		{
+		  strncpy(current_mtl->d_filename, strtok(NULL, " \t"), OBJ_FILENAME_LENGTH);
+		}
+		//Specular map
+		else if( strequal(current_token, "map_Ks") && material_open)
+		{
+		  strncpy(current_mtl->ks_filename, strtok(NULL, " \t"), OBJ_FILENAME_LENGTH);
 		}
 		else
 		{

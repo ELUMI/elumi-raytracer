@@ -20,7 +20,6 @@
 #include "../utilities/Triangle.h"
 #include "../utilities/Ray.h"
 
-
 using namespace glm;
 
 namespace raytracer {

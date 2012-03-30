@@ -56,27 +56,39 @@ void OBJImporter::loadFile(const char* filename){
 	for(int i=0; i<obj_data->materialCount; i++){
 		obj_material *material = obj_data->materialList[i];
 
-		std::string _name = material->name;
-		glm::vec3 _ambient = vec3(material->amb[0],material->amb[1],material->amb[2]);
-		glm::vec3 _diffuse = vec3(material->diff[0],material->diff[1],material->diff[2]);
-		glm::vec3 _specular = vec3(material->spec[0],material->spec[1],material->spec[2]);
-		glm::vec3 _emissive = vec3(material->emissive[0],material->emissive[1],material->emissive[2]);
+		std::string _name           = material->name;
+		glm::vec3 _ambient          = vec3(material->amb[0],material->amb[1],material->amb[2]);
+		glm::vec3 _diffuse          = vec3(material->diff[0],material->diff[1],material->diff[2]);
+		glm::vec3 _specular         = vec3(material->spec[0],material->spec[1],material->spec[2]);
+		glm::vec3 _emissive         = vec3(material->emissive[0],material->emissive[1],material->emissive[2]);
 
-		glm::vec3 _transparency = vec3(material->trans[0],material->trans[1],material->trans[2]);
-		float _shininess = material->shiny;
-		float _sharpness = material->glossy;
-		float _reflection = material->reflect;
-		float _index_of_refraction = material->refract_index;
-		float _refraction = material->refract;
-		std::string _diffuse_map = material->diffuse_map;
-		std::string _bump_map = material->bump_filename;
+		glm::vec3 _transparency     = vec3(material->trans[0],material->trans[1],material->trans[2]);
+		float _shininess            = material->shiny;
+		float _sharpness            = material->glossy;
+		float _reflection           = material->reflect;
+		float _index_of_refraction  = material->refract_index;
+		float _refraction           = material->refract;
+		float _reflect_spread       = material->reflect_spread;
+		int   _reflect_samples      = material->reflect_samples;
+		float _refract_spread       = material->refract_spread;
+		int   _refract_samples      = material->refract_samples;
+		std::string _diffuse_map    = material->diffuse_map;
+		std::string _bump_map       = material->bump_filename;
+		std::string _norm_map = material->norm_filename;
+		std::string _ks_map = material->ks_filename;
+		std::string _d_map = material->d_filename;
 
     replace(_diffuse_map.begin(), _diffuse_map.end(), '\n', '\0');
     replace(_bump_map.begin(), _bump_map.end(), '\n', '\0');
+    replace(_norm_map.begin(), _norm_map.end(), '\n', '\0');
+    replace(_ks_map.begin(), _ks_map.end(), '\n', '\0');
+    replace(_d_map.begin(), _d_map.end(), '\n', '\0');
 
 
 		ILuint image;
-		int diff_map_index = -1, bump_map = -1;
+		int diff_map_index = -1, bump_map = -1, ks_map = -1, norm_map = -1,
+		    d_map = -1;
+
 
 		//Texture
     if(!_diffuse_map.empty()) {
@@ -127,15 +139,97 @@ void OBJImporter::loadFile(const char* filename){
 
         textures.push_back(new Texture(w,h,ilGetData()));
         bump_map = textures.size()-1;
-        image++;
       } else {
         //Image not loaded (?)
         cout << "Bumpmap not loaded" << endl;
       }
     }
 
-		OBJImporter::materials.push_back(new Material(_name,_ambient,_diffuse,_specular,_emissive,
-				_transparency,_shininess,_sharpness,_reflection,_index_of_refraction,diff_map_index,bump_map));
+    //Normal map
+    if(!_norm_map.empty()) {
+      image = ilGenImage();
+      ilBindImage(image);
+
+      ilLoadImage(_norm_map.c_str());
+
+      if(ilGetError() == IL_NO_ERROR) {
+        ILuint w,h;
+
+        w = ilGetInteger(IL_IMAGE_WIDTH);
+        h = ilGetInteger(IL_IMAGE_HEIGHT);
+
+        textures.push_back(new Texture(w,h,ilGetData()));
+        norm_map = textures.size()-1;
+      } else {
+        //Image not loaded (?)
+        cout << "Normal map not loaded" << endl;
+      }
+    }
+
+    //Specular map
+    if(!_ks_map.empty()) {
+      image = ilGenImage();
+      ilBindImage(image);
+
+      ilLoadImage(_ks_map.c_str());
+
+      if(ilGetError() == IL_NO_ERROR) {
+        ILuint w,h;
+
+        w = ilGetInteger(IL_IMAGE_WIDTH);
+        h = ilGetInteger(IL_IMAGE_HEIGHT);
+
+        cout << "Specular map loaded: " << _ks_map << "\n";
+
+        textures.push_back(new Texture(w,h,ilGetData()));
+        ks_map = textures.size()-1;
+      } else {
+        //Image not loaded (?)
+        cout << "Specular map not loaded error code: " << ilGetError() << endl;
+      }
+    }
+
+    //Transparency map
+    if(!_d_map.empty()) {
+      image = ilGenImage();
+      ilBindImage(image);
+
+      ilLoadImage(_d_map.c_str());
+
+      if(ilGetError() == IL_NO_ERROR) {
+        ILuint w,h;
+
+        w = ilGetInteger(IL_IMAGE_WIDTH);
+        h = ilGetInteger(IL_IMAGE_HEIGHT);
+
+        textures.push_back(new Texture(w,h,ilGetData()));
+        d_map = textures.size()-1;
+      } else {
+        //Image not loaded (?)
+        cout << "Transparency map not loaded" << endl;
+      }
+    }
+
+		OBJImporter::materials.push_back(new Material(
+		    _name,
+		    _ambient,
+		    _diffuse,
+		    _specular,
+		    _emissive,
+				_transparency,
+				_shininess,
+				_sharpness,
+				_reflection,
+				_index_of_refraction,
+				diff_map_index,
+				bump_map,
+				norm_map,
+				ks_map,
+				d_map,
+				_reflect_spread,
+				_reflect_samples,
+				_refract_spread,
+				_refract_samples));
 	}
 
   float inf=std::numeric_limits<float>::infinity();
@@ -160,10 +254,10 @@ void OBJImporter::loadFile(const char* filename){
 			_vertices.push_back(new vec3(_vec->e[0],_vec->e[1],_vec->e[2]));
 			_normals.push_back(new vec3(_norm->e[0],_norm->e[1],_norm->e[2]));
 
-		  for(int t=0;t<3;t++){
-		        testMax(&max[t],_vec->e[t]);
-		        testMin(&min[t],_vec->e[t]);
-		      } // IN BOTH
+		  for (int t = 0; t < 3; t++) {
+        testMax(&max[t], _vec->e[t]);
+        testMin(&min[t], _vec->e[t]);
+      } // IN BOTH
 
 			if(face->texture_index[j] != -1)
 			  _texCoords.push_back(new vec3(_text->e[0],_text->e[1],_text->e[2]));
@@ -190,10 +284,11 @@ void OBJImporter::loadFile(const char* filename){
 						_vertices.push_back(new vec3(_vec->e[0],_vec->e[1],_vec->e[2]));
 						_normals.push_back(new vec3(_norm->e[0],_norm->e[1],_norm->e[2]));
 
-					  for(int t=0;t<3;t++){
-					        testMax(&max[t],_vec->e[t]);
-					        testMin(&min[t],_vec->e[t]);
-					      } // IN BOTH
+
+						for (int t = 0; t < 3; t++) {
+						  testMax(&max[t], _vec->e[t]);
+						  testMin(&min[t], _vec->e[t]);
+						} // IN BOTH
 
 						if(face->texture_index[j] != -1)
 						  _textures.push_back(new vec3(_text->e[0],_text->e[1],_text->e[2]));
