@@ -44,12 +44,15 @@ public:
     vec3 normal;
     vec2 texcoord;
     vec3 e1,e2;
-    const static unsigned int NOT_FOUND = -1;
+    const static unsigned int NOT_FOUND_INTERNAL = -1;
+
+    bool missed() { return material == NOT_FOUND_INTERNAL; }
+    static IntersectionData miss() { return IntersectionData(NULL, NOT_FOUND_INTERNAL, vec3(), vec3(), vec2(),vec3(),vec3()); }
   };
 
 
   virtual ~IAccDataStruct() {};
-  virtual IntersectionData findClosestIntersection(Ray ray, int thread_id=-1)=0;
+  virtual IntersectionData findClosestIntersection(Ray ray)=0;
   virtual void setData(Triangle** triangles,size_t size,AABB* aabb) = 0;
   virtual vector<AABB*>& getAABBList() = 0;
 

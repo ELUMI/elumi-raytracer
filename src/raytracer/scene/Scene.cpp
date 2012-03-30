@@ -11,6 +11,7 @@
 #include "../AccDataStructImpl/KDTreeDataStruct.hpp"
 #include "../AccDataStructImpl/HashDataStruct.h"
 #include "../AccDataStructImpl/TriangleArray.h"
+#include "../AccDataStructImpl/TestHeightMapDataStruct.h"
 
 namespace raytracer {
 
@@ -25,6 +26,9 @@ Scene::Scene(Settings* settings)
   case 2:
   default:
     m_acc_data_struct = new KDTreeDataStruct(settings);
+    break;
+  case 3:
+    m_acc_data_struct = new HashDataStruct(0.1f, 1024);
     break;
   }
   m_settings = settings;

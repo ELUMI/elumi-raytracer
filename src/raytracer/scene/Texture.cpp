@@ -83,12 +83,12 @@ vec2 Texture::getUVCoordinates(vec3 position, Axis axis) {
 vec3 Texture::getColorAt(vec2 coords) {
   int x_coord,y_coord;
   if(coords.x < 0) {
-    x_coord = width+(int)(coords.x*(width))%width;
+    x_coord = width-1+(int)(coords.x*(width))%width;
   } else {
     x_coord = (int)(coords.x*(width))%width;
   }
   if(coords.y < 0) {
-    y_coord = height+(int)(coords.y*(height))%height;
+    y_coord = height-1+(int)(coords.y*(height))%height;
   } else {
     y_coord = (int)(coords.y*(height))%height;
   }
@@ -108,5 +108,4 @@ void Texture::addMipmap() {
 }
 
 }
-
 

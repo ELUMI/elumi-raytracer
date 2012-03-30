@@ -45,16 +45,24 @@ typedef struct obj_material
 	char name[MATERIAL_NAME_SIZE];
 	char diffuse_map[OBJ_FILENAME_LENGTH];
 	char bump_filename[OBJ_FILENAME_LENGTH];
+	char d_filename[OBJ_FILENAME_LENGTH];
+	char norm_filename[OBJ_FILENAME_LENGTH];
+	char ks_filename[OBJ_FILENAME_LENGTH];
 	double amb[3];
 	double diff[3];
 	double spec[3];
 	double emissive[3];
 	double reflect;
+	double reflect_spread;
+	double reflect_samples;
 	double refract;
+	double refract_spread;
+	double refract_samples;
 	double trans[3];
 	double shiny;
 	double glossy;
 	double refract_index;
+
 };
 
 typedef struct obj_camera

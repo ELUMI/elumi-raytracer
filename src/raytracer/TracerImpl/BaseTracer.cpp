@@ -80,7 +80,7 @@ void BaseTracer::first_bounce() {
 
       //see comment in deferred.frag
       unsigned int material = ceil(normals[i].w - 0.5); //alpha channel is noisy, but this works!
-      assert(material == IAccDataStruct::IntersectionData::NOT_FOUND || material < scene->getMaterialVector().size());
+      assert(material == IAccDataStruct::IntersectionData::NOT_FOUND_INTERNAL || material < scene->getMaterialVector().size());
 
       first_intersections[i] = IAccDataStruct::IntersectionData(NULL, material,
           vec3(pos) / pos.w, vec3(normals[i]), texcoords[i],vec3(),vec3());
@@ -140,8 +140,11 @@ void BaseTracer::traceImage(float *color_buffer)
     pattern = new LinePattern(settings->width, settings->height);
     nr_batches = pattern->getNumberBatches();
     next_batch = 0;
+
     // Launch threads
-    int nr_threads = boost::thread::hardware_concurrency();
+    int nr_threads = settings->threads;
+    if(nr_threads == 0)
+      nr_threads= boost::thread::hardware_concurrency();
 
     // TODO detta ska även göras i first bounce
     // Init shadow caches
@@ -226,7 +229,7 @@ int BaseTracer::spawnRays() {
 vec4 BaseTracer::trace(Ray ray, IAccDataStruct::IntersectionData idata, int thread_id) {
   vec4 color;
 
-  if (idata.material == IAccDataStruct::IntersectionData::NOT_FOUND) {
+  if (idata.missed()) {
     // No intersection
     color = settings->background_color;
   } else {

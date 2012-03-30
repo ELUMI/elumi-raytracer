@@ -19,17 +19,15 @@ Allowed options:
 ############################################################
 
                      Settings-file
-Each row in the settings file specifies the value for one
-option. Option name is separated by a colon:
+The settings file uses xml-syntax. See example:
 
-    option_name : value
-
-Available options are:
-
-width:int
-height:int
-opengl_version:int
-use_first_bounce:bool
+<Screen width="200" height="200"/>
+<Tracer version="2"/>
+<Recursion maxDepth="5" attenuationThreshold="0.015625"/>
+<Threading threads="auto"/>
+<Tonemapping key="0.18"/>
+<Tree version="2"/>
+<Wireframe enable="0"/>
 
 ############################################################
 
@@ -74,3 +72,21 @@ eclipse
      * glfw
      * glew
      * devil
+
+############################################################
+                         Endline felen
+Kolla: man gitattributes
+
+Gå till din branch och gör följande:
+               $ echo "* text=auto" >>.gitattributes
+               $ rm .git/index     # Remove the index to force git to
+               $ git reset         # re-scan the working directory
+               $ git status        # Show files that will be normalized
+               $ git add -u
+               $ git add .gitattributes
+               $ git commit -m "Introduce end-of-line normalization"
+
+Sen ska det vara lätt att merga med master.
+Alternativt gör en ny branch från master.
+
+Merga INTE med master med en branch som inte gjort detta. Då får ni problem.

@@ -1,4 +1,3 @@
-
 #ifndef ARRAYDATASTRUCT_H_
 #define ARRAYDATASTRUCT_H_
 
@@ -16,7 +15,7 @@ public:
   ArrayDataStruct(int size);
   virtual ~ArrayDataStruct();
 
-  IAccDataStruct::IntersectionData findClosestIntersection(Ray ray, int thread_id=-1);
+  IAccDataStruct::IntersectionData findClosestIntersection(Ray ray);
   void setData(Triangle** triangles,size_t size,AABB* aabb);
   vector<AABB*>& getAABBList(){return aabb_list;}
 

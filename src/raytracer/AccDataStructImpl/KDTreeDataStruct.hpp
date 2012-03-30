@@ -25,7 +25,7 @@ public:
   KDTreeDataStruct(std::vector<Triangle*> triangles);
   virtual ~KDTreeDataStruct();
 
-  IAccDataStruct::IntersectionData findClosestIntersection(Ray ray, int thread_id);
+  IAccDataStruct::IntersectionData findClosestIntersection(Ray ray);
   void setData(Triangle** triangles,size_t size,AABB* aabb);
   void build();
   vector<AABB*>& getAABBList(){return KDTreeDataStruct::splitting_list;}

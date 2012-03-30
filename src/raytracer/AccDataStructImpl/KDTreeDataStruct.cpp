@@ -20,7 +20,6 @@
 #include "../utilities/Triangle.h"
 #include "../utilities/Ray.h"
 
-
 using namespace glm;
 
 namespace raytracer {
@@ -157,16 +156,16 @@ IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(
             v1,v2);
     }
   }
-  return IntersectionData(NULL, IntersectionData::NOT_FOUND, vec3(), vec3(), vec2(),vec3(),vec3());
+  return IntersectionData::miss();
 }
 
 IAccDataStruct::IntersectionData
-KDTreeDataStruct::findClosestIntersection(Ray ray, int thread_id) {
+KDTreeDataStruct::findClosestIntersection(Ray ray) {
   float min,max;
   if(aabb->intersect(ray,min,max)){ //TODO: Bugg när kameran ligger på linjen för första splitting planet
     return findClosestIntersectionStack(&ray,min,max);
   }
-  return IntersectionData(NULL, IntersectionData::NOT_FOUND, vec3(), vec3(), vec2(),vec3(),vec3());
+  return IntersectionData::miss();
 }
 
 void KDTreeDataStruct::build(){

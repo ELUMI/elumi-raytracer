@@ -13,8 +13,8 @@ namespace raytracer {
 
 PhotonMapper::PhotonMapper(Scene* scene)
 : StandardTracer(scene) {
-  radius = 1;
-  photonmap = new HashPM(radius, 1024*128);
+  radius = 0.5f;
+  photonmap = new HashPM(radius, 1024*16);
 }
 
 PhotonMapper::~PhotonMapper() {
@@ -32,20 +32,20 @@ void PhotonMapper::storeInMap(Photon p){
   photonmap->addPhoton(p);
 }
 
-bool PhotonMapper::bounce(Photon& p) {
+bool PhotonMapper::bounce(Photon& p, bool store) {
   Ray ray(p.position, -p.direction);
   //cout << p.direction.x << " " << p.direction.y << " " << p.direction.z << "\n";
 
   IAccDataStruct::IntersectionData idata = datastruct->findClosestIntersection(ray);
   p.position = idata.interPoint;
   p.normal = idata.normal;
-  if(idata.material == idata.NOT_FOUND){
+  if(idata.missed()){
     return false;
   }
 
-  storeInMap(p);
-
-  //return false;
+  if(store) {
+    storeInMap(p);
+  }
 
   Material* mat = scene->getMaterialVector()[idata.material];
 
@@ -62,13 +62,13 @@ bool PhotonMapper::bounce(Photon& p) {
   float rand = gen_random_float(0,1);
   if (rand < reflection) {
     outgoing = glm::reflect(p.direction, p.normal);
-    p.power *= reflection * mat->getDiffuse();
+    p.power *= mat->getSpecular();
   } else if (rand < reflection+refraction) {
     outgoing = glm::refract(p.direction, p.normal, mat->getIndexOfRefraction());
-    p.power *= refraction * mat->getDiffuse();
+    p.power *= mat->getDiffuse();
   } else if(rand < reflection+refraction+diffuse) {  //diffuse interreflection
     outgoing = get_random_hemisphere(p.normal);
-    p.power *= diffuse    * mat->getDiffuse();
+    p.power *= mat->getDiffuse();
   } else { //absorbtion
     return false;
   }
@@ -81,37 +81,42 @@ bool PhotonMapper::bounce(Photon& p) {
   return true;
 }
 
-void PhotonMapper::getPhotons() {
-  size_t n = 1024*32; //NUMBER_OF_PHOTONS;
-  size_t max_recursion_depth = settings->max_recursion_depth;
+void PhotonMapper::tracePhoton(Photon p)
+{
+  for(size_t k = 0;k < settings->max_recursion_depth;++k){
+    if(abort)
+      break;
+
+    if(!bounce(p))
+      break;
+  }
+}
+
+void PhotonMapper::getPhotons()
+{
+  size_t n = 1024 * 32; //NUMBER_OF_PHOTONS;
   float totalpower = 0;
-  for(size_t i=0; i<lights->size(); ++i){
+  for(size_t i = 0;i < lights->size();++i){
     totalpower += lights->at(i)->getPower();
   }
-
-  for(size_t i=0; i<lights->size(); ++i){
-    ILight* light = lights->at(i);
+  for(size_t i = 0;i < lights->size();++i){
+    ILight *light = lights->at(i);
     float npe = n * light->getPower() / totalpower;
     size_t m = size_t(npe); //photons per light
-    Ray* rays = new Ray[m];
+    Ray *rays = new Ray[m];
     light->getRays(rays, m);
+    vec3 power = (1 / (light->getPower() / totalpower)) * light->getColor() * light->getIntensity();
+    for(size_t j = 0;j < m;++j){
+      if(abort)
+        return;
 
-    vec3 power = (1/(light->getPower() / totalpower)) * light->getColor() * light->getIntensity();
-
-    for(size_t j=0; j<m; ++j){
       Ray ray = rays[j];
-
       Photon p;
       p.power = power;
       p.direction = -ray.getDirection();
       p.position = ray.getPosition();
 
-      for(size_t k=0; k<max_recursion_depth; ++k) {
-        if(abort)
-          return;
-        if(!bounce(p))
-          break;
-      }
+      tracePhoton(p);
     }
   }
 }
@@ -121,12 +126,10 @@ vector<Photon*> PhotonMapper::gather(float& r, vec3 point){
   return photonmap->gatherFromR(point, r);
 }
 
-float inline brdf(vec3 point, vec3 idir, vec3 odir){
-  return 1.0;
-}
-
 vec3 PhotonMapper::getLuminance(Ray incoming_ray,
     IAccDataStruct::IntersectionData idata) {
+  Material *material = scene->getMaterialVector()[idata.material];
+
   vec3 l = vec3(0);
 
   size_t g; //number of photons
@@ -137,22 +140,22 @@ vec3 PhotonMapper::getLuminance(Ray incoming_ray,
     return vec3(0);
   for(size_t i=0; i<photons.size(); ++i){
     Photon* p = photons[i];
-    float b = brdf(idata.interPoint, p->direction, incoming_ray.getDirection());
+
+    vec3 b = brdf(-p->direction, incoming_ray.getDirection(), idata.normal, material);
 
     float k;
     //k = 1/(M_PI*r*r); //simple filter kernel
 
     { //advanced filter kernel (ISPM paper)
       float dist = length(idata.interPoint-p->position);
-      float rz = 0.1 * r;
-      float t = (dist/r)*(1-dot((idata.interPoint-p->position) / dist, p->normal)*(r+rz)/rz);
+      float rz = 0.01 * r;
+      float t = (dist/r)*(1-dot((idata.interPoint-p->position) / dist, idata.normal)*(r+rz)/rz);
       float scale = 0.2;
       float sigma = r*scale;
       float a = 1/(sqrt(2*M_PI)*sigma);
       k = a*a*a*exp(-t*t/(2*sigma*sigma));
       k *= scale;
     }
-
     float a = glm::max(0.0f, glm::dot(p->direction, idata.normal));
     //cout << p.power.r << " " << p.power.g << " " << p.power.b << "\n";
     //cout << b << " " << a << " " << k << "\n";
@@ -160,35 +163,45 @@ vec3 PhotonMapper::getLuminance(Ray incoming_ray,
     //l += a;
   }
   l /= photonmap->getTotalPhotons();
+  l *= 128.0f; //magic scaling
 
   return l;
 }
 
 
-vec4 PhotonMapper::shade(Ray incoming_ray,
-    IAccDataStruct::IntersectionData idata,
-    float attenuation, unsigned short depth) {
-  if (idata.material == IAccDataStruct::IntersectionData::NOT_FOUND) {
-    // No intersection
-    return settings->background_color;
-  }
-
-  vec3 l=vec3(0);
-  if(false) { //final gather
-    l=vec3(0);
-    const size_t final_gather_samples = 8;
-    for(size_t i=0; i<final_gather_samples; ++i){
+vec3 PhotonMapper::getAmbient(Ray incoming_ray,
+    IAccDataStruct::IntersectionData idata) {
+  const size_t final_gather_samples = 0;
+  vec3 l = vec3(0);
+  if(final_gather_samples != 0){
+    //final gather
+    l = vec3(0);
+    for(size_t i = 0;i < final_gather_samples;++i){
       Ray ray = Ray(idata.interPoint, get_random_hemisphere(idata.normal));
       IAccDataStruct::IntersectionData idata2 = datastruct->findClosestIntersection(ray);
-      l += getLuminance(ray, idata2);
+      if(!idata2.missed()){
+        l += getLuminance(ray, idata2);
+      }
     }
+
     l /= final_gather_samples;
   } else {
     l = getLuminance(incoming_ray, idata);
   }
+  return l;
+}
 
+vec4 PhotonMapper::shade(Ray incoming_ray,
+    IAccDataStruct::IntersectionData idata,
+    float attenuation, unsigned short  depth) {
+  if(idata.missed()){
+    // No intersection
+    return settings->background_color;
+  }
+
+  vec3 l = getAmbient(incoming_ray, idata);
   vec3 color = scene->getMaterialVector()[idata.material]->getDiffuse();
-  return vec4(l*color,0);
+  return vec4(l*color,1);
 }
 
 

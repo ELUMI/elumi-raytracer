@@ -24,7 +24,7 @@ ArrayDataStruct::~ArrayDataStruct() {
 }
 
 IAccDataStruct::IntersectionData 
-ArrayDataStruct::findClosestIntersection(Ray ray, int thread_id) {
+ArrayDataStruct::findClosestIntersection(Ray ray) {
   vec3 o = ray.getPosition();
   vec3 d = ray.getDirection();
 
@@ -67,7 +67,7 @@ ArrayDataStruct::findClosestIntersection(Ray ray, int thread_id) {
   }
 
   if(closest_t == numeric_limits<float>::infinity( )) {
-    return IntersectionData(NULL, IntersectionData::NOT_FOUND, vec3(), vec3(), vec2(),vec3(),vec3());
+    return IntersectionData::miss();
   }
 
   vec3 v1v0 = *(closest_tri->getVertices()[1]) - *(closest_tri->getVertices()[0]);

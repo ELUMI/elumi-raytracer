@@ -16,6 +16,7 @@ using namespace glm;
 #include "../scene/LightImpl/BaseLight.h"
 #include "../scene/LightImpl/AreaLight.h"
 #include <exception>
+#include <iostream>
 using namespace std;
 
 namespace raytracer {
@@ -62,11 +63,13 @@ Scene* XML::importScene(const char* fileName) {
     if(!result) {
       throw fnf_exception;
     } else {
-      xml_node screen = settings_doc.child("Screen");
-      xml_node tracer = settings_doc.child("Tracer");
-      xml_node tree = settings_doc.child("Tree");
-      xml_node wireframe = settings_doc.child("Wireframe");
-      xml_node recursion = settings_doc.child("Recursion");
+      xml_node screen       = settings_doc.child("Screen");
+      xml_node tracer       = settings_doc.child("Tracer");
+      xml_node recursion    = settings_doc.child("Recursion");
+      xml_node threading    = settings_doc.child("Threading");
+      xml_node tonemapping  = settings_doc.child("Tonemapping");
+      xml_node tree         = settings_doc.child("Tree");
+      xml_node wireframe    = settings_doc.child("Wireframe");
 
       if(screen) {
         settings->width = screen.attribute("width").as_int();
@@ -78,6 +81,16 @@ Scene* XML::importScene(const char* fileName) {
       if(recursion) {
         settings->max_recursion_depth = recursion.attribute("maxDepth").as_int();
         settings->recursion_attenuation_threshold = recursion.attribute("attenuationThreshold").as_float();
+      }
+      if(threading) {
+        settings->threads = threading.attribute("threads").as_int();
+      }
+      if(tonemapping) {
+        if(!tonemapping.attribute("key").empty())
+          settings->key = tonemapping.attribute("key").as_float();
+
+        if(!tonemapping.attribute("white").empty())
+          settings->white = tonemapping.attribute("white").as_float();
       }
       if(tree){
         settings->tree = tree.attribute("version").as_int();
