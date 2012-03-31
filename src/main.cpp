@@ -193,7 +193,7 @@ int main(int argc, char* argv[]) {
       glfwSwapBuffers();
 
       timedCallback();
-      glfwSleep(0.01);
+      glfwSleep(0.1);
 
       //Check if ESC key was pressed or window was closed
       running = !glfwGetKey(GLFW_KEY_ESC) && glfwGetWindowParam(GLFW_OPENED);
