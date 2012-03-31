@@ -16,6 +16,7 @@
 #include "boost/thread/mutex.hpp"
 
 #include "../RenderPatternImpl/LinePattern.h"
+#include "../RenderPatternImpl/HilbertCurve.h"
 
 namespace raytracer {
 
@@ -137,7 +138,7 @@ void BaseTracer::traceImage(float *color_buffer)
     }
 
   } else {
-    pattern = new LinePattern(settings->width, settings->height);
+    pattern = new HilbertCurve(settings->width, settings->height);
     nr_batches = pattern->getNumberBatches();
     next_batch = 0;
 
