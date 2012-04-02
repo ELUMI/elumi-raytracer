@@ -20,7 +20,8 @@ using namespace glm;
 
 namespace raytracer {
 
-void init_generator(int n_threads = 12); //be safe...
+void init_generators(int n_threads = 12); //be safe...
+void delete_generators(); //be safe...
 float gen_random_float(float min, float max, int thread_id);
 float gen_random_float(int thread_id);
 vec3 gen_random_dir(int thread_id);

@@ -62,7 +62,7 @@ unsigned int win_width, win_height;
 string inputFileName, outputFileName;
 
 int main(int argc, char* argv[]) {
-  init_generator();
+  init_generators();
   int running = GL_TRUE;
   getArguments(argc, argv);
 
@@ -216,6 +216,7 @@ int main(int argc, char* argv[]) {
   delete myRenderer;
   std::cout << std::endl << "end of PROGRAM" << std::endl;
 
+  delete_generators();
   exit(EXIT_SUCCESS);
 }
 

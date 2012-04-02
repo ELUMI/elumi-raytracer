@@ -11,14 +11,19 @@
 
 namespace raytracer {
 
-static boost::mt19937* generator;
+static boost::mt19937* generators = 0;
 
-void init_generator(int n_threads) {
-  generator = new boost::mt19937[n_threads];
+void init_generators(int n_threads) {
+  generators = new boost::mt19937[n_threads];
   for(int i=0; i<n_threads; ++i) {
-    generator[i] = boost::mt19937(42u);
-    generator[i].seed(static_cast<unsigned int>(std::time(0)+i*37)); //some random extra seed
+    generators[i] = boost::mt19937(42u);
+    generators[i].seed(static_cast<unsigned int>(std::time(0)+i*37)); //some random extra seed
   }
+}
+
+void delete_generators(){
+  if(generators)
+    delete [] generators;
 }
 
 float gen_random_float(float min, float max, int thread_id) {
@@ -26,7 +31,7 @@ float gen_random_float(float min, float max, int thread_id) {
     return max;
   }
   boost::uniform_real<float> u(min, max);
-  boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > gen(generator[thread_id], u);
+  boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > gen(generators[thread_id], u);
   return gen();
 }
 
