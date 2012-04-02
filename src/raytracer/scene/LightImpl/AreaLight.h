@@ -27,7 +27,7 @@ public:
   void setColor(vec3 color);
   void setDistanceFalloff(FalloffType falloff_type);
 
-  void getRays(Ray* rays, size_t n);
+  void getRays(Ray* rays, size_t n, int thread_id);
 
   void draw();
 

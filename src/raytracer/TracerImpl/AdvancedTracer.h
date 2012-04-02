@@ -18,8 +18,8 @@ public:
   virtual ~AdvancedTracer();
 
 protected:
-  virtual void tracePhoton(Photon p);
-  vec4 shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata, float attenuation, unsigned short depth, int thread_id=-1);
+  virtual void tracePhoton(Photon p, int thread_id);
+  vec4 shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata, float attenuation, unsigned short depth, int thread_id);
 };
 
 }

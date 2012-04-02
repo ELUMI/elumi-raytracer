@@ -110,12 +110,12 @@ void AreaLight::setPosition(vec3 position) {
   }
 }
 
-void AreaLight::getRays(Ray* rays, size_t n) {
+void AreaLight::getRays(Ray* rays, size_t n, int thread_id) {
   for(size_t i = 0; i<n; ++i){
-    size_t j = gen_random_float(0.0f, samples);
+    size_t j = gen_random_float(0.0f, samples, thread_id);
     Ray ray;
-    light_sources[j].getRays(&ray,1);
-    vec3 offset = gen_random_float(0.0f, 1.0f) * delta1 + gen_random_float(0.0f, 1.0f) * delta2;
+    light_sources[j].getRays(&ray,1,thread_id);
+    vec3 offset = gen_random_float(thread_id) * delta1 + gen_random_float(thread_id) * delta2;
     rays[i] = Ray(ray.getPosition()+offset, ray.getDirection());
   }
 }
@@ -126,8 +126,8 @@ float AreaLight::calcLight(IAccDataStruct* datastruct, vec3 point, vec3 NOREPLY,
 
   BaseLight* light = light_sources;
   for (unsigned int i=0; i<samples; ++i,light++) {
-    vec3 offset = gen_random_float(0.0f, 1.0f) * delta1 + gen_random_float(0.0f, 1.0f) * delta2;
-    in_light += light->calcLight(datastruct,point,offset, thread_id) / samples;
+    vec3 offset = gen_random_float(0.0f, 1.0f, thread_id) * delta1 + gen_random_float(0.0f, 1.0f, thread_id) * delta2;
+    in_light += light->calcLight(datastruct, point, thread_id, offset) / samples;
   }
 
   return in_light;

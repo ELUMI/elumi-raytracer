@@ -265,7 +265,7 @@ inline vec3 StandardTracer::reflection_refraction(Ray incoming_ray,
 }
 
 vec3 StandardTracer::getAmbient(Ray incoming_ray,
-    IAccDataStruct::IntersectionData idata) {
+    IAccDataStruct::IntersectionData idata, int thread_id) {
   Material *material = scene->getMaterialVector()[idata.material];
   vec3 color = vec3(0);
   for(unsigned int i = 0;i < lights->size();++i){
@@ -297,7 +297,7 @@ vec3 StandardTracer::getLighting(
       //do nothing, handled in getAmbient()
     }else{
       /**** NON AMBIENT LIGHT, CALCULATE SHADOW RAYS ***/
-      float in_light = light->calcLight(datastruct, idata.interPoint, vec3(0,0,0), thread_id);
+      float in_light = light->calcLight(datastruct, idata.interPoint, thread_id);
       if(in_light > 0.0f){
         // NOT ENTIRELY IN SHADOW! SHADE!
         Ray light_ray = Ray::generateRay(light->getPosition(), idata.interPoint);
@@ -338,7 +338,8 @@ vec4 StandardTracer::shade(Ray incoming_ray,
   // Intersection!
   Material *material = scene->getMaterialVector()[idata.material];
   vec3 normal = bumpMap(incoming_ray, idata, material);
-  vec3 color = getAmbient(incoming_ray, idata);
+  vec3 color = material->getEmissive();
+  color += getAmbient(incoming_ray, idata, thread_id);
   color += getLighting(incoming_ray, idata, normal, material, thread_id);
   color = reflection_refraction(incoming_ray, idata, attenuation, depth, material, normal, color);
 

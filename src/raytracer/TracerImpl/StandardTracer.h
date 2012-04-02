@@ -33,8 +33,8 @@ protected:
   vec3 brdf(vec3 incoming_direction, vec3 outgoing_direction, vec3 normal, Material * material, vec3 texture_color = vec3(1,1,1));
   vec3 getTextureColor(Material* material, IAccDataStruct::IntersectionData idata);
   vec3 reflection_refraction(Ray incoming_ray, IAccDataStruct::IntersectionData idata, float attenuation, unsigned short  depth, Material *material, vec3 normal, vec3 color);
-  vec3 getLighting(Ray incoming_ray, IAccDataStruct::IntersectionData idata, vec3 normal, Material *material, int thread_id=-1);
-  virtual vec3 getAmbient(Ray incoming_ray, IAccDataStruct::IntersectionData idata);
+  vec3 getLighting(Ray incoming_ray, IAccDataStruct::IntersectionData idata, vec3 normal, Material *material, int thread_id);
+  virtual vec3 getAmbient(Ray incoming_ray, IAccDataStruct::IntersectionData idata, int thread_id);
 };
 
 }

@@ -20,12 +20,12 @@ using namespace glm;
 
 namespace raytracer {
 
-static boost::mt19937 generator(42u);
-void init_generator();
-float gen_random_float(float min, float max);
-vec3 get_random_dir();
-vec3 get_random_hemisphere(vec3 normal);
-vec3 get_random_cone(vec3 normal, float max_angle);
+void init_generator(int n_threads = 12); //be safe...
+float gen_random_float(float min, float max, int thread_id);
+float gen_random_float(int thread_id);
+vec3 gen_random_dir(int thread_id);
+vec3 gen_random_hemisphere(vec3 normal, int thread_id);
+vec3 gen_random_cone(vec3 normal, float max_angle, int thread_id);
 
 }
 

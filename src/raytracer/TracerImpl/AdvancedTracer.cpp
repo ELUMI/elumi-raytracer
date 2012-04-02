@@ -15,7 +15,7 @@ AdvancedTracer::AdvancedTracer(Scene* scene) : PhotonMapper(scene) {
 AdvancedTracer::~AdvancedTracer() {
 }
 
-void AdvancedTracer::tracePhoton(Photon p)
+void AdvancedTracer::tracePhoton(Photon p, int thread_id)
 {
   if(!bounce(p,false)) //first bounce should not be saved
     return;
@@ -23,7 +23,7 @@ void AdvancedTracer::tracePhoton(Photon p)
     if(abort)
       break;
 
-    if(!bounce(p))
+    if(!bounce(p, thread_id))
       break;
   }
 }

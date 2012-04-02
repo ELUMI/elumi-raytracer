@@ -244,7 +244,7 @@ vec4 BaseTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata,
   float light = 0;
   for(size_t i = 0; i < lights->size(); ++i){
     //if(!lights->at(i)->isBlocked(datastruct, idata.interPoint)){
-    if (lights->at(i)->calcLight(datastruct, idata.interPoint) > 0.0f) {
+    if (lights->at(i)->calcLight(datastruct, idata.interPoint, thread_id) > 0.0f) {
       light++;
     }
   }

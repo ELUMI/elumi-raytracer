@@ -10,6 +10,7 @@
 #include "TracerImpl/StandardTracer.h"
 #include "TracerImpl/PhotonMapper.h"
 #include "TracerImpl/AdvancedTracer.h"
+#include "TracerImpl/PathTracer.h"
 
 #include "XMLImpl/XML.h"
 
@@ -74,6 +75,10 @@ void Renderer::init() {
   case 4:
     m_tracer = new AdvancedTracer(m_scene);
     cout << "Using advanced tracer\n";
+    break;
+  case 5:
+    m_tracer = new PathTracer(m_scene);
+    cout << "Using path tracer\n";
     break;
   }
   buffer_length = m_scene->getSettings()->width * m_scene->getSettings()->height * 4;
