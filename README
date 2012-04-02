@@ -54,10 +54,10 @@ eclipse
      * IL (devil)
      * boost_program_options
      * boost_thread
-     * gomp (openmp)
+     * # gomp (openmp)
      * GLEW
-     * GL
-     * GLU
+     * # GL
+     * # GLU
      * glfw
     * -L (search path)
      * glfw

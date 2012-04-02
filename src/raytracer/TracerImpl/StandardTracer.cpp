@@ -339,7 +339,7 @@ vec4 StandardTracer::shade(Ray incoming_ray,
   Material *material = scene->getMaterialVector()[idata.material];
   vec3 normal = bumpMap(incoming_ray, idata, material);
   vec3 color = getAmbient(incoming_ray, idata);
-  color += getLighting(incoming_ray, idata, normal, material);
+  color += getLighting(incoming_ray, idata, normal, material, thread_id);
   color = reflection_refraction(incoming_ray, idata, attenuation, depth, material, normal, color);
 
   return vec4(color,1.0f);

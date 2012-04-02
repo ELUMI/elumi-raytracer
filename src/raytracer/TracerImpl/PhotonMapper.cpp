@@ -193,7 +193,7 @@ vec3 PhotonMapper::getAmbient(Ray incoming_ray,
 
 vec4 PhotonMapper::shade(Ray incoming_ray,
     IAccDataStruct::IntersectionData idata,
-    float attenuation, unsigned short  depth) {
+    float attenuation, unsigned short  depth, int thread_id) {
   if(idata.missed()){
     // No intersection
     return settings->background_color;
