@@ -48,9 +48,9 @@ protected:
   static const float EPSILON = 0.0001f;
 
 private:
-  float distanceToBlocker(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f), int thread_id=-1);
-  bool isBlocked(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f), int thread_id=-1) {
-    return distanceToBlocker(datastruct, point, offset, thread_id) > EPSILON;
+  float distanceToBlocker(IAccDataStruct* datastruct, vec3 point, int thread_id, vec3 offset = vec3(0.0f,0.0f,0.0f));
+  bool isBlocked(IAccDataStruct* datastruct, vec3 point, int thread_id, vec3 offset = vec3(0.0f,0.0f,0.0f)) {
+    return distanceToBlocker(datastruct, point, thread_id, offset) > EPSILON;
   }
 
   size_t nr_of_caches;

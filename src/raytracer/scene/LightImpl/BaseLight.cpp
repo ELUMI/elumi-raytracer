@@ -92,12 +92,12 @@ void BaseLight::draw() {
   gluDeleteQuadric(quadobj);
 }
 
-float BaseLight::distanceToBlocker(IAccDataStruct* datastruct, vec3 point, vec3 offset, int thread_id){
+float BaseLight::distanceToBlocker(IAccDataStruct* datastruct, vec3 point, int thread_id, vec3 offset){
   Ray light_ray = Ray::generateRay(position+offset, point);
 
 
   // Shadow cache
-  if(nr_of_caches && cache[thread_id] != NULL) {
+  if(cache!=NULL && cache[thread_id] != NULL) {
     if( IAccDataStruct::instersects(&light_ray, cache[thread_id]) )
       return 1.0f;
   }
@@ -123,7 +123,7 @@ void BaseLight::getRays(Ray* rays, size_t n, int thread_id){
 }
 
 float BaseLight::calcLight(IAccDataStruct* datastruct, vec3 point, int thread_id, vec3 offset) {
-  if (isBlocked(datastruct, point, offset, thread_id))
+  if (isBlocked(datastruct, point, thread_id, offset))
     return 0.0f;
   return getIntensity() * getFalloff( length(point - (position)) );
 }

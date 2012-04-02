@@ -126,42 +126,31 @@ void BaseTracer::traceImage(float *color_buffer)
   initTracing();
   int number_of_rays = spawnRays();
 
+  //TODO: add first bounce again
 
-  if (settings->use_first_bounce) {
-    // For every pixel
-    //#pragma omp parallel for
-    for(size_t i = 0;i < number_of_rays;++i){
-      if(!abort){
-        tracePixel(rays[i], i, first_intersections[i]);
-      }
-    }
+  pattern = new LinePattern(settings->width, settings->height);
+  nr_batches = pattern->getNumberBatches();
+  next_batch = 0;
 
-  } else {
-    pattern = new LinePattern(settings->width, settings->height);
-    nr_batches = pattern->getNumberBatches();
-    next_batch = 0;
+  // Launch threads
+  int nr_threads = settings->threads;
+  if(nr_threads == 0)
+    nr_threads= boost::thread::hardware_concurrency();
 
-    // Launch threads
-    int nr_threads = settings->threads;
-    if(nr_threads == 0)
-      nr_threads= boost::thread::hardware_concurrency();
-
-    // TODO detta ska även göras i first bounce
-    // Init shadow caches
-    for(size_t i=0; i<lights->size(); ++i) {
-      lights->at(i)->initCaches(nr_threads);
-    }
-
-    boost::thread threads[nr_threads];
-    for(int i = 0;i < nr_threads;++i){
-      threads[i] = boost::thread(boost::bind(&BaseTracer::traceImageThread, this, i));
-    }
-    // Wait for threads to complete
-    for(int i = 0;i < nr_threads;++i){
-      threads[i].join();
-    }
-    delete pattern;
+  // Init shadow caches
+  for(size_t i=0; i<lights->size(); ++i) {
+    //lights->at(i)->initCaches(nr_threads);
   }
+
+  boost::thread threads[nr_threads];
+  for(int i = 0;i < nr_threads;++i){
+    threads[i] = boost::thread(boost::bind(&BaseTracer::traceImageThread, this, i));
+  }
+  // Wait for threads to complete
+  for(int i = 0;i < nr_threads;++i){
+    threads[i].join();
+  }
+  delete pattern;
 }
 
 void BaseTracer::traceImageThread(int id) {

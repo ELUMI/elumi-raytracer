@@ -33,7 +33,7 @@ public:
 
   void initCaches(size_t nr_of_threads);
 
-  float calcLight(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f), int thread_id=-1);
+  float calcLight(IAccDataStruct* datastruct, vec3 point, int thread_id, vec3 offset = vec3(0.0f,0.0f,0.0f));
 
 private:
   vec3 axis1, axis2;

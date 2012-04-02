@@ -121,12 +121,14 @@ void AreaLight::getRays(Ray* rays, size_t n, int thread_id) {
 }
 
 
-float AreaLight::calcLight(IAccDataStruct* datastruct, vec3 point, vec3 NOREPLY, int thread_id) {
+float AreaLight::calcLight(IAccDataStruct* datastruct, vec3 point, int thread_id, vec3 area_offset) {
   float in_light = 0.0f;
 
   BaseLight* light = light_sources;
   for (unsigned int i=0; i<samples; ++i,light++) {
-    vec3 offset = gen_random_float(0.0f, 1.0f, thread_id) * delta1 + gen_random_float(0.0f, 1.0f, thread_id) * delta2;
+    vec3 offset = area_offset
+                + gen_random_float(0.0f, 1.0f, thread_id) * delta1
+                + gen_random_float(0.0f, 1.0f, thread_id) * delta2;
     in_light += light->calcLight(datastruct, point, thread_id, offset) / samples;
   }
 
