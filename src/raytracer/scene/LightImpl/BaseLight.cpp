@@ -110,7 +110,7 @@ float BaseLight::distanceToBlocker(IAccDataStruct* datastruct, vec3 point, vec3 
   float dtb = distance_to_light - distance_between_light_and_first_hit;
 
   // Shadow cache
-  if(nr_of_caches && dtb > EPSILON)
+  if(cache!=NULL && dtb > EPSILON)
     cache[thread_id] = light_idata.triangle;
 
   return dtb;

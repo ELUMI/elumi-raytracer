@@ -164,22 +164,39 @@ void BaseTracer::traceImage(float *color_buffer)
   }
 }
 
-void BaseTracer::traceImageThread(int id)
-{
+void BaseTracer::traceImageThread(int id) {
   // Synchronize work
   int my_batch = 0;
   pattern_mutex.lock();
   my_batch = next_batch++;
   pattern_mutex.unlock();
+
+  int width = settings->width;
+  int height = settings->height;
+
+  Camera camera = scene->getCamera();
+  vec3 camera_position = camera.getPosition();
+  mat4 trans = camera.getViewportToModelMatrix(width - 1, height - 1);
+
+
   while(my_batch < nr_batches){
     //cout << "Thread: " << id << " on batch: " << my_batch << endl;
     int length;
     int *batch = pattern->getBatch(my_batch, &length);
-    for(size_t i = 0;i < length;++i){
+    for(size_t i = 0; i<length; ++i){
       if(abort){
         return;
       }
-      Ray ray = rays[batch[i]];
+
+      int p = batch[i];
+      vec4 pos = vec4(p%width, p/width, -1, 1);
+      pos = trans * pos;
+      Ray ray = Ray::generateRay(camera_position, vec3(pos / pos.w));
+
+      assert(rays[p].getDirection() == ray.getDirection());
+      assert(rays[p].getPosition()  == ray.getPosition());
+
+      ray = rays[batch[i]];
       IAccDataStruct::IntersectionData intersection_data = scene->getAccDataStruct()->findClosestIntersection(ray);
       tracePixel(ray, batch[i], intersection_data, id);
     }
