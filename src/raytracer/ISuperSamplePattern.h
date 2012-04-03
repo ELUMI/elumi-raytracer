@@ -29,5 +29,8 @@ protected:
   vec2* offsets;
 };
 
+int gridify_size(int i);
+ISuperSamplePattern* getSuperSamplePatter(int i);
+
 } /* namespace raytracer */
 #endif /* ISUPERSAMPLEPATTERN_H_ */

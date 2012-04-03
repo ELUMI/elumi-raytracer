@@ -17,7 +17,9 @@
 
 #include "../utilities/Random.h"
 #include "../RenderPatternImpl/LinePattern.h"
+#include "../SuperSamplePatternImpl/GridPattern.h"
 #include "../SuperSamplePatternImpl/RandomPattern.h"
+#include "../SuperSamplePatternImpl/JitterPattern.h"
 
 namespace raytracer {
 
@@ -157,7 +159,14 @@ void BaseTracer::traceImageThread(int thread_id) {
   switch(settings->super_sampler_pattern) {
   case 0:
   default:
+    ss_pattern = new GridPattern(settings->samples);
+    break;
+  case 1:
     ss_pattern = new RandomPattern(settings->samples, thread_id);
+    break;
+  case 2:
+    ss_pattern = new JitterPattern(settings->samples, thread_id);
+    break;
   }
 
   while(my_batch < nr_batches){
@@ -176,7 +185,7 @@ void BaseTracer::traceImageThread(int thread_id) {
 
       vec4 c = vec4(0);
       for(int s=0; s<ss_pattern->getSize(); ++s) {
-        vec4 pos = trans * vec4(coord.x+offsets[s].x, coord.y+offsets[i].y, -1, 1);
+        vec4 pos = trans * vec4(coord.x+offsets[s].x, coord.y+offsets[s].y, -1, 1);
         Ray ray = Ray::generateRay(camera_position, vec3(pos / pos.w));
 
         IAccDataStruct::IntersectionData intersection_data;

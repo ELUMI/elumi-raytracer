@@ -18,6 +18,7 @@ public:
   virtual ~RandomPattern();
 
   void newPixel();
+private:
   int thread_id;
 };
 

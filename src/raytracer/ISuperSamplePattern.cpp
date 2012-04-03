@@ -31,4 +31,10 @@ const int ISuperSamplePattern::getSize() const {
   return size;
 }
 
+int gridify_size(int i){
+  i = floor(sqrt(i));
+  return i*i;
+}
+
+
 } /* namespace raytracer */
