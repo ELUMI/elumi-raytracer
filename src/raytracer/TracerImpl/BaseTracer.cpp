@@ -21,7 +21,6 @@ namespace raytracer {
 
 BaseTracer::BaseTracer(Scene* scene) {
   this->scene = scene;
-  rays = NULL;
   datastruct = scene->getAccDataStruct();
 
   first_pass = 0;
@@ -35,9 +34,7 @@ BaseTracer::BaseTracer(Scene* scene) {
 
 BaseTracer::~BaseTracer() {
   stopTracing();
-  if(rays!=NULL)
-    delete[] rays;
-  delete[] posbuff;
+  delete [] posbuff;
 }
 
 void BaseTracer::first_bounce() {
@@ -124,7 +121,6 @@ void BaseTracer::traceImage(float *color_buffer)
 {
   buffer = color_buffer;
   initTracing();
-  int number_of_rays = spawnRays();
 
   //TODO: add first bounce again
 
@@ -165,29 +161,33 @@ void BaseTracer::traceImageThread(int id) {
 
   Camera camera = scene->getCamera();
   vec3 camera_position = camera.getPosition();
-  mat4 trans = camera.getViewportToModelMatrix(width - 1, height - 1);
+  mat4 trans = camera.getViewportToModelMatrix(width, height);
 
 
   while(my_batch < nr_batches){
     //cout << "Thread: " << id << " on batch: " << my_batch << endl;
     int length;
     int *batch = pattern->getBatch(my_batch, &length);
-    for(size_t i = 0; i<length; ++i){
+    for(size_t b = 0; b<length; ++b){
       if(abort){
         return;
       }
 
-      int p = batch[i];
-      vec4 pos = vec4(p%width, p/width, -1, 1);
+      int i = batch[b];
+      vec4 pos = vec4(i%width, i/width, -1, 1);
+      pos.x += 0.5f;
+      pos.y += 0.5f;
       pos = trans * pos;
       Ray ray = Ray::generateRay(camera_position, vec3(pos / pos.w));
 
-      assert(rays[p].getDirection() == ray.getDirection());
-      assert(rays[p].getPosition()  == ray.getPosition());
-
-      ray = rays[batch[i]];
-      IAccDataStruct::IntersectionData intersection_data = scene->getAccDataStruct()->findClosestIntersection(ray);
-      tracePixel(ray, batch[i], intersection_data, id);
+      //ray = rays[batch[b]];
+      IAccDataStruct::IntersectionData intersection_data;
+      if(settings->use_first_bounce){
+        intersection_data = first_intersections[i];
+      } else {
+        intersection_data = scene->getAccDataStruct()->findClosestIntersection(ray);
+      }
+      tracePixel(ray, i, intersection_data, id);
     }
 
     pattern_mutex.lock();
@@ -202,34 +202,6 @@ void BaseTracer::stopTracing() {
 
 float BaseTracer::getPixelsLeft() {
   return clamp((float)(nr_batches - next_batch) / (float)nr_batches);
-}
-
-int BaseTracer::spawnRays() {
-  // Local variables
-  int width = settings->width;
-  int height = settings->height;
-
-  // Number of rays to spawn from camera
-  int number_of_rays = width * height;
-  // Initiate ray array
-  rays = new Ray[number_of_rays]; //TODO om man renderar många gånger i samma körning???
-
-  Camera camera = scene->getCamera();
-  vec3 camera_position = camera.getPosition();
-  mat4 trans = camera.getViewportToModelMatrix(width - 1, height - 1);
-
-  //We step over all "pixels" from the cameras viewpoint
-  for (int y = 0; y < height; y++) {
-    for (int x = 0; x < width; x++) {
-      vec4 aray = vec4(x, y, -1, 1);
-      //vec3 r = unProject(vec3(aray), trans, mat4(), vec4(0, 0, width, height));
-      aray = trans * aray;
-      vec3 r = vec3(aray / aray.w);
-      rays[y * width + x] = Ray::generateRay(camera_position, r);
-    }
-  }
-
-  return number_of_rays;
 }
 
 vec4 BaseTracer::trace(Ray ray, IAccDataStruct::IntersectionData idata, int thread_id) {

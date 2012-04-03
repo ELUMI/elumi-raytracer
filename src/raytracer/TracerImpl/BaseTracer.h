@@ -31,7 +31,6 @@ public:
   virtual ~BaseTracer();
 
   virtual void         traceImage(float* color_buffer);
-  virtual int          spawnRays();
   virtual void first_bounce();
 
   void         stopTracing();
@@ -45,7 +44,6 @@ protected:
   Scene* scene;
   Settings* settings;
   float* buffer;
-  Ray* rays;
 
   IAccDataStruct* datastruct;
   std::vector<ILight*>* lights;
