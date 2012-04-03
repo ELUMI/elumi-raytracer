@@ -25,7 +25,7 @@ public:
 	Scene(Settings* settings);
 	virtual ~Scene();
 
-	void loadTriangles(vector<Triangle*> triangles,AABB* aabb, bool overwrite=false);
+	void loadTriangles(vector<Triangle*> triangles,AABB aabb, bool overwrite=false);
 	void loadCamera(Camera camera);
 	void loadLights(ILight** lights, size_t length, bool overwrite=false);
 	void loadMaterials(Material* materials, size_t length);

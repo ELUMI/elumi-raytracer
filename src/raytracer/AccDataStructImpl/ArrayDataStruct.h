@@ -16,7 +16,7 @@ public:
   virtual ~ArrayDataStruct();
 
   IAccDataStruct::IntersectionData findClosestIntersection(Ray ray);
-  void setData(Triangle** triangles,size_t size,AABB* aabb);
+  void setData(Triangle** triangles,size_t size,AABB aabb);
   vector<AABB*>& getAABBList(){return aabb_list;}
 
 
@@ -24,7 +24,7 @@ private:
   Triangle** triangles;
   size_t size;
   vector<AABB*> aabb_list;
-  AABB* aabb;
+  AABB aabb;
 };
 
 }

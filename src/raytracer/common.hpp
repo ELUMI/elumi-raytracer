@@ -24,6 +24,7 @@ private:
 };
 class AABB{
   public:
+    AABB(){}
     AABB(const float& x,const float& y,const float& z,const float& w,const float& h,const float&  d){
       AABB::pos = vec3(x,y,z);
       AABB::size = vec3(w,h,d);

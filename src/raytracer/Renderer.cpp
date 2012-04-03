@@ -87,7 +87,7 @@ void Renderer::init() {
 }
 
 
-void Renderer::loadTriangles(vector<Triangle*> triangles,AABB* aabb, bool overwrite) {
+void Renderer::loadTriangles(vector<Triangle*> triangles,AABB aabb, bool overwrite) {
   if(m_scene == NULL) {
     cout << "Render has no scene!\n";
     return;

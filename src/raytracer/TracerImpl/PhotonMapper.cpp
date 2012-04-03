@@ -13,8 +13,8 @@ namespace raytracer {
 
 PhotonMapper::PhotonMapper(Scene* scene)
 : StandardTracer(scene) {
-  radius = 0.5f;
-  photonmap = new HashPM(radius, 1024*16);
+  radius = settings->gather_radius;
+  photonmap = new HashPM(radius, settings->photonmap_size);
 }
 
 PhotonMapper::~PhotonMapper() {
@@ -94,7 +94,7 @@ void PhotonMapper::tracePhoton(Photon p, int thread_id)
 
 void PhotonMapper::getPhotons()
 {
-  size_t n = 1024 * 32; //NUMBER_OF_PHOTONS;
+  size_t n = settings->photons; //NUMBER_OF_PHOTONS;
   float totalpower = 0;
   for(size_t i = 0;i < lights->size();++i){
     totalpower += lights->at(i)->getPower();
@@ -121,6 +121,8 @@ void PhotonMapper::getPhotons()
 
       tracePhoton(p, thread_id);
     }
+
+    delete [] rays;
   }
 }
 
@@ -135,7 +137,7 @@ vec3 PhotonMapper::getLuminance(Ray incoming_ray,
 
   vec3 l = vec3(0);
 
-  size_t g; //number of photons
+  //size_t g; //number of photons
   float r;  //gather radius
 
   vector<Photon*> photons = gather(r, idata.interPoint);
