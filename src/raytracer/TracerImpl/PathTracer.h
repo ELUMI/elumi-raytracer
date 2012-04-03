@@ -17,7 +17,7 @@ public:
 	PathTracer(Scene* scene);
 	virtual ~PathTracer();
 
-  virtual vec4 shade(Ray ray, IAccDataStruct::IntersectionData idata, float attenuation, unsigned short depth, int thread_id=-1);
+  virtual vec4 shade(Ray ray, IAccDataStruct::IntersectionData idata, float attenuation, unsigned short depth, int thread_id);
 };
 
 } /* namespace raytracer */

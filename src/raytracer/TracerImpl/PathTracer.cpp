@@ -45,12 +45,12 @@ vec4 PathTracer::shade(Ray incoming_ray,
       Ray new_ray(idata.interPoint, gen_random_hemisphere(normal, thread_id));
       vec3 brdff = brdf(-new_ray.getDirection(), incoming_ray.getDirection(), normal, material, texture_color);
       float new_attenuation = attenuation * (brdff.r+brdff.g+brdff.b)/3;
-      vec4 new_color = tracePrim(new_ray, new_attenuation, depth+1);
+      vec4 new_color = tracePrim(new_ray, new_attenuation, depth+1, thread_id);
       color += vec3(new_color) * brdff;
     }
   }
 
-  color = reflection_refraction(incoming_ray, idata, attenuation, depth, material, normal, color);
+  color = reflection_refraction(incoming_ray, idata, attenuation, depth, material, normal, color, thread_id);
 
   return vec4(color,1.0f);
 }

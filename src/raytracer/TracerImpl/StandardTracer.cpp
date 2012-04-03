@@ -211,7 +211,7 @@ vec3 StandardTracer::getTextureColor(Material* material,
 inline vec3 StandardTracer::reflection_refraction(Ray incoming_ray,
     IAccDataStruct::IntersectionData idata,
     float attenuation, unsigned short depth,
-    Material *material, vec3 normal, vec3 color)
+    Material *material, vec3 normal, vec3 color, int thread_id)
 {
   if(attenuation < ATTENUATION_THRESHOLD || depth > MAX_RECURSION_DEPTH){
     return color;
@@ -236,7 +236,7 @@ inline vec3 StandardTracer::reflection_refraction(Ray incoming_ray,
     vec3 offset = refr_normal * 0.01f;
     vec3 refl_dir = glm::reflect(incoming_ray.getDirection(), refr_normal);
     Ray refl_ray = Ray(idata.interPoint + offset, glm::normalize(refl_dir));
-    vec3 refl_color = vec3(tracePrim(refl_ray, attenuation * reflectance, depth + 1));
+    vec3 refl_color = vec3(tracePrim(refl_ray, attenuation * reflectance, depth + 1, thread_id));
     refl_color *= reflectance;
     // SVART BEROR PÅ ATT DEN STUDSAR MOT SIG SJÄLV OCH ALLTID BLIR REFLECTIVE TILLS MAXDJUP
     //mix with output
@@ -254,7 +254,7 @@ inline vec3 StandardTracer::reflection_refraction(Ray incoming_ray,
       transmittance = 0.0f;
     }else{
       Ray refr_ray = Ray(idata.interPoint + offset, refr_dir);
-      vec4 refr_color = tracePrim(refr_ray, attenuation * (transmittance), depth + 1) * (transmittance);
+      vec4 refr_color = tracePrim(refr_ray, attenuation * (transmittance), depth + 1, thread_id) * (transmittance);
       // SVART BEROR PÅ SELF SHADOWING
       //mix with output
       color = color * (1 - transmittance) + vec3(refr_color);
@@ -341,7 +341,7 @@ vec4 StandardTracer::shade(Ray incoming_ray,
   vec3 color = material->getEmissive();
   color += getAmbient(incoming_ray, idata, thread_id);
   color += getLighting(incoming_ray, idata, normal, material, thread_id);
-  color = reflection_refraction(incoming_ray, idata, attenuation, depth, material, normal, color);
+  color = reflection_refraction(incoming_ray, idata, attenuation, depth, material, normal, color, thread_id);
 
   return vec4(color,1.0f);
 }

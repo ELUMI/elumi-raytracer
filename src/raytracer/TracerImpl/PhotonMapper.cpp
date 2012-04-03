@@ -37,11 +37,11 @@ bool PhotonMapper::bounce(Photon& p, int thread_id, bool store) {
   //cout << p.direction.x << " " << p.direction.y << " " << p.direction.z << "\n";
 
   IAccDataStruct::IntersectionData idata = datastruct->findClosestIntersection(ray);
-  p.position = idata.interPoint;
-  p.normal = idata.normal;
   if(idata.missed()){
     return false;
   }
+  p.position = idata.interPoint;
+  p.normal = idata.normal;
 
   if(store) {
     storeInMap(p);
