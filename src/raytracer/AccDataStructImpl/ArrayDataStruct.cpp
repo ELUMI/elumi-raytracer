@@ -104,15 +104,15 @@ ArrayDataStruct::findClosestIntersection(Ray ray) {
       v1,v2);
 }
 
-void ArrayDataStruct::setData(Triangle** triangles,size_t size,AABB* aabb) {
+void ArrayDataStruct::setData(Triangle** triangles,size_t size,AABB aabb) {
   ArrayDataStruct::triangles = new Triangle*[size];
   for(size_t t=0;t<size;t++){
     ArrayDataStruct::triangles[t] = new Triangle();
     ArrayDataStruct::triangles[t]->set(triangles[t]);
   }
   ArrayDataStruct::size = size;
-  aabb_list.push_back(aabb);
   ArrayDataStruct::aabb = aabb;
+  aabb_list.push_back(&(ArrayDataStruct::aabb));
 }
 
 }

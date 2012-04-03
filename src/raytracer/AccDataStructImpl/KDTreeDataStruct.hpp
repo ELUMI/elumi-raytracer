@@ -26,7 +26,7 @@ public:
   virtual ~KDTreeDataStruct();
 
   IAccDataStruct::IntersectionData findClosestIntersection(Ray ray);
-  void setData(Triangle** triangles,size_t size,AABB* aabb);
+  void setData(Triangle** triangles,size_t size,AABB aabb);
   void build();
   vector<AABB*>& getAABBList(){return KDTreeDataStruct::splitting_list;}
 
@@ -105,8 +105,8 @@ private:
   int qsPartition(int* triangles,int top,int bottom,int axis);
 
 
-  KDNode* root;
-  AABB* aabb;
+  KDNode root;
+  AABB aabb;
   vector<AABB*> splitting_list;
   SortableTriangle** triangles;
   int* root_triangles;

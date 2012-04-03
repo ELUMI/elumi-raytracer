@@ -59,7 +59,7 @@ Scene::~Scene() {
     delete m_drawable;
 }
 
-void Scene::loadTriangles(vector<Triangle*> triangles,AABB* aabb, bool overwrite) {
+void Scene::loadTriangles(vector<Triangle*> triangles,AABB aabb, bool overwrite) {
   m_triangles = triangles;
   m_acc_data_struct->setData(triangles.data(),triangles.size(),aabb);
 

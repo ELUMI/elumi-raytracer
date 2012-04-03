@@ -25,13 +25,18 @@ using namespace glm;
 namespace raytracer {
 
 KDTreeDataStruct::KDTreeDataStruct(Settings* settings){
-  root = new KDNode();
   KDTreeDataStruct::settings = settings;
+  triangles = 0;
+  root_triangles = 0;
 }
 
 KDTreeDataStruct::KDTreeDataStruct(std::vector<Triangle*> triangles){
 }
 KDTreeDataStruct::~KDTreeDataStruct() {
+  if(triangles)
+    delete [] triangles;
+  if(root_triangles)
+    delete [] root_triangles;
 }
 
 IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(Ray* ray,float _min,float _max){
@@ -39,12 +44,12 @@ IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(
   stack<float> min_stack;
   stack<float> max_stack;
 
-  node_stack.push(root);
+  node_stack.push(&root);
   min_stack.push(_min);
   max_stack.push(_max);
 
   // Speed optimisation
-  float* ray_dir = new float[3];
+  float ray_dir[3];
   for(size_t axis=0;axis<3;axis++){
     ray_dir[axis] = 1 / ray->getDirection()[axis];
   }
@@ -162,7 +167,7 @@ IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(
 IAccDataStruct::IntersectionData
 KDTreeDataStruct::findClosestIntersection(Ray ray) {
   float min,max;
-  if(aabb->intersect(ray,min,max)){ //TODO: Bugg när kameran ligger på linjen för första splitting planet
+  if(aabb.intersect(ray,min,max)){ //TODO: Bugg när kameran ligger på linjen för första splitting planet
     return findClosestIntersectionStack(&ray,min,max);
   }
   return IntersectionData::miss();
@@ -201,8 +206,8 @@ void KDTreeDataStruct::constructTreeStack(Side side){
   stack<int*> triangle_pos_node;
   stack< KDNode* > node_stack;
 
-  root = new KDNode();
-  root->setSide(KDTreeDataStruct::ROOT);
+  root = KDNode();
+  root.setSide(KDTreeDataStruct::ROOT);
 
   depth_node.push(0);
 
@@ -210,7 +215,7 @@ void KDTreeDataStruct::constructTreeStack(Side side){
   quickSort(root_triangles,0,triangle_count-1,0);
   triangle_pos_node.push(root_triangles);
   size_node.push(triangle_count);
-  node_stack.push(root);
+  node_stack.push(&root);
 
   int min_size = (int)log10(triangle_count)*8;
 
@@ -300,10 +305,10 @@ void KDTreeDataStruct::constructTreeStack(Side side){
 }
 void KDTreeDataStruct::constructWireframe(){
   stack<AABB*> aabb_stack;
-   stack<KDNode*> node_stack;
+  stack<KDNode*> node_stack;
 
-  node_stack.push(root);
-  aabb_stack.push(aabb);
+  node_stack.push(&root);
+  aabb_stack.push(&aabb);
 
   while(!node_stack.empty()){
     KDNode* node = node_stack.top();
@@ -362,7 +367,11 @@ void KDTreeDataStruct::constructWireframe(){
  * sorting every time we create a node. The three triangle lists are also the only triangle lists
  * that need to be created because each node has an axis, start and end position.
  */
-void KDTreeDataStruct::setData(Triangle** triangles,size_t size,AABB* aabb){
+void KDTreeDataStruct::setData(Triangle** triangles,size_t size,AABB aabb){
+  if(KDTreeDataStruct::triangles)
+    delete [] KDTreeDataStruct::triangles;
+  if(KDTreeDataStruct::root_triangles)
+    delete [] KDTreeDataStruct::root_triangles;
   KDTreeDataStruct::triangles = new SortableTriangle*[size];
   KDTreeDataStruct::root_triangles = new int[size];
   for(size_t t=0;t<size;t++){
