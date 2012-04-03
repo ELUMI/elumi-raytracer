@@ -70,6 +70,7 @@ Scene* XML::importScene(const char* fileName) {
       xml_node tonemapping  = settings_doc.child("Tonemapping");
       xml_node tree         = settings_doc.child("Tree");
       xml_node wireframe    = settings_doc.child("Wireframe");
+      xml_node photonmapper = settings_doc.child("Photonmapper");
 
       if(screen) {
         settings->width = screen.attribute("width").as_int();
@@ -98,6 +99,15 @@ Scene* XML::importScene(const char* fileName) {
       if(wireframe){
         settings->wireframe = wireframe.attribute("enable").as_int();
       }
+      if(photonmapper){
+        if(!photonmapper.attribute("photons").empty())
+          settings->photons = photonmapper.attribute("photons").as_int();
+        if(!photonmapper.attribute("radius").empty())
+          settings->gather_radius = photonmapper.attribute("radius").as_float();
+        if(!photonmapper.attribute("photonmap_size").empty())
+          settings->photonmap_size = photonmapper.attribute("photonmap_size").as_int();
+      }
+
       if(settings->opengl_version<3){
         settings->wireframe = 0;
       }

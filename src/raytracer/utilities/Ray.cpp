@@ -47,11 +47,11 @@ Ray Ray::refraction(Ray ray, vec3 n, vec3 intersection_point, float index) {
   return Ray(intersection_point, refr);
 }
 
-const vec3& Ray::getPosition() {
+const vec3& Ray::getPosition() const {
   return position;
 }
 
-const vec3& Ray::getDirection() {
+const vec3& Ray::getDirection() const {
   return direction;
 }
 

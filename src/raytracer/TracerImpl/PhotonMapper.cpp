@@ -13,8 +13,8 @@ namespace raytracer {
 
 PhotonMapper::PhotonMapper(Scene* scene)
 : StandardTracer(scene) {
-  radius = 0.5f;
-  photonmap = new HashPM(radius, 1024*16);
+  radius = settings->gather_radius;
+  photonmap = new HashPM(radius, settings->photonmap_size);
 }
 
 PhotonMapper::~PhotonMapper() {

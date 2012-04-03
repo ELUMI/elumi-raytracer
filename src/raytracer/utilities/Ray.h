@@ -24,8 +24,8 @@ public:
   static Ray reflection(Ray ray, vec3 normal, vec3 intersection_point);
   static Ray refraction(Ray ray, vec3 normal, vec3 intersection_point, float refr_index);
 
-  const vec3& getPosition();
-  const vec3& getDirection();
+  const vec3& getPosition() const;
+  const vec3& getDirection() const;
 
 private:
   vec3 position;

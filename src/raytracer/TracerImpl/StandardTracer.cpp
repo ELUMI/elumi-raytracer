@@ -102,7 +102,7 @@ inline vec3 StandardTracer::bumpMap(Ray incoming_ray,
   return normal;
 }
 
-inline vec3 StandardTracer::brdf(vec3 incoming_direction,
+vec3 StandardTracer::brdf(vec3 incoming_direction,
     vec3 outgoing_direction, vec3 normal,
     Material * material, vec3 texture_color)
 {
