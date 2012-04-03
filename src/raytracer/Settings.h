@@ -49,7 +49,7 @@ struct Settings {
 
     //Supersampling
     super_sampler_pattern = 0;
-    samples = 16;
+    samples = 1;
   }
 
   // Screen

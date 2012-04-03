@@ -70,6 +70,7 @@ Scene* XML::importScene(const char* fileName) {
       xml_node tonemapping  = settings_doc.child("Tonemapping");
       xml_node tree         = settings_doc.child("Tree");
       xml_node wireframe    = settings_doc.child("Wireframe");
+      xml_node supersampling= settings_doc.child("Supersampling");
 
       if(screen) {
         settings->width = screen.attribute("width").as_int();
@@ -97,6 +98,10 @@ Scene* XML::importScene(const char* fileName) {
       }
       if(wireframe){
         settings->wireframe = wireframe.attribute("enable").as_int();
+      }
+      if(supersampling){
+        settings->samples = supersampling.attribute("samples").as_int();
+        settings->super_sampler_pattern = supersampling.attribute("pattern").as_int();
       }
       if(settings->opengl_version<3){
         settings->wireframe = 0;
