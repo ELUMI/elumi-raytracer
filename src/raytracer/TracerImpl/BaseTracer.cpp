@@ -11,11 +11,13 @@
 #include <omp.h>
 #include <glm/gtc/matrix_transform.hpp> //translate, rotate, scale, perspective
 
-#include "boost/thread.hpp"
-#include "boost/bind.hpp"
-#include "boost/thread/mutex.hpp"
+#include <boost/thread.hpp>
+#include <boost/bind.hpp>
+#include <boost/thread/mutex.hpp>
 
+#include "../utilities/Random.h"
 #include "../RenderPatternImpl/LinePattern.h"
+#include "../SuperSamplePatternImpl/RandomPattern.h"
 
 namespace raytracer {
 
@@ -105,18 +107,6 @@ void BaseTracer::initTracing()
       << "\" z=\"" << scene->getCamera().getUpVector().z << "\"/>\n";
 }
 
-void BaseTracer::tracePixel(Ray ray, size_t i
-    , IAccDataStruct::IntersectionData intersection_data
-    , int thread_id){
-
-  posbuff[i] = intersection_data.interPoint;
-  vec4 c = trace(ray, intersection_data, thread_id);
-  buffer[i * 4] = c.r;
-  buffer[i * 4 + 1] = c.g;
-  buffer[i * 4 + 2] = c.b;
-  buffer[i * 4 + 3] = c.a;
-}
-
 void BaseTracer::traceImage(float *color_buffer)
 {
   buffer = color_buffer;
@@ -149,7 +139,7 @@ void BaseTracer::traceImage(float *color_buffer)
   delete pattern;
 }
 
-void BaseTracer::traceImageThread(int id) {
+void BaseTracer::traceImageThread(int thread_id) {
   // Synchronize work
   int my_batch = 0;
   pattern_mutex.lock();
@@ -163,6 +153,12 @@ void BaseTracer::traceImageThread(int id) {
   vec3 camera_position = camera.getPosition();
   mat4 trans = camera.getViewportToModelMatrix(width, height);
 
+  ISuperSamplePattern* ss_pattern;
+  switch(settings->super_sampler_pattern) {
+  case 0:
+  default:
+    ss_pattern = new RandomPattern(settings->samples, thread_id);
+  }
 
   while(my_batch < nr_batches){
     //cout << "Thread: " << id << " on batch: " << my_batch << endl;
@@ -174,26 +170,40 @@ void BaseTracer::traceImageThread(int id) {
       }
 
       int i = batch[b];
-      vec4 pos = vec4(i%width, i/width, -1, 1);
-      pos.x += 0.5f;
-      pos.y += 0.5f;
-      pos = trans * pos;
-      Ray ray = Ray::generateRay(camera_position, vec3(pos / pos.w));
+      vec2 coord = vec2(i%width, i/width);
 
-      //ray = rays[batch[b]];
-      IAccDataStruct::IntersectionData intersection_data;
-      if(settings->use_first_bounce){
-        intersection_data = first_intersections[i];
-      } else {
-        intersection_data = scene->getAccDataStruct()->findClosestIntersection(ray);
+      const vec2* offsets = ss_pattern->getNewOffsets();
+
+      vec4 c = vec4(0);
+      for(int s=0; s<ss_pattern->getSize(); ++s) {
+        vec4 pos = trans * vec4(coord.x+offsets[s].x, coord.y+offsets[i].y, -1, 1);
+        Ray ray = Ray::generateRay(camera_position, vec3(pos / pos.w));
+
+        IAccDataStruct::IntersectionData intersection_data;
+        if(settings->use_first_bounce){
+          intersection_data = first_intersections[i];
+        } else {
+          intersection_data = scene->getAccDataStruct()->findClosestIntersection(ray);
+        }
+
+        if(s==0) {
+          posbuff[i] = intersection_data.interPoint;
+        }
+        c += trace(ray, intersection_data, thread_id);
       }
-      tracePixel(ray, i, intersection_data, id);
+      c /= ss_pattern->getSize();
+      buffer[i * 4] = c.r;
+      buffer[i * 4 + 1] = c.g;
+      buffer[i * 4 + 2] = c.b;
+      buffer[i * 4 + 3] = c.a;
     }
 
     pattern_mutex.lock();
     my_batch = next_batch++;
     pattern_mutex.unlock();
   }
+
+  delete ss_pattern;
 }
 
 void BaseTracer::stopTracing() {

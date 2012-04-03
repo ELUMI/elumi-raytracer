@@ -57,7 +57,6 @@ protected:
 
 private:
   void traceImageThread(int id);
-  void tracePixel(Ray ray, size_t i, IAccDataStruct::IntersectionData intersection_data, int thread_id);
 
   IRenderPattern* pattern;
   int nr_batches;

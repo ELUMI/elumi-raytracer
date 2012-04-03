@@ -46,6 +46,10 @@ struct Settings {
     // Tonemapping
     key = 0.18;
     white = 1e20;
+
+    //Supersampling
+    super_sampler_pattern = 0;
+    samples = 1;
   }
 
   // Screen
@@ -76,6 +80,10 @@ struct Settings {
   // Tonemapping
   float key;
   float white;
+
+  //Supersampling
+  unsigned int super_sampler_pattern;
+  unsigned int samples;
 };
 
 }
