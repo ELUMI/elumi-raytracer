@@ -33,10 +33,14 @@ KDTreeDataStruct::KDTreeDataStruct(Settings* settings){
 KDTreeDataStruct::KDTreeDataStruct(std::vector<Triangle*> triangles){
 }
 KDTreeDataStruct::~KDTreeDataStruct() {
-  if(triangles)
-    delete [] triangles;
-  if(root_triangles)
-    delete [] root_triangles;
+  if(KDTreeDataStruct::triangles) {
+    for(size_t t=0; t<triangle_count; ++t){
+      delete triangles[t];
+    }
+    delete [] KDTreeDataStruct::triangles;
+  }
+  //if(root_triangles)
+  //  delete [] root_triangles;
 }
 
 IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(Ray* ray,float _min,float _max){
@@ -217,7 +221,7 @@ void KDTreeDataStruct::constructTreeStack(Side side){
   size_node.push(triangle_count);
   node_stack.push(&root);
 
-  int min_size = (int)log10(triangle_count)*8;
+  size_t min_size = (int)log10(triangle_count)*8;
 
   while(!node_stack.empty()){
     int depth = depth_node.top();
@@ -239,8 +243,7 @@ void KDTreeDataStruct::constructTreeStack(Side side){
       node->setTriangles(triangles_pos);
       node->setAxis(axis);
       node->setLeaf(true);
-    }
-    else{
+    } else {
 
       //Pick median triangle and just select the barycenter, or mean of the two in the middle.
       float first_median = triangles[triangles_pos[size/2-1+size%2]]->getBarycenter(axis);
@@ -368,10 +371,15 @@ void KDTreeDataStruct::constructWireframe(){
  * that need to be created because each node has an axis, start and end position.
  */
 void KDTreeDataStruct::setData(Triangle** triangles,size_t size,AABB aabb){
-  if(KDTreeDataStruct::triangles)
+  if(KDTreeDataStruct::triangles) {
+    for(size_t t=0; t<triangle_count; ++t){
+      delete triangles[t];
+    }
     delete [] KDTreeDataStruct::triangles;
+  }
   if(KDTreeDataStruct::root_triangles)
     delete [] KDTreeDataStruct::root_triangles;
+
   KDTreeDataStruct::triangles = new SortableTriangle*[size];
   KDTreeDataStruct::root_triangles = new int[size];
   for(size_t t=0;t<size;t++){

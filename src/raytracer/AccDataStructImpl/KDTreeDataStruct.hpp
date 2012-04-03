@@ -37,6 +37,12 @@ private:
   class KDNode{
   public:
     KDNode():left(NULL),right(NULL),leaf(false){};
+    ~KDNode() {
+      if(left)
+        delete left;
+      if(right)
+        delete right;
+    }
     void setLeft(KDNode* left){KDNode::left=left;}
     void setRight(KDNode* right){KDNode::right=right;}
     void setLeaf(bool leaf){KDNode::leaf=leaf;}
@@ -66,7 +72,7 @@ private:
   };
   class SortableTriangle {
   public:
-    SortableTriangle(Triangle* tri): triangle(tri),min(new float[3]),max(new float[3]),barycenter(new float[3])
+    SortableTriangle(Triangle* tri): triangle(tri)
     {
       vector<vec3*> vertices = triangle->getVertices();
       barycenter[0]= (vertices[0]->x + vertices[1]->x + vertices[2]->x)/3;
@@ -92,7 +98,9 @@ private:
     const float& getBarycenter(int axis){return barycenter[axis];}
     Triangle* getTriangle(){return triangle;}
   private:
-    float* min;float* max;float* barycenter;
+    float min[3];
+    float max[3];
+    float barycenter[3];
     Triangle* triangle;
 
   };

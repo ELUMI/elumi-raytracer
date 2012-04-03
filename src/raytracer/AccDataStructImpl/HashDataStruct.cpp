@@ -52,8 +52,8 @@ void HashDataStruct::setData(Triangle** triangles,size_t size,AABB aabb){
         for(float z=min.z; z<max.z+bucketsize; z+=bucketsize){
           HashedTriangle i;
           size_t has2 =    size_t(x / hashpoint.getBucketSize())
-                  +(1<<23)*size_t(y / hashpoint.getBucketSize())
-              +(1<<(2*23))*size_t(z / hashpoint.getBucketSize());
+                  +(1<<10)*size_t(y / hashpoint.getBucketSize())
+              +(1<<(2*10))*size_t(z / hashpoint.getBucketSize());
           i.hash = has2;
           i.triangle = t;
           hashpoint.addItem(vec3(x,y,z), i);
@@ -65,9 +65,9 @@ void HashDataStruct::setData(Triangle** triangles,size_t size,AABB aabb){
 
 float getTMax(float p, float dir, float size){
   if(dir > 0) {
-    p = (1-mod(p,size))/dir;
+    return (1-mod(p,size))/dir;
   } else {
-    p = mod(p,size)/-dir;
+    return mod(p,size)/-dir;
   }
 }
 
@@ -90,8 +90,8 @@ IAccDataStruct::IntersectionData HashDataStruct::findClosestIntersection(Ray ray
   while(--length) {
     size_t hash = hashpoint.hash(point);
     size_t has2 =   size_t(point.x / hashpoint.getBucketSize())
-           +(1<<23)*size_t(point.y / hashpoint.getBucketSize())
-       +(1<<(2*23))*size_t(point.z / hashpoint.getBucketSize());
+           +(1<<10)*size_t(point.y / hashpoint.getBucketSize())
+       +(1<<(2*10))*size_t(point.z / hashpoint.getBucketSize());
     vector<HashedTriangle> list = hashpoint.getBucket(hash);
     vector<Triangle*> goodlist;
     for(size_t i=0; i<list.size(); ++i){

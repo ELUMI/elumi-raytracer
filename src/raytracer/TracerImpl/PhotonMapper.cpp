@@ -94,7 +94,7 @@ void PhotonMapper::tracePhoton(Photon p)
 
 void PhotonMapper::getPhotons()
 {
-  size_t n = 1024 * 32; //NUMBER_OF_PHOTONS;
+  size_t n = settings->photons; //NUMBER_OF_PHOTONS;
   float totalpower = 0;
   for(size_t i = 0;i < lights->size();++i){
     totalpower += lights->at(i)->getPower();
@@ -103,7 +103,7 @@ void PhotonMapper::getPhotons()
     ILight *light = lights->at(i);
     float npe = n * light->getPower() / totalpower;
     size_t m = size_t(npe); //photons per light
-    Ray *rays = new Ray[m];
+    Ray* rays = new Ray[m];
     light->getRays(rays, m);
     vec3 power = (1 / (light->getPower() / totalpower)) * light->getColor() * light->getIntensity();
     for(size_t j = 0;j < m;++j){
@@ -118,6 +118,8 @@ void PhotonMapper::getPhotons()
 
       tracePhoton(p);
     }
+
+    delete [] rays;
   }
 }
 
@@ -132,7 +134,7 @@ vec3 PhotonMapper::getLuminance(Ray incoming_ray,
 
   vec3 l = vec3(0);
 
-  size_t g; //number of photons
+  //size_t g; //number of photons
   float r;  //gather radius
 
   vector<Photon*> photons = gather(r, idata.interPoint);

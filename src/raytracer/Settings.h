@@ -46,6 +46,9 @@ struct Settings {
     // Tonemapping
     key = 0.18;
     white = 1e20;
+
+    //Photon mapper
+    photons = 32*1024;
   }
 
   // Screen
@@ -76,6 +79,9 @@ struct Settings {
   // Tonemapping
   float key;
   float white;
+
+  //Photon mapper
+  size_t photons; //32*1024;
 };
 
 }
