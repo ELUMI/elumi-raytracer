@@ -43,9 +43,9 @@ HilbertCurve::HilbertCurve(int width, int height) {
   this->height = height;
 
   n = max(width,height);
-  nr_of_batches = n*n;
-  int tmp = n/2;
+  int tmp = n/4;
   batch_size = tmp > 0 ? tmp*tmp : 1;
+  nr_of_batches = 16;
 
   //TODO mindre och mindre allteftersom? dynamiskt?
   batches = new int*[nr_of_batches];
@@ -53,12 +53,14 @@ HilbertCurve::HilbertCurve(int width, int height) {
   int x,y;
 
   for(int i=0; i<nr_of_batches; ++i) {
-    batches = new int*[batch_size];
+    batches[i] = new int[batch_size];
     for(int j=0; j<batch_size; ++j) {
-      d2xy(n,i*nr_of_batches+j,&x,&y);
-      int yo = y*height+x*width;
+      d2xy(n,i*batch_size+j,&x,&y);
+      //      x = x%width;
+      //      y = y%height;
+      int yo = y*width+x;
       batches[i][j] = yo;
-      std::cout << yo << "\n";
+      //std::cout << "i=" << i << ",j=" << j << " => "  << i*batch_size+j <<   " (" << x << "," << y << ") => " << yo << "\n";
     }
   }
 
@@ -66,12 +68,13 @@ HilbertCurve::HilbertCurve(int width, int height) {
 
 HilbertCurve::~HilbertCurve() {
   for(int i = 0; i < nr_of_batches; ++i)
-      delete [] batches[i];
-    delete [] batches;
+    delete [] batches[i];
+  delete [] batches;
 }
 
 int* HilbertCurve::getBatch(int batchNr, int *length) {
-  return length;
+  *length = batch_size;
+  return batches[batchNr];
 }
 
 int HilbertCurve::getNumberBatches() {
