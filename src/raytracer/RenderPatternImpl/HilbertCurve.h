@@ -25,12 +25,12 @@ public:
 
 private:
   int** batches;
+  int* batch_sizes;
 
-  int n;
-  int batch_size;
-  int nr_of_batches;
-  int width;
-  int height;
+  unsigned int n;
+  unsigned int nr_of_batches;
+  unsigned int width;
+  unsigned int height;
 };
 
 }
