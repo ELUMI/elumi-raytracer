@@ -8,6 +8,7 @@
 #ifndef STANDARDTRACER_H_
 #define STANDARDTRACER_H_
 
+#include "../IEnvironmentMap.h"
 #include "BaseTracer.h"
 
 namespace raytracer {
@@ -35,6 +36,9 @@ protected:
   vec3 reflection_refraction(Ray incoming_ray, IAccDataStruct::IntersectionData idata, float attenuation, unsigned short  depth, Material *material, vec3 normal, vec3 color, int thread_id);
   vec3 getLighting(Ray incoming_ray, IAccDataStruct::IntersectionData idata, vec3 normal, Material *material, int thread_id);
   virtual vec3 getAmbient(Ray incoming_ray, IAccDataStruct::IntersectionData idata, int thread_id);
+
+private:
+  IEnvironmentMap* environment_map;
 };
 
 }

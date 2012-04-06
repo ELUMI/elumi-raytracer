@@ -10,6 +10,7 @@
 
 #include "StandardTracer.h"
 #include "../utilities/Random.h"
+#include "../EnvironmentMapImpl/CubeMap.h"
 
 namespace raytracer {
 
@@ -19,6 +20,8 @@ StandardTracer::StandardTracer(Scene* scene)
 , MAX_RECURSION_DEPTH(settings->max_recursion_depth)
 , ATTENUATION_THRESHOLD(settings->recursion_attenuation_threshold) {
 
+  environment_map = new CubeMap();
+  environment_map->loadImageFiles(NULL, 6);
 }
 
 StandardTracer::~StandardTracer() {
@@ -329,10 +332,12 @@ vec4 StandardTracer::shade(Ray incoming_ray,
 //      //vec3 lc = light->getPosition()-scene->getCamera().getPosition();
 //      //light_color *= light->getIntensity(lc.length());
 //    }
-//
+//files
 //    return settings->background_color + vec4(light_color.r,light_color.g,light_color.b,1.0f);
 
-    return settings->background_color;
+    return environment_map->getColor(incoming_ray);
+
+    //return settings->background_color;
   }
   assert(idata.material < scene->getMaterialVector().size());
   // Intersection!

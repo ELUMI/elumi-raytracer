@@ -95,6 +95,7 @@ void OBJImporter::loadFile(const char* filename){
     replace(_ks_map.begin(), _ks_map.end(), '\n', '\0');
     replace(_d_map.begin(), _d_map.end(), '\n', '\0');
 
+// (const ILstring)
 
 		ILuint image;
 		int diff_map_index = -1, bump_map = -1, ks_map = -1, norm_map = -1,
