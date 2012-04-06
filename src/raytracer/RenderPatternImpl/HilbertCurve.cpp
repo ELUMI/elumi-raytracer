@@ -39,7 +39,7 @@ void rot(int n, int *x, int *y, int rx, int ry) {
 }
 
 unsigned int nextOrEqualPowerOf2 (unsigned int x) {
-  unsigned int powerOfTwo = 1;
+  unsigned int powerOfTwo = 2;
 
   while (powerOfTwo < x && powerOfTwo < 2147483648)
     powerOfTwo *= 2;
@@ -53,10 +53,9 @@ HilbertCurve::HilbertCurve(int width, int height) {
   unsigned int max_side = max(width,height);
   n = nextOrEqualPowerOf2(max_side);
 
-  nr_of_batches = 32; // Must be power of 2
+  nr_of_batches = n/8; // Must be power of 2
+  nr_of_batches = nr_of_batches == 0 ? 1 : nr_of_batches;
   unsigned int max_batch_size = (n*n)>=nr_of_batches ? (n*n)/nr_of_batches : 1;
-  //max_batch_size = max_batch_size*max_batch_size;
-
 
   //TODO mindre och mindre allteftersom? dynamiskt?
   batches = new int*[nr_of_batches];
@@ -72,12 +71,12 @@ HilbertCurve::HilbertCurve(int width, int height) {
 
     for(unsigned int j=0; j<max_batch_size; ++j) {
       d2xy(n,i*max_batch_size+j,&x,&y);
-      int yo = y*width+x;
+
       if (x>=width || y>=height) {
         batches[i][j] = -1;
         batch_errors[i]++;
       } else {
-
+        int yo = y*width+x;
         batches[i][j] = yo;
       }
       //std::cout << "i=" << i << ",j=" << j << " => "  << i*max_batch_size+j <<   " (" << x << "," << y << ") => " << yo << "\n";
