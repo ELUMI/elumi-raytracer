@@ -31,7 +31,6 @@ public:
   virtual ~BaseTracer();
 
   virtual void         traceImage(float* color_buffer);
-  virtual int          spawnRays();
   virtual void first_bounce();
 
   void         stopTracing();
@@ -39,13 +38,12 @@ public:
 
   vec3* posbuff;
 protected:
-  virtual vec4 trace(Ray ray, IAccDataStruct::IntersectionData idata, int thread_id=-1);
-  virtual vec4 shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata, int thread_id=-1);
+  virtual vec4 trace(Ray ray, IAccDataStruct::IntersectionData idata, int thread_id);
+  virtual vec4 shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata, int thread_id);
 
   Scene* scene;
   Settings* settings;
   float* buffer;
-  Ray* rays;
 
   IAccDataStruct* datastruct;
   std::vector<ILight*>* lights;
@@ -59,7 +57,6 @@ protected:
 
 private:
   void traceImageThread(int id);
-  void tracePixel(Ray ray, size_t i, IAccDataStruct::IntersectionData intersection_data, int thread_id=-1);
 
   IRenderPattern* pattern;
   int nr_batches;

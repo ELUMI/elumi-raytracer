@@ -46,6 +46,15 @@ struct Settings {
     // Tonemapping
     key = 0.18;
     white = 1e20;
+
+    //Supersampling
+    super_sampler_pattern = 0;
+    samples = 1;
+
+    //Photon mapper
+    photons = 32*1024;
+    gather_radius = 0.5f;
+    photonmap_size = 1024;
   }
 
   // Screen
@@ -76,6 +85,15 @@ struct Settings {
   // Tonemapping
   float key;
   float white;
+
+  //Supersampling
+  unsigned int super_sampler_pattern;
+  unsigned int samples;
+
+  //Photon mapper
+  size_t photons; //32*1024;
+  float gather_radius;
+  size_t photonmap_size;
 };
 
 }

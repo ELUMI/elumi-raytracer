@@ -57,12 +57,12 @@ void drawPointsPhoton();
 void writePhotonMap();
 void readPhotonMap();
 
-int open_gl_version = -1;
+int open_gl_version = 2;
 unsigned int win_width, win_height;
 string inputFileName, outputFileName;
 
 int main(int argc, char* argv[]) {
-  init_generator();
+  init_generators();
   int running = GL_TRUE;
   getArguments(argc, argv);
 
@@ -193,7 +193,7 @@ int main(int argc, char* argv[]) {
       glfwSwapBuffers();
 
       timedCallback();
-      glfwSleep(0.1);
+      glfwSleep(1.0f/60.0f);
 
       //Check if ESC key was pressed or window was closed
       running = !glfwGetKey(GLFW_KEY_ESC) && glfwGetWindowParam(GLFW_OPENED);
@@ -216,6 +216,7 @@ int main(int argc, char* argv[]) {
   delete myRenderer;
   std::cout << std::endl << "end of PROGRAM" << std::endl;
 
+  delete_generators();
   exit(EXIT_SUCCESS);
 }
 
@@ -263,8 +264,7 @@ void getArguments(int argc, char *argv[]) {
   if (vm.count("gl-version")) {
     open_gl_version = vm["gl-version"].as<int> ();
   } else {
-    cout << "Not using OpenGL.\n";
-    open_gl_version = 0;
+    cout << "Using default OpenGL version: " << open_gl_version << "\n";
   }
 }
 

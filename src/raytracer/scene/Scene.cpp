@@ -59,7 +59,7 @@ Scene::~Scene() {
     delete m_drawable;
 }
 
-void Scene::loadTriangles(vector<Triangle*> triangles,AABB* aabb, bool overwrite) {
+void Scene::loadTriangles(vector<Triangle*> triangles,AABB aabb, bool overwrite) {
   m_triangles = triangles;
   m_acc_data_struct->setData(triangles.data(),triangles.size(),aabb);
 
@@ -94,7 +94,7 @@ void Scene::loadMaterials(std::vector<raytracer::Material*> materials) {
 
 
 void Scene::loadTextures(std::vector<raytracer::Texture*> textures) {
-  for(int i = 0; i < textures.size();i++) {
+  for(size_t i = 0; i < textures.size();i++) {
     m_textures.push_back(textures.at(i));
   }
 }
