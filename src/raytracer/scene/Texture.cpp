@@ -43,8 +43,7 @@ void Texture::setData(unsigned int width, unsigned int height, unsigned char* da
 }
 
 Texture::~Texture() {
-  // TODO ? kanske.
-  // vart skapas data, och vart tas det bort?
+  // TODO ILShutdown anropas i SCENES's destructor. Den verkar ta bort datan?
 }
 
 unsigned int Texture::getHeight() {

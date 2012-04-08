@@ -46,6 +46,7 @@ XML::~XML() {
 Scene* XML::importScene(const char* fileName) {
 
   ilInit();
+  iluInit();
 
   xml_document doc;
   pugi::xml_parse_result result = doc.load_file(fileName);
@@ -85,8 +86,11 @@ Scene* XML::importScene(const char* fileName) {
       }
       if(tracer) {
         settings->tracer = tracer.attribute("version").as_int();
-        settings->pattern = tracer.attribute("pattern").as_int();
-        settings->batches = tracer.attribute("batches").as_int();
+
+        if(!tracer.attribute("pattern").empty())
+          settings->pattern = tracer.attribute("pattern").as_int();
+        if(!tracer.attribute("batches").empty())
+          settings->batches = tracer.attribute("batches").as_int();
       }
       if(recursion) {
         settings->max_recursion_depth = recursion.attribute("maxDepth").as_int();
@@ -260,8 +264,29 @@ Scene* XML::importScene(const char* fileName) {
         ilLoadImage((const ILstring)srcs[i].c_str());
 
         if(ilGetError() == IL_NO_ERROR) {
+
+          // Fix rotation
+          if(i==0) {
+            iluRotate(180);
+          }
+          if(i==2) {
+            iluRotate(180);
+          }
+          if(i==3) {
+            iluRotate(90);
+          }
+          if(i==4) {
+            iluRotate(180);
+            iluMirror();
+          }
+          if(i==5) {
+            iluRotate(270);
+            iluMirror();
+          }
+
           ILuint w = ilGetInteger(IL_IMAGE_WIDTH);
           ILuint h = ilGetInteger(IL_IMAGE_HEIGHT);
+
           textures[i] = new Texture();
           textures[i]->setData(w,h,ilGetData(),Texture::TEXTURE);
         } else {

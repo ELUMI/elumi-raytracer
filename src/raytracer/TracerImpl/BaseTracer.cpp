@@ -118,7 +118,11 @@ void BaseTracer::traceImage(float *color_buffer)
 
   //TODO: add first bounce again
 
-  pattern = new HilbertCurve(settings->width, settings->height);
+  if (settings->pattern == 1)
+    pattern = new HilbertCurve(settings->width, settings->height, settings->batches);
+  else
+    pattern = new LinePattern(settings->width, settings->height);
+
   nr_batches = pattern->getNumberBatches();
   next_batch = 0;
 

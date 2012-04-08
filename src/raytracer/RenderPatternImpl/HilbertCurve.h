@@ -17,7 +17,7 @@ void d2xy(int n, int d, int *x, int *y);
 
 class HilbertCurve: public raytracer::IRenderPattern {
 public:
-  HilbertCurve(int width, int height);
+  HilbertCurve(int width, int height, int arg_batches=0);
   virtual ~HilbertCurve();
 
   int* getBatch(int batchNr, int* length);

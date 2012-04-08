@@ -46,14 +46,18 @@ unsigned int nextOrEqualPowerOf2 (unsigned int x) {
   return powerOfTwo;
 }
 
-HilbertCurve::HilbertCurve(int width, int height) {
+HilbertCurve::HilbertCurve(int width, int height, int arg_batches) {
   this->width = width;
   this->height = height;
 
   unsigned int max_side = max(width,height);
   n = nextOrEqualPowerOf2(max_side);
 
-  nr_of_batches = n/8; // Must be power of 2
+  if (arg_batches == 0)
+    nr_of_batches = n/8; // Must be power of 2
+  else
+    nr_of_batches = nextOrEqualPowerOf2(arg_batches);
+
   nr_of_batches = nr_of_batches == 0 ? 1 : nr_of_batches;
   unsigned int max_batch_size = (n*n)>=nr_of_batches ? (n*n)/nr_of_batches : 1;
 

@@ -34,25 +34,6 @@ void CubeMap::loadTextures(Texture** textures, size_t size) {
   }
 
   this->textures = textures;
-
-//  width = height = 50;
-//
-//  image_data = new vec4**[nr_of_images];
-//  for(size_t i=0; i<nr_of_images; ++i) {
-//    vec4** rows = new vec4*[height];
-//    for(size_t h=0; h<height; ++h) {
-//      vec4* line = new vec4[width];
-//      for(size_t w=0; w<width; ++w) {
-//        if(w%10==0 && h%10==0)
-//          line[w] = vec4(0,1,1,1);
-//        else
-//          line[w] = vec4(0,1,0,1);
-//      }
-//      rows[h] = line;
-//    }
-//    image_data[i] = rows;
-//  }
-
 }
 
 vec3 CubeMap::getColor(Ray ray) {
@@ -86,8 +67,6 @@ vec3 CubeMap::getColor(Ray ray) {
 
   coord /= max;
   coord = (coord + vec2(1.0f,1.0f)) / 2.0f;
-
-  //std::cout << "quad: " << quad << ", coord: " << coord.x << ", " << coord.y << "\n";
 
   return getColorFromImage(coord, quad);
 }

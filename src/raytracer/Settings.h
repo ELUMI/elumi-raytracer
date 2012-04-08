@@ -35,7 +35,7 @@ struct Settings {
 
     // Tracer
     tracer = 2;
-    pattern = 0;
+    pattern = 1;
     batches = 0;
 
     // Recursion

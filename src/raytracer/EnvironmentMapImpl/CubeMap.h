@@ -25,10 +25,8 @@ public:
 private:
   vec3 getColorFromImage(vec2 coord, int quad);
 
-  //vec4*** image_data;
   Texture** textures;
   static const size_t nr_of_images = 6;
-  //int width, height;
 };
 
 } /* namespace raytracer */
