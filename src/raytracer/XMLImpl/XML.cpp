@@ -10,11 +10,15 @@
 using namespace pugi;
 using namespace glm;
 
+#include <IL/il.h>
+#include <IL/ilu.h>
+
 #include "../scene/Camera.h"
 #include "../Settings.h"
 #include "../scene/ILight.h"
 #include "../scene/LightImpl/BaseLight.h"
 #include "../scene/LightImpl/AreaLight.h"
+#include "../EnvironmentMapImpl/CubeMap.h"
 #include <exception>
 #include <iostream>
 using namespace std;
@@ -40,6 +44,8 @@ XML::~XML() {
 }
 
 Scene* XML::importScene(const char* fileName) {
+
+  ilInit();
 
   xml_document doc;
   pugi::xml_parse_result result = doc.load_file(fileName);
@@ -79,6 +85,8 @@ Scene* XML::importScene(const char* fileName) {
       }
       if(tracer) {
         settings->tracer = tracer.attribute("version").as_int();
+        settings->pattern = tracer.attribute("pattern").as_int();
+        settings->batches = tracer.attribute("batches").as_int();
       }
       if(recursion) {
         settings->max_recursion_depth = recursion.attribute("maxDepth").as_int();
@@ -164,10 +172,10 @@ Scene* XML::importScene(const char* fileName) {
 
     if(position)
       pos = vec3(position.attribute("x").as_float(), position.attribute("y").as_float(),
-        position.attribute("z").as_float());
+          position.attribute("z").as_float());
     if(color)
       col = vec3(color.attribute("r").as_float(), color.attribute("g").as_float(),
-        color.attribute("b").as_float());
+          color.attribute("b").as_float());
 
 
     if(type.compare("Point") == 0) {
@@ -222,6 +230,51 @@ Scene* XML::importScene(const char* fileName) {
 
     scene->loadCamera(cam);
   }
+
+
+  //Load environment map
+  for (pugi::xml_node env = doc.child("Environment"); env; env = env.next_sibling("Environment"))
+  {
+
+    IEnvironmentMap* newEnv = NULL;
+    string type = env.attribute("type").value();
+
+    if(type.compare("Cube") == 0) {
+      string srcs[] = {"","","","","",""};
+      srcs[0] = env.child("Top").attribute("src").value();
+      srcs[1] = env.child("Bottom").attribute("src").value();
+      srcs[2] = env.child("Front").attribute("src").value();
+      srcs[3] = env.child("Right").attribute("src").value();
+      srcs[4] = env.child("Back").attribute("src").value();
+      srcs[5] = env.child("Left").attribute("src").value();
+
+      ILuint image;
+      Texture** textures = new Texture*[6];
+      for(int i=0; i<6; ++i) {
+        if(srcs[i].empty())
+          throw fnf_exception;
+
+
+        image = ilGenImage();
+        ilBindImage(image);
+        ilLoadImage((const ILstring)srcs[i].c_str());
+
+        if(ilGetError() == IL_NO_ERROR) {
+          ILuint w = ilGetInteger(IL_IMAGE_WIDTH);
+          ILuint h = ilGetInteger(IL_IMAGE_HEIGHT);
+          textures[i] = new Texture();
+          textures[i]->setData(w,h,ilGetData(),Texture::TEXTURE);
+        } else {
+          cout << "XML.cpp: Environtment map image not loaded.\n" << endl;
+        }
+      }
+      newEnv = new CubeMap(textures, 6);
+    }
+
+    if(newEnv != NULL)
+      scene->setEnvirontmentMap(newEnv);
+  }
+
 
   return scene;
 }

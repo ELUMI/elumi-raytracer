@@ -19,9 +19,7 @@ StandardTracer::StandardTracer(Scene* scene)
 : BaseTracer(scene)
 , MAX_RECURSION_DEPTH(settings->max_recursion_depth)
 , ATTENUATION_THRESHOLD(settings->recursion_attenuation_threshold) {
-
-  environment_map = new CubeMap();
-  environment_map->loadImageFiles(NULL, 6);
+  using_environment_map = false;
 }
 
 StandardTracer::~StandardTracer() {
@@ -33,6 +31,9 @@ void StandardTracer::initTracing(){
 }
 
 void StandardTracer::traceImage(float* color_buffer) {
+  if (scene->getEnvironmentMap() != NULL)
+    using_environment_map = true;
+
   BaseTracer::traceImage(color_buffer);
 }
 
@@ -335,9 +336,9 @@ vec4 StandardTracer::shade(Ray incoming_ray,
 //files
 //    return settings->background_color + vec4(light_color.r,light_color.g,light_color.b,1.0f);
 
-    return environment_map->getColor(incoming_ray);
-
-    //return settings->background_color;
+    if (using_environment_map)
+      return vec4(scene->getEnvironmentMap()->getColor(incoming_ray), 0.0f);
+    return settings->background_color;
   }
   assert(idata.material < scene->getMaterialVector().size());
   // Intersection!

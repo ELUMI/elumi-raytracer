@@ -9,23 +9,26 @@
 #define CUBEMAP_H_
 
 #include "../IEnvironmentMap.h"
+#include "../scene/Texture.h"
 
 namespace raytracer {
 
 class CubeMap : public IEnvironmentMap {
 public:
   CubeMap();
+  CubeMap(Texture** textures, size_t size);
   virtual ~CubeMap();
 
-  void loadImageFiles(const char** filenames, int length);
-  vec4 getColor(Ray ray);
+  void loadTextures(Texture** textures, size_t size);
+  vec3 getColor(Ray ray);
 
 private:
-  vec4 getColorFromImage(vec2 coord, int quad);
+  vec3 getColorFromImage(vec2 coord, int quad);
 
-  vec4*** image_data;
+  //vec4*** image_data;
+  Texture** textures;
   static const size_t nr_of_images = 6;
-  int width, height;
+  //int width, height;
 };
 
 } /* namespace raytracer */

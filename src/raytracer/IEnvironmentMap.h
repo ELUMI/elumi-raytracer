@@ -11,6 +11,7 @@
 #include <glm/glm.hpp>
 
 #include "utilities/Ray.h"
+#include "scene/Texture.h"
 
 namespace raytracer {
 
@@ -18,8 +19,8 @@ class IEnvironmentMap {
 public:
   virtual ~IEnvironmentMap() {};
 
-  virtual void loadImageFiles(const char** filenames, int length) = 0;
-  virtual vec4 getColor(Ray ray) = 0;
+  virtual void loadTextures(Texture** textures, size_t size) = 0;
+  virtual vec3 getColor(Ray ray) = 0;
 
 };
 

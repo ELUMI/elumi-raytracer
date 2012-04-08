@@ -97,6 +97,10 @@ int main(int argc, char* argv[]) {
   settings = myScene->getSettings();
   camera = myScene->getCamera();
 
+//
+//  cout << myScene->getEnvironmentMap()->getColor(Ray::generateRay(vec3(0,0,0), vec3(1,0,0))).x;
+//  exit(1);
+
   // RESIZE
   if (open_gl_version) {
     glfwSetWindowSize(settings->width, settings->height);

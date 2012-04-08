@@ -33,6 +33,7 @@ Scene::Scene(Settings* settings)
   }
   m_settings = settings;
   m_drawable = NULL;
+  environment_map = NULL;
 }
 
 
@@ -57,6 +58,11 @@ Scene::~Scene() {
 
   if (m_drawable!=NULL)
     delete m_drawable;
+
+  if (environment_map!=NULL)
+    delete environment_map;
+
+  ilShutDown();
 }
 
 void Scene::loadTriangles(vector<Triangle*> triangles,AABB aabb, bool overwrite) {
@@ -133,6 +139,14 @@ IDraw* Scene::getDrawable(){
 
 Settings* Scene::getSettings() {
   return m_settings;
+}
+
+IEnvironmentMap* Scene::getEnvironmentMap() {
+  return environment_map;
+}
+
+void Scene::setEnvirontmentMap(IEnvironmentMap* environment_map) {
+  this->environment_map = environment_map;
 }
 
 }

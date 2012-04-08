@@ -16,6 +16,7 @@
 #include "Texture.h"
 #include "Camera.h"
 #include "ILight.h"
+#include "../IEnvironmentMap.h"
 #include "../Settings.h"
 
 namespace raytracer {
@@ -31,6 +32,7 @@ public:
 	void loadMaterials(Material* materials, size_t length);
 	void loadMaterials(std::vector<raytracer::Material*> materials);
 	void loadTextures(std::vector<raytracer::Texture*> textures);
+	void setEnvirontmentMap(IEnvironmentMap* environment_map);
 	void setSettings(Settings* settings);
 
 	Camera& getCamera();
@@ -40,6 +42,7 @@ public:
 	std::vector<ILight*>* getLightVector();
 	const std::vector<Material*>& getMaterialVector();
 	const std::vector<Texture*>& getTextures();
+	IEnvironmentMap* getEnvironmentMap();
 
 	Texture* getTextureAt(int index);
 
@@ -56,6 +59,7 @@ private:
   std::vector<Texture*> m_textures;
 	IDraw* m_drawable;
 	Settings* m_settings;
+  IEnvironmentMap* environment_map;
 };
 
 }

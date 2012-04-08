@@ -35,6 +35,8 @@ struct Settings {
 
     // Tracer
     tracer = 2;
+    pattern = 0;
+    batches = 0;
 
     // Recursion
     max_recursion_depth = 5;
@@ -74,6 +76,8 @@ struct Settings {
 
   // Tracer
   int tracer;
+  int pattern;
+  int batches;
 
   // Recursion
   unsigned int max_recursion_depth;

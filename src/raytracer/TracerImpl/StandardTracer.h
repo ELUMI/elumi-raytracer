@@ -38,7 +38,7 @@ protected:
   virtual vec3 getAmbient(Ray incoming_ray, IAccDataStruct::IntersectionData idata, int thread_id);
 
 private:
-  IEnvironmentMap* environment_map;
+  bool using_environment_map;
 };
 
 }
