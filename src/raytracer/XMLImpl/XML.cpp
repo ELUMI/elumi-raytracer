@@ -91,6 +91,9 @@ Scene* XML::importScene(const char* fileName) {
           settings->pattern = tracer.attribute("pattern").as_int();
         if(!tracer.attribute("batches").empty())
           settings->batches = tracer.attribute("batches").as_int();
+
+        if(!tracer.attribute("use_fresnel").empty())
+          settings->use_fresnel = tracer.attribute("use_fresnel").as_int();
       }
       if(recursion) {
         settings->max_recursion_depth = recursion.attribute("maxDepth").as_int();

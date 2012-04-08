@@ -117,13 +117,6 @@ vec3 StandardTracer::brdf(vec3 incoming_direction,
   vec3 h = normalize(-outgoing_direction - incoming_direction);
   vec3 specular = glm::pow(clamp(glm::dot(normal, h)), material->getShininess()) * material->getSpecular();
 
-  //maybe some fresnel
-  // Fresnel reflectance (with Schlick's approx.)
-  //      float fresnel_refl = reflectance
-  //          + (1 - reflectance)
-  //          * glm::pow( clamp(1.0f + glm::dot(incoming_ray.getDirection(), normal) ), 5.0f);
-  //      reflectance = fresnel_refl;
-
   //fixme
 //  if(material->getSpecularMap() == -1) {
 //    specular *= material->getSpecular();
@@ -240,8 +233,18 @@ inline vec3 StandardTracer::reflection_refraction(Ray incoming_ray,
     vec3 offset = refr_normal * 0.01f;
     vec3 refl_dir = glm::reflect(incoming_ray.getDirection(), refr_normal);
     Ray refl_ray = Ray(idata.interPoint + offset, glm::normalize(refl_dir));
+
+    //Fresnel reflectance (with Schlick's approx.)
+    if(settings->use_fresnel) {
+      float fresnel_refl = reflectance
+          + (1 - reflectance)
+          * glm::pow( clamp(1.0f + glm::dot(incoming_ray.getDirection(), normal) ), 5.0f);
+      reflectance = fresnel_refl;
+    }
+
     vec3 refl_color = vec3(tracePrim(refl_ray, attenuation * reflectance, depth + 1, thread_id));
     refl_color *= reflectance;
+
     // SVART BEROR PÅ ATT DEN STUDSAR MOT SIG SJÄLV OCH ALLTID BLIR REFLECTIVE TILLS MAXDJUP
     //mix with output
     color = color * (1 - reflectance) + vec3(refl_color);
@@ -337,7 +340,7 @@ vec4 StandardTracer::shade(Ray incoming_ray,
 //    return settings->background_color + vec4(light_color.r,light_color.g,light_color.b,1.0f);
 
     if (using_environment_map)
-      return vec4(scene->getEnvironmentMap()->getColor(incoming_ray), 0.0f);
+      return vec4(scene->getEnvironmentMap()->getColor(incoming_ray), 1.0f);
     return settings->background_color;
   }
   assert(idata.material < scene->getMaterialVector().size());

@@ -51,7 +51,7 @@ The scene file uses xml-syntax. See example:
 The settings file uses xml-syntax. See example:
 
 <Screen width="200" height="200"/>
-<Tracer version="2" pattern="1" batches="auto"/>
+<Tracer version="2" use_fresnel="1" pattern="1" batches="auto"/>
 <Recursion maxDepth="5" attenuationThreshold="0.015625"/>
 <Threading threads="auto"/>
 <Tonemapping key="0.18"/>

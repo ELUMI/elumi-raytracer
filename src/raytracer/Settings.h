@@ -37,6 +37,7 @@ struct Settings {
     tracer = 2;
     pattern = 1;
     batches = 0;
+    use_fresnel = true;
 
     // Recursion
     max_recursion_depth = 5;
@@ -78,6 +79,7 @@ struct Settings {
   int tracer;
   int pattern;
   int batches;
+  bool use_fresnel;
 
   // Recursion
   unsigned int max_recursion_depth;
