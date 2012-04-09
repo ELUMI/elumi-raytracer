@@ -115,7 +115,7 @@ void BaseTracer::initTracing()
 
 void BaseTracer::traceImage(float *color_buffer)
 {
-  boost::timer::auto_cpu_timer t(2);
+  boost::timer::cpu_timer timer;
 
   buffer = color_buffer;
   initTracing();
@@ -149,6 +149,9 @@ void BaseTracer::traceImage(float *color_buffer)
     threads[i].join();
   }
   delete pattern;
+
+  if(!abort)
+    cout << timer.format(2);
 }
 
 void BaseTracer::traceImageThread(int thread_id) {
