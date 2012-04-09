@@ -153,7 +153,7 @@ vec3 PhotonMapper::getLuminance(Ray incoming_ray,
 
     { //advanced filter kernel (ISPM paper)
       float dist = length(idata.interPoint-p->position);
-      float rz = 0.01 * r;
+      float rz = 0.1 * r;
       float t = (dist/r)*(1-dot((idata.interPoint-p->position) / dist, idata.normal)*(r+rz)/rz);
       float scale = 0.2;
       float sigma = r*scale;

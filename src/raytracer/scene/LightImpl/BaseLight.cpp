@@ -104,7 +104,7 @@ float BaseLight::distanceToBlocker(IAccDataStruct* datastruct, vec3 point, int t
   }
 
   IAccDataStruct::IntersectionData light_idata = datastruct->findClosestIntersection(light_ray);
-  assert(!light_idata.missed());
+  //assert(!light_idata.missed());
 
   float distance_to_light = length(point - (position+offset));
   float distance_between_light_and_first_hit = length(light_idata.interPoint - (position+offset));

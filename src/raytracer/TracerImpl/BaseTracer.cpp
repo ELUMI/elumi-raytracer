@@ -14,6 +14,7 @@
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
 #include <boost/thread/mutex.hpp>
+#include <boost/timer/timer.hpp>
 
 #include "../utilities/Random.h"
 #include "../RenderPatternImpl/LinePattern.h"
@@ -111,8 +112,11 @@ void BaseTracer::initTracing()
       << "\" z=\"" << scene->getCamera().getUpVector().z << "\"/>\n";
 }
 
+
 void BaseTracer::traceImage(float *color_buffer)
 {
+  boost::timer::auto_cpu_timer t(2);
+
   buffer = color_buffer;
   initTracing();
 
