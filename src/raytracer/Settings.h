@@ -55,9 +55,10 @@ struct Settings {
     samples = 1;
 
     //Photon mapper
+    photonmap = 1;
+    photonmap_size = 1024;
     photons = 32*1024;
     gather_radius = 0.5f;
-    photonmap_size = 1024;
   }
 
   // Screen
@@ -97,9 +98,10 @@ struct Settings {
   unsigned int samples;
 
   //Photon mapper
-  size_t photons; //32*1024;
-  float gather_radius;
+  int photonmap;
   size_t photonmap_size;
+  size_t photons;
+  float gather_radius;
 };
 
 }

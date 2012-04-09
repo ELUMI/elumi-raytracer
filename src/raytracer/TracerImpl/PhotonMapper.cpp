@@ -7,6 +7,8 @@
 
 #include "PhotonMapper.h"
 #include "../PhotonMapImpl/HashPM.h"
+#include "../PhotonMapImpl/GridPM.h"
+#include "../PhotonMapImpl/ArrayPM.h"
 #include "../utilities/Random.h"
 
 namespace raytracer {
@@ -14,7 +16,17 @@ namespace raytracer {
 PhotonMapper::PhotonMapper(Scene* scene)
 : StandardTracer(scene) {
   radius = settings->gather_radius;
-  photonmap = new HashPM(radius, settings->photonmap_size);
+  switch(settings->photonmap) {
+  case 0:
+    photonmap = new ArrayPM(settings->photonmap_size);
+    cout << "Using array photonmap\n";
+    break;
+  case 1:
+  default:
+    photonmap = new HashPM(radius, settings->photonmap_size);
+    cout << "Using hash photonmap\n";
+    break;
+  }
 }
 
 PhotonMapper::~PhotonMapper() {
@@ -144,7 +156,7 @@ vec3 PhotonMapper::getLuminance(Ray incoming_ray,
   if(photons.size() == 0)
     return vec3(0);
   for(size_t i=0; i<photons.size(); ++i){
-    Photon* p = photons[i];
+    const Photon* p = photons[i];
 
     vec3 b = brdf(-p->direction, incoming_ray.getDirection(), idata.normal, material);
 
