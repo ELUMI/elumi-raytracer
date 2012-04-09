@@ -32,6 +32,7 @@ public:
 	const vector<vec3*>& getTextures();
   unsigned int getMaterial();
   unsigned int getTexture();
+  void addMaterialShift(unsigned int material_shift);
 
 protected:
 	vector<vec3*> vertices;

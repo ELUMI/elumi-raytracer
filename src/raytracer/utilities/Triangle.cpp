@@ -53,4 +53,8 @@ const vector<vec3*>& Triangle::getTextures() {return texCoords;}
 unsigned int Triangle::getMaterial() {return Triangle::material;}
 unsigned int Triangle::getTexture() {return Triangle::texture;}
 
+
+void Triangle::addMaterialShift(unsigned int material_shift){
+  material += material_shift;
+}
 }

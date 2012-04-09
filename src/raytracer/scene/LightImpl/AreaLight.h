@@ -10,6 +10,7 @@
 
 #include "../ILight.h"
 #include "BaseLight.h"
+#include "../Scene.h"
 
 namespace raytracer {
 
@@ -30,6 +31,7 @@ public:
   void getRays(Ray* rays, size_t n, int thread_id);
 
   void draw();
+  void addPlane(Scene* scene);
 
   void initCaches(size_t nr_of_threads);
 
