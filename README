@@ -16,7 +16,7 @@ Allowed options:
   -s [ --settings-file ] arg Settings file
   
 ############################################################
-  
+
                      Scene-file
 The scene file uses xml-syntax. See example:
 
@@ -57,6 +57,8 @@ The settings file uses xml-syntax. See example:
 <Tonemapping key="0.18"/>
 <Tree version="2"/>
 <Wireframe enable="0"/>
+<Supersampling samples="1" pattern="0" />
+<Photonmapper photons="1024" radius="0.5" photonmap_size="1024" />
 
 ############################################################
 
@@ -104,21 +106,3 @@ eclipse
      * glfw
      * glew
      * devil
-
-############################################################
-                         Endline felen
-Kolla: man gitattributes
-
-Gå till din branch och gör följande:
-               $ echo "* text=auto" >>.gitattributes
-               $ rm .git/index     # Remove the index to force git to
-               $ git reset         # re-scan the working directory
-               $ git status        # Show files that will be normalized
-               $ git add -u
-               $ git add .gitattributes
-               $ git commit -m "Introduce end-of-line normalization"
-
-Sen ska det vara lätt att merga med master.
-Alternativt gör en ny branch från master.
-
-Merga INTE med master med en branch som inte gjort detta. Då får ni problem.
