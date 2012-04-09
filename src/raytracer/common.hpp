@@ -48,6 +48,11 @@ class AABB{
     const vector<Line>& getLines(){
       return AABB::lines;
     }
+    void extend(AABB aabb){
+      vec3 ma = glm::max(pos+size, aabb.pos+aabb.size);
+      pos = glm::min(pos,aabb.pos);
+      size = ma-pos;
+    }
   private:
     vector<Line> lines;
     vec3  pos,size;

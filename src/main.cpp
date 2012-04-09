@@ -135,7 +135,6 @@ int main(int argc, char* argv[]) {
     glfwEnable(GLFW_AUTO_POLL_EVENTS);
     glfwSetWindowSizeCallback(windowSize); // TODO: In settings
 
-
     IDraw* data_struct_drawable = NULL;
     if(settings->wireframe==1){
       data_struct_drawable= new LineArrayDataStruct(myRenderer->getScene()->getAccDataStruct()->getAABBList());
@@ -153,16 +152,16 @@ int main(int argc, char* argv[]) {
 
       int light_size = myRenderer->getScene()->getLightVector()->size();
 
-      IDraw* drawables[1+light_size+settings->wireframe];
-      drawables[0] = myRenderer->getScene()->getDrawable();
+      IDraw* drawables[2+light_size]; //enough size
+      int n_drawables = 0;
+      drawables[n_drawables++] = myRenderer->getScene()->getDrawable();
       for(int i=0; i<light_size; ++i)
-        drawables[1+i] = myScene->getLightVector()->at(i);
+        drawables[n_drawables++] = myScene->getLightVector()->at(i);
       if(settings->wireframe==1)
-        drawables[1+light_size] = data_struct_drawable;
-
+        drawables[n_drawables++] = data_struct_drawable;
       switch (renderMode) {
       case 1:
-        drawDrawables(drawables, sizeof(drawables) / sizeof(IDraw*));
+        drawDrawables(drawables, n_drawables);
         break;
       case 2:
         glRasterPos2f(-1,-1);
@@ -171,7 +170,7 @@ int main(int argc, char* argv[]) {
             GL_FLOAT, buffer);
         break;
       case 3:
-        drawDrawables(drawables, sizeof(drawables) / sizeof(IDraw*));
+        drawDrawables(drawables, n_drawables);
         drawPoints();
         break;
       case 4:
@@ -185,7 +184,7 @@ int main(int argc, char* argv[]) {
         drawPointsPhoton();
         break;
       case 7:
-        drawDrawables(drawables, sizeof(drawables) / sizeof(IDraw*));
+        drawDrawables(drawables, n_drawables);
         drawPoints();
         drawPointsPhoton();
         break;

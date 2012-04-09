@@ -146,8 +146,8 @@ Scene* XML::importScene(const char* fileName) {
     std::vector<raytracer::Texture*> textures   = importer->getTextures();
 
     if (!triangles.empty()) {
-      scene->loadMaterials(materials); //load materials BEFORE triangles!
-      scene->loadTriangles(triangles,importer->getAABB());
+      size_t material_shift = scene->loadMaterials(materials); //load materials BEFORE triangles!
+      scene->loadTriangles(triangles,importer->getAABB(), material_shift);
       scene->loadTextures(textures);
     }
   }
@@ -155,7 +155,6 @@ Scene* XML::importScene(const char* fileName) {
   for (pugi::xml_node light = doc.child("Light"); light; light = light.next_sibling("Light"))
   {
 
-    ILight* newLight = NULL;
     string type = light.attribute("type").value();
     ILight::FalloffType ftype = ILight::NONE;
 
@@ -185,6 +184,7 @@ Scene* XML::importScene(const char* fileName) {
           color.attribute("b").as_float());
 
 
+    ILight* newLight = NULL;
     if(type.compare("Point") == 0) {
       newLight = new BaseLight();
 
@@ -203,6 +203,7 @@ Scene* XML::importScene(const char* fileName) {
           xml_axis2.attribute("z").as_float());
 
       newLight = new AreaLight(pos,axis1,axis2,samples1,samples2);
+      reinterpret_cast<AreaLight*>(newLight)->addPlane(scene); //add arealight to datastruct
     }
 
     if(newLight != NULL) {
@@ -303,7 +304,7 @@ Scene* XML::importScene(const char* fileName) {
       scene->setEnvirontmentMap(newEnv);
   }
 
-
+  scene->build(); //build everything we have read in
   return scene;
 }
 
