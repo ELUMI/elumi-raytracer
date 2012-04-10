@@ -16,6 +16,8 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/timer/timer.hpp>
 
+#include "../GLData/DeferredTexProcesser.h"
+
 #include "../utilities/Random.h"
 #include "../RenderPatternImpl/LinePattern.h"
 #include "../RenderPatternImpl/HilbertCurve.h"
@@ -61,15 +63,15 @@ void BaseTracer::first_bounce() {
     delete first_pass; //there may be a unneccesary delete here, which may be very slow
     delete[] first_intersections;
   }
-  first_pass = new DeferredProcesser(settings->width, settings->height); //TODO: use settings, and check useopengl
+  first_pass = new DeferredTexProcesser(settings->width, settings->height);
   first_intersections = new IAccDataStruct::IntersectionData[size];
 
   mat4 vp2m = scene->getCamera().getViewportToModelMatrix(width, height);
   mat4 view_matrix = scene->getCamera().getViewMatrix();
   first_pass->render(scene, view_matrix, width, height);
 
-  vec4* normals = new vec4[size];
-  vec2* texcoords = new vec2[size];
+  vec3* normals = new vec3[size];
+  vec3* texcoords = new vec3[size];
   float* depths = new float[size];
 
   first_pass->readNormals(width, height, normals);
@@ -81,13 +83,13 @@ void BaseTracer::first_bounce() {
       int i = y * width + x;
       vec4 pos = vp2m * vec4(x + 0.5, y + 0.5, depths[i], 1);
 
-
       //see comment in deferred.frag
-      unsigned int material = ceil(normals[i].w - 0.5); //alpha channel is noisy, but this works!
+      unsigned int material = ceil(texcoords[i].z - 0.5); //alpha channel is noisy, but this works!
+      //cout << texcoords[i].z << "\t" << material << "\n";
       assert(material == IAccDataStruct::IntersectionData::NOT_FOUND_INTERNAL || material < scene->getMaterialVector().size());
 
       first_intersections[i] = IAccDataStruct::IntersectionData(NULL, material,
-          vec3(pos) / pos.w, vec3(normals[i]), texcoords[i],vec3(),vec3());
+          vec3(pos) / pos.w, normals[i], vec2(texcoords[i]),vec3(),vec3());
 
     }
   }

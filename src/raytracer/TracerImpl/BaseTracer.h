@@ -12,7 +12,7 @@
 #include "../scene/Scene.h"
 #include "../Settings.h"
 #include "../utilities/Ray.h"
-#include "../GLData/DeferredProcesser.h"
+#include "../IDeferredProcesser.h"
 #include "../IRenderPattern.h"
 
 #include <boost/thread/mutex.hpp>
@@ -50,7 +50,7 @@ protected:
 
   bool abort;
 
-  DeferredProcesser* first_pass;
+  IDeferredProcesser* first_pass;
   IAccDataStruct::IntersectionData* first_intersections;
 
   virtual void initTracing();

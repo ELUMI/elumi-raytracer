@@ -5,16 +5,21 @@
  *      Author: ulvinge
  */
 
+//#include <GL/glew.h>
+//#include "../AccDataStructImpl/VertexArrayDataStruct.h"
+#include "../scene/Scene.h"
+
 #include "../IDeferredProcesser.h"
 
-#ifndef DEFERREDPROCESSER_H_
-#define DEFERREDPROCESSER_H_
+#ifndef DEFERREDTEXPROCESSER_H_
+#define DEFERREDTEXPROCESSER_H_
+
 
 namespace raytracer {
-class DeferredProcesser : public IDeferredProcesser {
+class DeferredTexProcesser : public IDeferredProcesser {
 public:
-  DeferredProcesser(unsigned int width, unsigned int height);
-  virtual ~DeferredProcesser();
+  DeferredTexProcesser(unsigned int width, unsigned int height);
+  virtual ~DeferredTexProcesser();
 
   void render(Scene* scene, mat4 viewMatrix, int width, int height);
   void readNormals(unsigned int width, unsigned int height, vec3* buffer);
@@ -23,12 +28,12 @@ public:
 
 private:
   GLuint shader_program;
-  GLuint texcoord_rbo;
-  GLuint normal_rbo;
-  GLuint depth_rbo;
+  GLuint texcoord_tex;
+  GLuint normal_tex;
+  GLuint depth_tex;
   GLuint fbo;
 
 };
 }
 
-#endif /* DEFERREDPROCESSER_H_ */
+#endif /* DEFERREDTEXPROCESSER_H_ */
