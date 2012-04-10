@@ -24,6 +24,7 @@ private:
 };
 class AABB{
   public:
+    AABB(){}
     AABB(const float& x,const float& y,const float& z,const float& w,const float& h,const float&  d){
       AABB::pos = vec3(x,y,z);
       AABB::size = vec3(w,h,d);
@@ -46,6 +47,11 @@ class AABB{
     const vec3& getSize(){return AABB::size;}
     const vector<Line>& getLines(){
       return AABB::lines;
+    }
+    void extend(AABB aabb){
+      vec3 ma = glm::max(pos+size, aabb.pos+aabb.size);
+      pos = glm::min(pos,aabb.pos);
+      size = ma-pos;
     }
   private:
     vector<Line> lines;

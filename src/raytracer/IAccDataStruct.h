@@ -53,10 +53,10 @@ public:
 
   virtual ~IAccDataStruct() {};
   virtual IntersectionData findClosestIntersection(Ray ray)=0;
-  virtual void setData(Triangle** triangles,size_t size,AABB* aabb) = 0;
+  virtual void setData(Triangle** triangles,size_t size,AABB aabb) = 0;
   virtual vector<AABB*>& getAABBList() = 0;
 
-  static bool instersects(Ray* ray, Triangle* triangle) {
+  static float instersection_distance(Ray* ray, Triangle* triangle) {
     const vec3 o = ray->getPosition();
     const vec3 d = ray->getDirection();
     const vector<vec3*> vertices = triangle->getVertices();
@@ -78,9 +78,9 @@ public:
     const float v = res.z;
 
     if(u >= 0 && v >= 0 && u + v <= 1 && t>0) {  // Intersection!
-      return true;
+      return t;
     }
-    return false;
+    return -INFINITY;
   }
 
 };

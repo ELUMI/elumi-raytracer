@@ -10,6 +10,7 @@
 
 #include "../ILight.h"
 #include "BaseLight.h"
+#include "../Scene.h"
 
 namespace raytracer {
 
@@ -27,13 +28,14 @@ public:
   void setColor(vec3 color);
   void setDistanceFalloff(FalloffType falloff_type);
 
-  void getRays(Ray* rays, size_t n);
+  void getRays(Ray* rays, size_t n, int thread_id);
 
   void draw();
+  void addPlane(Scene* scene);
 
   void initCaches(size_t nr_of_threads);
 
-  float calcLight(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f), int thread_id=-1);
+  float calcLight(IAccDataStruct* datastruct, vec3 point, int thread_id, vec3 offset = vec3(0.0f,0.0f,0.0f));
 
 private:
   vec3 axis1, axis2;

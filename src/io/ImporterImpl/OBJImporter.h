@@ -29,7 +29,7 @@ public:
 		std::vector<Material*>& getMaterialList();
 		std::vector<Texture*>& getTextures();
 
-		AABB* getAABB();
+		AABB getAABB();
 		Camera* getCamera();
 
 		std::vector<ILight*>&  getLightPointList();
@@ -45,7 +45,7 @@ private:
 
 		Camera* camera;
 
-    AABB* aabb;
+    AABB aabb;
 
 		std::vector<ILight*> point_lights;
 		std::vector<ILight*> quad_lights;

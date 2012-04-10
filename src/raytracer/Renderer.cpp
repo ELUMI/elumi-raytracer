@@ -10,6 +10,7 @@
 #include "TracerImpl/StandardTracer.h"
 #include "TracerImpl/PhotonMapper.h"
 #include "TracerImpl/AdvancedTracer.h"
+#include "TracerImpl/PathTracer.h"
 
 #include "XMLImpl/XML.h"
 
@@ -75,6 +76,10 @@ void Renderer::init() {
     m_tracer = new AdvancedTracer(m_scene);
     cout << "Using advanced tracer\n";
     break;
+  case 5:
+    m_tracer = new PathTracer(m_scene);
+    cout << "Using path tracer\n";
+    break;
   }
   buffer_length = m_scene->getSettings()->width * m_scene->getSettings()->height * 4;
   color_buffer = new float[buffer_length];
@@ -82,7 +87,7 @@ void Renderer::init() {
 }
 
 
-void Renderer::loadTriangles(vector<Triangle*> triangles,AABB* aabb, bool overwrite) {
+void Renderer::loadTriangles(vector<Triangle*> triangles,AABB aabb, bool overwrite) {
   if(m_scene == NULL) {
     cout << "Render has no scene!\n";
     return;

@@ -40,8 +40,8 @@ public:
 
   virtual void initCaches(size_t nr_of_threads) = 0;
 
-  virtual float calcLight(IAccDataStruct* datastruct, vec3 point, vec3 offset = vec3(0.0f,0.0f,0.0f), int thread_id=-1) = 0;
-  virtual void getRays(Ray* rays, size_t n) = 0;
+  virtual float calcLight(IAccDataStruct* datastruct, vec3 point, int thread_id, vec3 offset = vec3(0.0f,0.0f,0.0f)) = 0;
+  virtual void getRays(Ray* rays, size_t n, int thread_id) = 0;
 };
 
 }

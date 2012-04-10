@@ -17,18 +17,20 @@ Material::Material() {
   Material::ambient             = glm::vec3(0.2f,0.2f,0.2f);
   Material::diffuse             = glm::vec3(0.8f,0.8f,0.8f);
   Material::specular            = glm::vec3(0.2f,0.2f,0.2f);
-  Material::emissive            = glm::vec3(1.0f,1.0f,1.0f); //?
+  Material::emissive            = glm::vec3(0.0f,0.0f,0.0f); //!?!
   Material::opacity             = 1.0f;
   Material::shininess           = 0.0f;
   Material::sharpness           = 98; //glossy
-  Material::index_of_refraction = 1.0f;
   Material::reflection          = 0.0f;
+  Material::index_of_refraction = 1.0f;
   Material::diffuse_map         = -1;
   Material::bump_map            = -1;
+  Material::specular_map        = -1;
+  Material::transparency_map    = -1;
   Material::reflect_spread      = 0;
-  Material::refract_spread      = 0;
-  Material::specular_map = -1;
-  Material::transparency_map = -1;
+  Material::reflect_samples     = 0;
+  Material::reflect_spread      = 0;
+  Material::refract_samples     = 0;
 }
 
 Material::Material(std::string name,glm::vec3 ambient,glm::vec3 diffuse,glm::vec3 specular,

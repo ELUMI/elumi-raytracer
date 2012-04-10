@@ -57,12 +57,12 @@ void drawPointsPhoton();
 void writePhotonMap();
 void readPhotonMap();
 
-int open_gl_version = -1;
+int open_gl_version = 2;
 unsigned int win_width, win_height;
 string inputFileName, outputFileName;
 
 int main(int argc, char* argv[]) {
-  init_generator();
+  init_generators();
   int running = GL_TRUE;
   getArguments(argc, argv);
 
@@ -96,6 +96,10 @@ int main(int argc, char* argv[]) {
   Scene* myScene = myRenderer->getScene();
   settings = myScene->getSettings();
   camera = myScene->getCamera();
+
+//
+//  cout << myScene->getEnvironmentMap()->getColor(Ray::generateRay(vec3(0,0,0), vec3(1,0,0))).x;
+//  exit(1);
 
   // RESIZE
   if (open_gl_version) {
@@ -131,7 +135,6 @@ int main(int argc, char* argv[]) {
     glfwEnable(GLFW_AUTO_POLL_EVENTS);
     glfwSetWindowSizeCallback(windowSize); // TODO: In settings
 
-
     IDraw* data_struct_drawable = NULL;
     if(settings->wireframe==1){
       data_struct_drawable= new LineArrayDataStruct(myRenderer->getScene()->getAccDataStruct()->getAABBList());
@@ -149,16 +152,16 @@ int main(int argc, char* argv[]) {
 
       int light_size = myRenderer->getScene()->getLightVector()->size();
 
-      IDraw* drawables[1+light_size+settings->wireframe];
-      drawables[0] = myRenderer->getScene()->getDrawable();
+      IDraw* drawables[2+light_size]; //enough size
+      int n_drawables = 0;
+      drawables[n_drawables++] = myRenderer->getScene()->getDrawable();
       for(int i=0; i<light_size; ++i)
-        drawables[1+i] = myScene->getLightVector()->at(i);
+        drawables[n_drawables++] = myScene->getLightVector()->at(i);
       if(settings->wireframe==1)
-        drawables[1+light_size] = data_struct_drawable;
-
+        drawables[n_drawables++] = data_struct_drawable;
       switch (renderMode) {
       case 1:
-        drawDrawables(drawables, sizeof(drawables) / sizeof(IDraw*));
+        drawDrawables(drawables, n_drawables);
         break;
       case 2:
         glRasterPos2f(-1,-1);
@@ -167,7 +170,7 @@ int main(int argc, char* argv[]) {
             GL_FLOAT, buffer);
         break;
       case 3:
-        drawDrawables(drawables, sizeof(drawables) / sizeof(IDraw*));
+        drawDrawables(drawables, n_drawables);
         drawPoints();
         break;
       case 4:
@@ -181,7 +184,7 @@ int main(int argc, char* argv[]) {
         drawPointsPhoton();
         break;
       case 7:
-        drawDrawables(drawables, sizeof(drawables) / sizeof(IDraw*));
+        drawDrawables(drawables, n_drawables);
         drawPoints();
         drawPointsPhoton();
         break;
@@ -193,7 +196,7 @@ int main(int argc, char* argv[]) {
       glfwSwapBuffers();
 
       timedCallback();
-      glfwSleep(0.01);
+      glfwSleep(1.0f/60.0f);
 
       //Check if ESC key was pressed or window was closed
       running = !glfwGetKey(GLFW_KEY_ESC) && glfwGetWindowParam(GLFW_OPENED);
@@ -216,6 +219,7 @@ int main(int argc, char* argv[]) {
   delete myRenderer;
   std::cout << std::endl << "end of PROGRAM" << std::endl;
 
+  delete_generators();
   exit(EXIT_SUCCESS);
 }
 
@@ -263,8 +267,7 @@ void getArguments(int argc, char *argv[]) {
   if (vm.count("gl-version")) {
     open_gl_version = vm["gl-version"].as<int> ();
   } else {
-    cout << "Not using OpenGL.\n";
-    open_gl_version = 0;
+    cout << "Using default OpenGL version: " << open_gl_version << "\n";
   }
 }
 

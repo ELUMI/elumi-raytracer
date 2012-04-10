@@ -28,6 +28,17 @@ OBJImporter::~OBJImporter(){
 
   //TODO
 
+  /* should this be done? there is a leak here, but it is small...
+  for(size_t i=0; i<triangles.size(); ++i)
+    delete triangles[i];
+
+  for(size_t i=0; i<materials.size(); ++i)
+    delete materials[i];
+
+  for(size_t i=0; i<textures.size(); ++i)
+    delete textures[i];
+  */
+
 	triangles.clear();
 	materials.clear();
 	textures.clear();
@@ -74,9 +85,9 @@ void OBJImporter::loadFile(const char* filename){
 		int   _refract_samples      = material->refract_samples;
 		std::string _diffuse_map    = material->diffuse_map;
 		std::string _bump_map       = material->bump_filename;
-		std::string _norm_map = material->norm_filename;
-		std::string _ks_map = material->ks_filename;
-		std::string _d_map = material->d_filename;
+		std::string _norm_map       = material->norm_filename;
+		std::string _ks_map         = material->ks_filename;
+		std::string _d_map          = material->d_filename;
 
     replace(_diffuse_map.begin(), _diffuse_map.end(), '\n', '\0');
     replace(_bump_map.begin(), _bump_map.end(), '\n', '\0');
@@ -84,6 +95,7 @@ void OBJImporter::loadFile(const char* filename){
     replace(_ks_map.begin(), _ks_map.end(), '\n', '\0');
     replace(_d_map.begin(), _d_map.end(), '\n', '\0');
 
+// (const ILstring)
 
 		ILuint image;
 		int diff_map_index = -1, bump_map = -1, ks_map = -1, norm_map = -1,
@@ -301,7 +313,7 @@ void OBJImporter::loadFile(const char* filename){
 	}
 
 	delete(obj_data);
-  aabb = new AABB(min[0],min[1],min[2],max[0]-min[0],max[1]-min[1],max[2]-min[2]);
+  aabb = AABB(min[0],min[1],min[2],max[0]-min[0],max[1]-min[1],max[2]-min[2]);
 }
 void OBJImporter::testMax(float* max,float value){
   if(value>*(max))
@@ -322,13 +334,8 @@ std::vector<Texture*>& OBJImporter::getTextures() {
   return textures;
 }
 
-AABB* OBJImporter::getAABB(){
-  if(aabb!=NULL){
-    return aabb;
-  }
-  else{
-    return NULL;
-  }
+AABB OBJImporter::getAABB(){
+  return aabb;
 }
 
 Camera* OBJImporter::getCamera(){

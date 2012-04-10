@@ -15,7 +15,7 @@ AdvancedTracer::AdvancedTracer(Scene* scene) : PhotonMapper(scene) {
 AdvancedTracer::~AdvancedTracer() {
 }
 
-void AdvancedTracer::tracePhoton(Photon p)
+void AdvancedTracer::tracePhoton(Photon p, int thread_id)
 {
   if(!bounce(p,false)) //first bounce should not be saved
     return;
@@ -23,13 +23,15 @@ void AdvancedTracer::tracePhoton(Photon p)
     if(abort)
       break;
 
-    if(!bounce(p))
+    if(!bounce(p, thread_id))
       break;
   }
 }
 
-vec4 AdvancedTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata, float attenuation, unsigned short  depth){
-  return StandardTracer::shade(incoming_ray, idata, attenuation, depth);
+vec4 AdvancedTracer::shade(Ray incoming_ray,
+		IAccDataStruct::IntersectionData idata,
+		float attenuation, unsigned short depth, int thread_id){
+  return StandardTracer::shade(incoming_ray, idata, attenuation, depth, thread_id);
 }
 
 

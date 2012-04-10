@@ -15,6 +15,35 @@ Allowed options:
   -o [ --output-file ] arg   Output file
   -s [ --settings-file ] arg Settings file
   
+############################################################
+
+                     Scene-file
+The scene file uses xml-syntax. See example:
+
+<Object fileName="data/scenes/cornell1.obj"/>
+<Settings fileName="data/scenes/settings.xml"></Settings>
+
+<Camera>
+    <Position x="0" y="0.717527" z="-2.69957"/>
+    <Direction x="0" y="0" z="1"/>
+    <Normal x="0" y="1" z="0"/>
+</Camera>
+
+<Light type="Area" intensity="1.5" falloff="Quadratic">
+    <Position x="0.1" y="1.2" z="0.2"/>
+    <Color r="1" g="1" b="1"/>
+    <Axis1 x="0.5" y="0" z="0" samples="3"/>
+    <Axis2 x="0" y="0" z="0.5" samples="3"/>
+</Light>
+
+<Environment type="Cube">
+    <Top src="data/scenes/textures/environment_maps/land_top.png" />
+    <Bottom src="data/scenes/textures/environment_maps/land_bottom.png" />
+    <Front src="data/scenes/textures/environment_maps/land_front.png" />
+    <Right src="data/scenes/textures/environment_maps/land_right.png" />
+    <Back src="data/scenes/textures/environment_maps/land_back.png" />
+    <Left src="data/scenes/textures/environment_maps/land_left.png" />
+</Environment>
 
 ############################################################
 
@@ -22,12 +51,14 @@ Allowed options:
 The settings file uses xml-syntax. See example:
 
 <Screen width="200" height="200"/>
-<Tracer version="2"/>
+<Tracer version="2" use_fresnel="1" pattern="1" batches="auto"/>
 <Recursion maxDepth="5" attenuationThreshold="0.015625"/>
 <Threading threads="auto"/>
 <Tonemapping key="0.18"/>
 <Tree version="2"/>
 <Wireframe enable="0"/>
+<Supersampling samples="1" pattern="0" />
+<Photonmapper photons="1024" radius="0.5" photonmap_size="1024" />
 
 ############################################################
 
@@ -52,12 +83,15 @@ eclipse
     * -l (libraries)
      * png
      * IL (devil)
+     * ILU (devil manipulations library, used for rotating environment maps)
      * boost_program_options
      * boost_thread
-     * gomp (openmp)
+     * boost_timer
+     * boost_system
+     * # gomp (openmp)
      * GLEW
-     * GL
-     * GLU
+     * # GL
+     * # GLU
      * glfw
     * -L (search path)
      * glfw
@@ -72,21 +106,3 @@ eclipse
      * glfw
      * glew
      * devil
-
-############################################################
-                         Endline felen
-Kolla: man gitattributes
-
-Gå till din branch och gör följande:
-               $ echo "* text=auto" >>.gitattributes
-               $ rm .git/index     # Remove the index to force git to
-               $ git reset         # re-scan the working directory
-               $ git status        # Show files that will be normalized
-               $ git add -u
-               $ git add .gitattributes
-               $ git commit -m "Introduce end-of-line normalization"
-
-Sen ska det vara lätt att merga med master.
-Alternativt gör en ny branch från master.
-
-Merga INTE med master med en branch som inte gjort detta. Då får ni problem.

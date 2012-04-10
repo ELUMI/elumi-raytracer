@@ -92,39 +92,39 @@ void BaseLight::draw() {
   gluDeleteQuadric(quadobj);
 }
 
-float BaseLight::distanceToBlocker(IAccDataStruct* datastruct, vec3 point, vec3 offset, int thread_id){
+float BaseLight::distanceToBlocker(IAccDataStruct* datastruct, vec3 point, int thread_id, vec3 offset){
   Ray light_ray = Ray::generateRay(position+offset, point);
 
 
   // Shadow cache
-  if(thread_id!=-1 && cache[thread_id] != NULL) {
-    if( IAccDataStruct::instersects(&light_ray, cache[thread_id]) )
-      return 1.0f;
+  if(nr_of_caches>0 && thread_id!=-1 && cache[thread_id] != NULL) {
+    float t = IAccDataStruct::instersection_distance(&light_ray, cache[thread_id]);
+    if(t>EPSILON)
+      return t;
   }
 
   IAccDataStruct::IntersectionData light_idata = datastruct->findClosestIntersection(light_ray);
-
-
+  //assert(!light_idata.missed());
 
   float distance_to_light = length(point - (position+offset));
   float distance_between_light_and_first_hit = length(light_idata.interPoint - (position+offset));
   float dtb = distance_to_light - distance_between_light_and_first_hit;
 
   // Shadow cache
-  if(thread_id!=-1 && dtb > EPSILON)
+  if(cache!=NULL && dtb > EPSILON)
     cache[thread_id] = light_idata.triangle;
 
   return dtb;
 }
 
-void BaseLight::getRays(Ray* rays, size_t n){
+void BaseLight::getRays(Ray* rays, size_t n, int thread_id){
   for(size_t i = 0; i<n; ++i){
-    rays[i] = Ray(position, get_random_dir());
+    rays[i] = Ray(position, gen_random_dir(thread_id));
   }
 }
 
-float BaseLight::calcLight(IAccDataStruct* datastruct, vec3 point, vec3 offset, int thread_id) {
-  if (isBlocked(datastruct, point, offset, thread_id))
+float BaseLight::calcLight(IAccDataStruct* datastruct, vec3 point, int thread_id, vec3 offset) {
+  if (isBlocked(datastruct, point, thread_id, offset))
     return 0.0f;
   return getIntensity() * getFalloff( length(point - (position)) );
 }
