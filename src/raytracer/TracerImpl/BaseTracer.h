@@ -12,7 +12,7 @@
 #include "../scene/Scene.h"
 #include "../Settings.h"
 #include "../utilities/Ray.h"
-#include "../utilities/DeferredProcesser.h"
+#include "../GLData/DeferredProcesser.h"
 #include "../IRenderPattern.h"
 
 #include <boost/thread/mutex.hpp>

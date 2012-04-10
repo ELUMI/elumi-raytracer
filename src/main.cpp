@@ -7,7 +7,7 @@ namespace po = boost::program_options;
 
 #include "io/ExporterImpl/PNGExporter.h"
 #include "raytracer/Renderer.h"
-#include "raytracer/utilities/glutil.h"
+#include "raytracer/GLData/glutil.h"
 #include "raytracer/utilities/Random.h"
 #include "raytracer/TracerImpl/PhotonMapper.h"
 
@@ -15,7 +15,7 @@ namespace po = boost::program_options;
 #include "raytracer/XMLImpl/XML.h"
 
 #include "raytracer/common.hpp"
-#include "raytracer/AccDataStructImpl/LineArrayDataStruct.hpp"
+#include "raytracer/GLData/LineArrayDataStruct.hpp"
 
 #include <iostream>
 #include <fstream>

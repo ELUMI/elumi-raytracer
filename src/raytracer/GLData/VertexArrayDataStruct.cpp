@@ -12,7 +12,7 @@
 #include "VertexArrayDataStruct.h"
 #include "../utilities/Triangle.h"
 #include "../utilities/Ray.h"
-#include "../utilities/glutil.h"
+#include "../GLData/glutil.h"
 #include "../scene/Scene.h"
 
 using namespace glm;
