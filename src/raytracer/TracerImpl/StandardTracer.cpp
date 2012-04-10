@@ -236,11 +236,73 @@ inline vec3 StandardTracer::reflection_refraction(Ray incoming_ray,
     vec3 offset = refr_normal * 0.01f;
     vec3 refl_dir = glm::reflect(incoming_ray.getDirection(), refr_normal);
     Ray refl_ray = Ray(idata.interPoint + offset, glm::normalize(refl_dir));
-    vec3 refl_color = vec3(tracePrim(refl_ray, attenuation * reflectance, depth + 1));
-    refl_color *= reflectance;
+
+    vec3 refl_color;
+
+    float reflect_spread  = material->getReflectionSpread();
+    int   reflect_samples = material->getReflectionSamples();
+    float refract_spread  = material->getRefractionSpread();
+    int   refract_samples = material->getRefractionSamples();
+
+    if(reflect_spread > 0.0f && reflect_samples > 0) { // Glossy reflections
+      for(int i = 0; i < reflect_samples; ++i) {
+
+        vec3 sample_dir = glm::normalize(
+            get_random_cone(refl_dir, reflect_spread));
+
+        Ray sample_ray = Ray(idata.interPoint + offset, sample_dir);
+
+        refl_color +=
+            tracePrim(sample_ray, attenuation*reflectance / reflect_samples, depth+1)
+            * reflectance / reflect_samples;
+
+      }
+    } else {  // Non glossy
+      refl_color =
+          tracePrim(refl_ray, attenuation*reflectance, depth+1) * reflectance;
+    }
     // SVART BEROR PÅ ATT DEN STUDSAR MOT SIG SJÄLV OCH ALLTID BLIR REFLECTIVE TILLS MAXDJUP
     //mix with output
     color = color * (1 - reflectance) + vec3(refl_color);
+
+
+    /*
+    if(reflectance > 0.0f) {
+
+      // Fresnel reflectance (with Schlick's approx.)
+      //      float fresnel_refl = reflectance
+      //          + (1 - reflectance)
+      //          * glm::pow( clamp(1.0f + glm::dot(incoming_ray.getDirection(), normal) ), 5.0f);
+      //      reflectance = fresnel_refl;
+
+
+      vec3 offset = refr_normal * 0.01f;
+      vec3 refl_dir = glm::reflect(incoming_ray.getDirection(), refr_normal);
+      Ray refl_ray = Ray(idata.interPoint + offset, glm::normalize(refl_dir));
+
+
+      if(reflect_spread > 0.0f && reflect_samples > 0) { // Glossy reflections
+        for(int i = 0; i < reflect_samples; ++i) {
+
+          vec3 sample_dir = glm::normalize(
+              get_random_cone(refl_dir, reflect_spread));
+
+          Ray sample_ray = Ray(idata.interPoint + offset, sample_dir);
+
+          refl_color +=
+              tracePrim(sample_ray, attenuation*reflectance / reflect_samples, depth+1)
+              * reflectance / reflect_samples;
+
+        }
+      } else {  // Non glossy
+        refl_color =
+            tracePrim(refl_ray, attenuation*reflectance, depth+1) * reflectance;
+      }
+
+      // BLACK BECAUSE OF BOUNCES AGAINTS ITSELF AND ALLWAYS REFLECTIVE UNTILL MAX DEPTH
+
+    }
+     */
   }
   /**** REFRACTION RAY ****/
   if(transmittance > 0.0f && reflectance < 1.0f){
