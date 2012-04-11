@@ -96,8 +96,6 @@ void DeferredProcesser::render(Scene* scene, mat4 viewMatrix, int width, int hei
   GLenum buffers_to_render[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
   glDrawBuffers(2,buffers_to_render);
 
-  void glDrawBuffers( GLsizei n, const GLenum *bufs );
-
   glViewport(0, 0, width, height);
   glPixelZoom(1,1);
   glRasterPos2f(-1,1);

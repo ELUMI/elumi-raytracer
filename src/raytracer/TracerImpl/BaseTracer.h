@@ -30,7 +30,8 @@ public:
 
   virtual ~BaseTracer();
 
-  virtual void         traceImage(float* color_buffer);
+  virtual void traceImage(float* color_buffer);
+  void runWithGL();
   virtual void first_bounce();
 
   void         stopTracing();
@@ -40,6 +41,7 @@ public:
 protected:
   virtual vec4 trace(Ray ray, IAccDataStruct::IntersectionData idata, int thread_id);
   virtual vec4 shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata, int thread_id);
+  virtual void initTracing();
 
   Scene* scene;
   Settings* settings;
@@ -53,7 +55,8 @@ protected:
   IDeferredProcesser* first_pass;
   IAccDataStruct::IntersectionData* first_intersections;
 
-  virtual void initTracing();
+
+  vec3* colors;
 
 private:
   void traceImageThread(int id);

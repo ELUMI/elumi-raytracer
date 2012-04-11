@@ -144,7 +144,7 @@ void Renderer::asyncRender() {
     cout << "Render has no scene!\n";
     return;
   }
-  m_tracer->first_bounce(); //must be done in master thread
+  m_tracer->runWithGL(); //must be done in master thread
 
   if(renderthread){
     stopRendering();

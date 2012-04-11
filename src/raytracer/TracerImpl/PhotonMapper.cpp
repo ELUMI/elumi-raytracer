@@ -27,17 +27,52 @@ PhotonMapper::PhotonMapper(Scene* scene)
     cout << "Using hash photonmap\n";
     break;
   }
+  photon_processer = 0;
 }
 
 PhotonMapper::~PhotonMapper() {
-  // TODO Auto-generated destructor stub
   delete photonmap;
+  if(photon_processer)
+    delete photon_processer;
+  if(colors)
+    delete [] colors;
 }
 
 void PhotonMapper::initTracing(){
   StandardTracer::initTracing();
-  getPhotons();
+  if(!settings->use_first_bounce) {
+    getPhotons();
+  }
   photonmap->balance();
+}
+
+void PhotonMapper::first_bounce() {
+  StandardTracer::first_bounce();
+  int width = settings->width;
+  int height = settings->width;
+  int size = width * height;
+
+  if(!photon_processer) {
+    getPhotons();
+
+    photon_processer = new PhotonProcesser(width, height);
+
+    assert(photonmap->getNumberOfBuckets() == 1);
+    photon_processer->readPhotons(photonmap->getBucket(0));
+  }
+
+  mat4 vp2m = scene->getCamera().getViewportToModelMatrix(width, height);
+  mat4 view_matrix = scene->getCamera().getViewMatrix();
+  GLuint normal_tex = first_pass->getNormalTex();
+  GLuint depth_tex  = first_pass->getDepthTex();
+
+  photon_processer->render(scene, view_matrix, width, height, normal_tex, depth_tex);
+
+  if(!colors) {
+    colors = new vec3[size];
+  }
+  photon_processer->readColors(width, height, colors);
+
 }
 
 void PhotonMapper::storeInMap(Photon p){
@@ -104,8 +139,7 @@ void PhotonMapper::tracePhoton(Photon p, int thread_id)
   }
 }
 
-void PhotonMapper::getPhotons()
-{
+void PhotonMapper::getPhotons() {
   size_t n = settings->photons; //NUMBER_OF_PHOTONS;
   float totalpower = 0;
   for(size_t i = 0;i < lights->size();++i){
@@ -185,7 +219,6 @@ vec3 PhotonMapper::getLuminance(Ray incoming_ray,
   return l;
 }
 
-
 vec3 PhotonMapper::getAmbient(Ray incoming_ray,
     IAccDataStruct::IntersectionData idata, int thread_id) {
   const size_t final_gather_samples = 0;
@@ -203,7 +236,12 @@ vec3 PhotonMapper::getAmbient(Ray incoming_ray,
 
     l /= final_gather_samples;
   } else {
-    l = getLuminance(incoming_ray, idata);
+    if(settings->use_first_bounce) {
+      //l = getLuminance(incoming_ray, idata);
+      //l = colors;
+    } else {
+      l = getLuminance(incoming_ray, idata);
+    }
   }
   return l;
 }
@@ -220,6 +258,5 @@ vec4 PhotonMapper::shade(Ray incoming_ray,
   vec3 color = scene->getMaterialVector()[idata.material]->getDiffuse();
   return vec4(l*color,1);
 }
-
 
 }

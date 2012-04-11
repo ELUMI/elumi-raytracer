@@ -39,14 +39,20 @@ BaseTracer::BaseTracer(Scene* scene) {
   posbuff = new vec3[settings->width * settings->height];
 
   abort = false;
+  colors = 0;
 }
 
 BaseTracer::~BaseTracer() {
   stopTracing();
   delete [] posbuff;
+
+  if (first_pass) {
+    delete first_pass;
+    delete first_intersections;
+  }
 }
 
-void BaseTracer::first_bounce() {
+void BaseTracer::runWithGL() {
   if (!settings->use_first_bounce) {
     return;
   }
@@ -54,17 +60,18 @@ void BaseTracer::first_bounce() {
     settings->use_first_bounce = false;
     return;
   }
+  first_bounce();
+}
 
+void BaseTracer::first_bounce() {
   int width = settings->width;
   int height = settings->width;
   int size = width * height;
 
-  if (first_pass) {
-    delete first_pass; //there may be a unneccesary delete here, which may be very slow
-    delete[] first_intersections;
+  if (!first_pass) {
+    first_pass = new DeferredTexProcesser(settings->width, settings->height);
+    first_intersections = new IAccDataStruct::IntersectionData[size];
   }
-  first_pass = new DeferredTexProcesser(settings->width, settings->height);
-  first_intersections = new IAccDataStruct::IntersectionData[size];
 
   mat4 vp2m = scene->getCamera().getViewportToModelMatrix(width, height);
   mat4 view_matrix = scene->getCamera().getViewMatrix();
@@ -94,9 +101,9 @@ void BaseTracer::first_bounce() {
     }
   }
 
-  delete[] normals;
-  delete[] texcoords;
-  delete[] depths;
+  delete [] normals;
+  delete [] texcoords;
+  delete [] depths;
 }
 
 void BaseTracer::initTracing()
@@ -216,6 +223,9 @@ void BaseTracer::traceImageThread(int thread_id) {
         c += trace(ray, intersection_data, thread_id);
       }
       c /= ss_pattern->getSize();
+      if(colors){
+        c += vec4(colors[i],1);
+      }
       buffer[i * 4] = c.r;
       buffer[i * 4 + 1] = c.g;
       buffer[i * 4 + 2] = c.b;

@@ -25,6 +25,7 @@ protected:
   virtual vec4 tracePrim(Ray ray, float attenuation, unsigned short depth, int thread_id);
   virtual vec4 shade(Ray ray, IAccDataStruct::IntersectionData idata, float attenuation, unsigned short depth, int thread_id);
   virtual void initTracing();
+  virtual void first_bounce();
 
 
   const unsigned short MAX_RECURSION_DEPTH;

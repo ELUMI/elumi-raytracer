@@ -1,7 +1,7 @@
 /*
  * DeferredProcesser.h
  *
- *  Created on: Feb 15, 2012
+ *  Created on: Apr 10, 2012
  *      Author: ulvinge
  */
 
@@ -25,6 +25,9 @@ public:
   void readNormals(unsigned int width, unsigned int height, vec3* buffer);
   void readTexCoords(unsigned int width, unsigned int height, vec3* buffer);
   void readDepths(unsigned int width, unsigned int height, float* buffer);
+
+  GLuint getNormalTex();
+  GLuint getDepthTex();
 
 private:
   GLuint shader_program;

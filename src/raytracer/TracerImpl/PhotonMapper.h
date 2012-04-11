@@ -10,6 +10,7 @@
 
 #include "StandardTracer.h"
 #include "../IPhotonMap.h"
+#include "../GLData/PhotonProcesser.h"
 
 namespace raytracer {
 
@@ -26,13 +27,17 @@ protected:
   bool bounce(Photon& p, int thread_id, bool store=true);
   virtual void tracePhoton(Photon p, int thread_id);
 
+  virtual void initTracing();
+  virtual void first_bounce();
   vector<Photon*> gather(float& r, vec3 point);
   virtual vec4 shade(Ray ray, IAccDataStruct::IntersectionData idata, float attenuation, unsigned short depth, int thread_id=-1);
-  virtual void initTracing();
   vec3 getLuminance(Ray incoming_ray, IAccDataStruct::IntersectionData idata);
   virtual vec3 getAmbient(Ray incoming_ray, IAccDataStruct::IntersectionData idata, int thread_id);
 
   float radius;
+
+  PhotonProcesser* photon_processer;
+
 };
 
 }

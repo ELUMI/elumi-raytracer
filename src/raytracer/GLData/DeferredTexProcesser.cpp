@@ -1,7 +1,7 @@
 /*
  * DeferredProcesser.cpp
  *
- *  Created on: Feb 15, 2012
+ *  Created on: Apr 10, 2012
  *      Author: ulvinge
  */
 
@@ -116,8 +116,6 @@ void DeferredTexProcesser::render(Scene* scene, mat4 viewMatrix, int width, int 
   GLenum buffers_to_render[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
   glDrawBuffers(2,buffers_to_render);
 
-  void glDrawBuffers( GLsizei n, const GLenum *bufs );
-
   glViewport(0, 0, width, height);
   glPixelZoom(1,1);
   glRasterPos2f(-1,1);
@@ -160,5 +158,14 @@ void DeferredTexProcesser::readDepths(unsigned int width, unsigned int height, f
   glGetTexImage(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, GL_FLOAT, buffer);
   CHECK_GL_ERROR();
 }
+
+GLuint DeferredTexProcesser::getNormalTex(){
+  return normal_tex;
+}
+
+GLuint DeferredTexProcesser::getDepthTex(){
+  return depth_tex;
+}
+
 
 }

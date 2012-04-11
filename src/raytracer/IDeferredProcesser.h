@@ -21,6 +21,8 @@ public:
   virtual void readTexCoords(unsigned int width, unsigned int height, vec3* buffer)=0;
   virtual void readDepths(unsigned int width, unsigned int height, float* buffer)=0;
 
+  virtual GLuint getNormalTex()=0;
+  virtual GLuint getDepthTex()=0;
 };
 }
 

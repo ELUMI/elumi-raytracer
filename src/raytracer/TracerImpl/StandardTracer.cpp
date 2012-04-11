@@ -30,6 +30,10 @@ void StandardTracer::initTracing(){
   BaseTracer::initTracing();
 }
 
+void StandardTracer::first_bounce(){
+  BaseTracer::first_bounce();
+}
+
 void StandardTracer::traceImage(float* color_buffer) {
   if (scene->getEnvironmentMap() != NULL)
     using_environment_map = true;
