@@ -36,12 +36,13 @@ public:
 
   void         stopTracing();
   float getPixelsLeft();
+  virtual void initTracing();
 
   vec3* posbuff;
 protected:
   virtual vec4 trace(Ray ray, IAccDataStruct::IntersectionData idata, int thread_id);
   virtual vec4 shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata, int thread_id);
-  virtual void initTracing();
+
 
   Scene* scene;
   Settings* settings;

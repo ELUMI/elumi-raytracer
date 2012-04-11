@@ -29,6 +29,7 @@ namespace raytracer {
 Renderer::Renderer(int open_gl_version):color_buffer_org(NULL) {
   this->open_gl_version = open_gl_version;
   abort = false;
+  initing = false;
 
   Settings* set = new Settings();
   set->opengl_version = open_gl_version;
@@ -149,6 +150,7 @@ void Renderer::asyncRender() {
   if(renderthread){
     stopRendering();
   }
+  initing = true;
   renderthread = new boost::thread( boost::bind(&Renderer::render, this ));
 }
 
@@ -234,6 +236,8 @@ void Renderer::render() {
     return;
   }
 
+  m_tracer->initTracing();
+  initing = false;
   m_tracer->traceImage(color_buffer);
 
   if(abort)
@@ -245,6 +249,8 @@ float Renderer::renderComplete() {
     cout << "Render has no tracer!\n";
     return -1;
   }
+  if(initing)
+    return 1;
   return m_tracer->getPixelsLeft();
 }
 

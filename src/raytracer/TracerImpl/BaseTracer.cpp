@@ -108,6 +108,14 @@ void BaseTracer::first_bounce() {
 
 void BaseTracer::initTracing()
 {
+  if (settings->pattern == 1)
+    pattern = new HilbertCurve(settings->width, settings->height, settings->batches);
+  else
+    pattern = new LinePattern(settings->width, settings->height);
+
+  nr_batches = pattern->getNumberBatches();
+  next_batch = 0;
+
   lights = scene->getLightVector();
   abort = false;
   cout << "<Position x=\"" << scene->getCamera().getPosition().x
@@ -124,20 +132,10 @@ void BaseTracer::initTracing()
 
 void BaseTracer::traceImage(float *color_buffer)
 {
+
   boost::timer::cpu_timer timer;
 
   buffer = color_buffer;
-  initTracing();
-
-  //TODO: add first bounce again
-
-  if (settings->pattern == 1)
-    pattern = new HilbertCurve(settings->width, settings->height, settings->batches);
-  else
-    pattern = new LinePattern(settings->width, settings->height);
-
-  nr_batches = pattern->getNumberBatches();
-  next_batch = 0;
 
   // Launch threads
   int nr_threads = settings->threads;

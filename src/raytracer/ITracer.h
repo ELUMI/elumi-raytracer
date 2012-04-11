@@ -17,7 +17,7 @@ public:
 	virtual void traceImage(float* color_buffer) = 0;
 	virtual void stopTracing() = 0;
   virtual float getPixelsLeft() = 0;
-
+  virtual void initTracing() = 0;
 };
 
 }

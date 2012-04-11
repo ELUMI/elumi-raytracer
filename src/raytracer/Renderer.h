@@ -57,6 +57,7 @@ private:
 
   bool tonemapped;
   boost::thread* renderthread;
+  bool initing;
 };
 
 }

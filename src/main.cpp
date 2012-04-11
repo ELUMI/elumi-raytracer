@@ -40,6 +40,7 @@ vec2 mousePrev;
 double prevTime;
 int renderMode = 2;
 raytracer::Renderer* myRenderer;
+bool auto_render = false;
 
 enum DebugVariable { TEST, KEY, WHITE, RADIUS };
 DebugVariable var = TEST;
@@ -141,7 +142,16 @@ int main(int argc, char* argv[]) {
     }
 
     while (running) {
-      //OpenGl rendering goes here...d
+      if(auto_render) {
+        while(myRenderer->renderComplete());
+
+        if(myRenderer->renderComplete() == 0.0f) {
+          myRenderer->loadCamera(camera);
+          myRenderer->asyncRender();
+        }
+      }
+
+        //OpenGl rendering goes here...d
       glViewport(0, 0, win_width, win_height);
 
       glClearColor(settings->background_color.x, settings->background_color.y,
@@ -166,8 +176,7 @@ int main(int argc, char* argv[]) {
       case 2:
         glRasterPos2f(-1,-1);
         glPixelZoom((float) win_width / settings->width, (float) win_height / settings->height);
-        glDrawPixels(settings->width, settings->height, GL_RGBA,
-            GL_FLOAT, buffer);
+        glDrawPixels(settings->width, settings->height, GL_RGBA, GL_FLOAT, buffer);
         break;
       case 3:
         drawDrawables(drawables, n_drawables);
@@ -464,16 +473,21 @@ void timedCallback() {
     camera.translate(vec3(0, 0, -speed));
   }
   if (glfwGetKey(GLFW_KEY_UP)) {
-    camera.rotate(vec2(0,-1));
+    camera.rotate(vec2(0,-speed));
   }
   if (glfwGetKey(GLFW_KEY_DOWN)) {
-    camera.rotate(vec2(0,1));
-  }
-  if (glfwGetKey(GLFW_KEY_RIGHT)) {
-    camera.rotate(vec2(1,0));
+    camera.rotate(vec2(0,speed));
   }
   if (glfwGetKey(GLFW_KEY_LEFT)) {
-    camera.rotate(vec2(-1,0));
+    camera.rotate(vec2(-speed,0));
+  }
+  if (glfwGetKey(GLFW_KEY_RIGHT)) {
+    camera.rotate(vec2(speed,0));
+  }
+  if (glfwGetKey(GLFW_KEY_TAB)) {
+    auto_render = !auto_render;
+    cout << "Autorender: " << auto_render << "\n";
+    glfwSleep(0.5);
   }
   if (glfwGetKey('1')) {
     renderMode = 1;
