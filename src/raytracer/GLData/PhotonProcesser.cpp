@@ -109,7 +109,7 @@ void PhotonProcesser::readPhotons(vector<Photon>& photons) {
   size = photons.size();
 }
 
-void PhotonProcesser::render(Scene* scene, mat4 viewMatrix, int width, int height, GLuint normal_tex, GLuint depth_tex){
+void PhotonProcesser::render(Scene* scene, int width, int height, GLuint normal_tex, GLuint depth_tex, float radius){
   CHECK_GL_ERROR();
   // set rendering destination to FBO
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
@@ -126,43 +126,46 @@ void PhotonProcesser::render(Scene* scene, mat4 viewMatrix, int width, int heigh
   glClearColor(0,0,0,0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glDisable(GL_ALPHA_TEST);
-  glDisable(GL_DEPTH_TEST);
+  glEnable(GL_DEPTH_TEST);
   glDisable(GL_CULL_FACE);
   glEnable(GL_BLEND);
   glBlendFunc (GL_ONE, GL_ONE);
   glBlendEquation(GL_FUNC_ADD);
-  glPointSize(10);
+  glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+  CHECK_GL_ERROR();
+  glEnable(GL_POINT_SPRITE);
 
   CHECK_GL_ERROR();
 
   glUseProgram(shader_program);
 
+  GLuint loc = glGetUniformLocation(shader_program, "modelViewProjectionMatrix");
+  mat4 viewMatrix = scene->getCamera().getViewMatrix();
+  glUniformMatrix4fv(loc, 1, GL_FALSE, value_ptr(viewMatrix));
+
+  loc = glGetUniformLocation(shader_program, "inverseModelViewProjectionMatrix");
+  viewMatrix = scene->getCamera().getViewportToModelMatrix(width, height);
+  glUniformMatrix4fv(loc, 1, GL_FALSE, value_ptr(viewMatrix));
+
+  loc = glGetUniformLocation(shader_program, "radius");
+  glUniform1f(loc, radius);
+  CHECK_GL_ERROR();
+
   setUniformSlow(shader_program, "depth_tex", 0);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, depth_tex);
+  glEnable(GL_TEXTURE_2D);
   setUniformSlow(shader_program, "normal_tex", 1);
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, normal_tex);
 
-  glBegin(GL_POINTS);
-  for(size_t i=0; i<size;++i){
-    Photon p = photons->at(i);
-    vec3 c = p.power;
-    //c = vec4(0,1,0,0);
-    //c = glm::normalize(c);
-    vec3 v = p.position;
-    glColor3f(c.r, c.b, c.g);
-    glVertex3f(v.x, v.y, v.z);
-  }
-  glEnd();
-
   glBindVertexArray(vertexArrayObject);
-  glDrawArrays(GL_TRIANGLES, 0, size);
+  glDrawArrays(GL_POINTS, 0, size);
 
   glUseProgram(0);
-  glPointSize(1);
   CHECK_GL_ERROR();
 
+  glDisable(GL_BLEND);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER,0); //Returns the default FBO to the DRAW location
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0); // unbind FBO
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER,0); //Returns the default FBO to the DRAW location

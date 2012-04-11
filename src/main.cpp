@@ -41,7 +41,7 @@ double prevTime;
 int renderMode = 2;
 raytracer::Renderer* myRenderer;
 
-enum DebugVariable { TEST, KEY, WHITE };
+enum DebugVariable { TEST, KEY, WHITE, RADIUS };
 DebugVariable var = TEST;
 
 void timedCallback();
@@ -402,6 +402,34 @@ void mouse(int button, int action) {
   }
   //mouseMove(pos.x,pos.y);
 }
+
+void adjustValue(double speed) {
+  switch (var) {
+  case TEST:
+    myRenderer->stopRendering();
+    settings->test += speed * 0.1;
+    myRenderer->asyncRender();
+    cout << "test: " << settings->test << "\n";
+    break;
+  case KEY:
+    settings->key += speed * 0.01;
+    myRenderer->tonemapImage(true);
+    cout << "key: " << settings->key << "\n";
+    break;
+  case WHITE:
+    settings->white += speed * 0.1;
+    myRenderer->tonemapImage(true);
+    cout << "white: " << settings->white << "\n";
+    break;
+  case RADIUS:
+    myRenderer->stopRendering();
+    settings->gather_radius += speed;
+    myRenderer->asyncRender();
+    cout << "photonmap gather radius: " << settings->gather_radius << "\n";
+    break;
+  }
+}
+
 void timedCallback() {
   double diffTime = glfwGetTime() - prevTime;
   prevTime += diffTime;
@@ -410,6 +438,9 @@ void timedCallback() {
 
   if (glfwGetKey(GLFW_KEY_LCTRL)) {
     speed /= 100;
+  }
+  if (glfwGetKey(GLFW_KEY_LSHIFT)) {
+    speed *= 100;
   }
   if (glfwGetKey('W')) {
     camera.translate(vec3(speed, 0, 0));
@@ -514,37 +545,14 @@ void timedCallback() {
   if (glfwGetKey(GLFW_KEY_F3)) {
     var = WHITE;
   }
+  if (glfwGetKey(GLFW_KEY_F4)) {
+    var = RADIUS;
+  }
   if (glfwGetKey(GLFW_KEY_KP_ADD)) {
-    if (var == TEST) {
-      myRenderer->stopRendering();
-      settings->test += speed/100;
-      myRenderer->asyncRender();
-      cout << "test: " << settings->test << "\n";
-    } else if (var == KEY) {
-      settings->key += 0.01;
-      myRenderer->tonemapImage(true);
-      cout << "key: " << settings->key << "\n";
-    } else if (var == WHITE) {
-      settings->white += 0.1;
-      myRenderer->tonemapImage(true);
-      cout << "white: " << settings->white << "\n";
-    }
+    adjustValue(speed);
   }
   if (glfwGetKey(GLFW_KEY_KP_SUBTRACT)) {
-    if (var == TEST) {
-      myRenderer->stopRendering();
-      settings->test -= speed/100;
-      myRenderer->asyncRender();
-      cout << "test: " << settings->test << "\n";
-    } else if (var == KEY) {
-      settings->key -= 0.01;
-      myRenderer->tonemapImage(true);
-      cout << "key: " << settings->key << "\n";
-    } else if (var == WHITE) {
-      settings->white -= 0.1;
-      myRenderer->tonemapImage(true);
-      cout << "white: " << settings->white << "\n";
-    }
+    adjustValue(-speed);
   }
   if (glfwGetKey(GLFW_KEY_KP_MULTIPLY)) {
     myRenderer->stopRendering();

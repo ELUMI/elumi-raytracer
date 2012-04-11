@@ -15,7 +15,6 @@ namespace raytracer {
 
 PhotonMapper::PhotonMapper(Scene* scene)
 : StandardTracer(scene) {
-  radius = settings->gather_radius;
   switch(settings->photonmap) {
   case 0:
     photonmap = new ArrayPM(settings->photonmap_size);
@@ -23,7 +22,7 @@ PhotonMapper::PhotonMapper(Scene* scene)
     break;
   case 1:
   default:
-    photonmap = new HashPM(radius, settings->photonmap_size);
+    photonmap = new HashPM(settings->gather_radius, settings->photonmap_size);
     cout << "Using hash photonmap\n";
     break;
   }
@@ -61,12 +60,11 @@ void PhotonMapper::first_bounce() {
     photon_processer->readPhotons(photonmap->getBucket(0));
   }
 
-  mat4 vp2m = scene->getCamera().getViewportToModelMatrix(width, height);
   mat4 view_matrix = scene->getCamera().getViewMatrix();
   GLuint normal_tex = first_pass->getNormalTex();
   GLuint depth_tex  = first_pass->getDepthTex();
 
-  photon_processer->render(scene, view_matrix, width, height, normal_tex, depth_tex);
+  photon_processer->render(scene, width, height, normal_tex, depth_tex, settings->gather_radius);
 
   if(!colors) {
     colors = new vec3[size];
@@ -173,7 +171,7 @@ void PhotonMapper::getPhotons() {
 }
 
 vector<Photon*> PhotonMapper::gather(float& r, vec3 point){
-  r = radius;
+  r = settings->gather_radius;
   return photonmap->gatherFromR(point, r);
 }
 

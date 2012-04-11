@@ -34,8 +34,6 @@ protected:
   vec3 getLuminance(Ray incoming_ray, IAccDataStruct::IntersectionData idata);
   virtual vec3 getAmbient(Ray incoming_ray, IAccDataStruct::IntersectionData idata, int thread_id);
 
-  float radius;
-
   PhotonProcesser* photon_processer;
 
 };
