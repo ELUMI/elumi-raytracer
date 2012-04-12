@@ -109,7 +109,7 @@ void PhotonProcesser::readPhotons(vector<Photon>& photons) {
   size = photons.size();
 }
 
-void PhotonProcesser::render(Scene* scene, int width, int height, GLuint normal_tex, GLuint depth_tex, float radius){
+void PhotonProcesser::render(Scene* scene, int width, int height, GLuint normal_tex, GLuint depth_tex, float radius, float scaling){
   CHECK_GL_ERROR();
   // set rendering destination to FBO
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
@@ -149,6 +149,13 @@ void PhotonProcesser::render(Scene* scene, int width, int height, GLuint normal_
 
   loc = glGetUniformLocation(shader_program, "radius");
   glUniform1f(loc, radius);
+
+  loc = glGetUniformLocation(shader_program, "camera_position");
+  vec3 camera_position = scene->getCamera().getPosition();
+  glUniform3f(loc, camera_position.x, camera_position.y, camera_position.z);
+
+  loc = glGetUniformLocation(shader_program, "scale");
+  glUniform1f(loc, scaling/float(size));
   CHECK_GL_ERROR();
 
   setUniformSlow(shader_program, "depth_tex", 0);

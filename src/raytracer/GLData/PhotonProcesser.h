@@ -17,7 +17,7 @@ public:
   PhotonProcesser(unsigned int width, unsigned int height);
   virtual ~PhotonProcesser();
 
-  void render(Scene* scene, int width, int height, GLuint normal_tex, GLuint depth_tex, float radius);
+  void render(Scene* scene, int width, int height, GLuint normal_tex, GLuint depth_tex, float radius, float scaling);
   void readColors(unsigned int width, unsigned int height, vec3* buffer);
   void readPhotons(vector<Photon>& photons);
 

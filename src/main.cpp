@@ -143,7 +143,8 @@ int main(int argc, char* argv[]) {
 
     while (running) {
       if(auto_render) {
-        while(myRenderer->renderComplete());
+        while(myRenderer->renderComplete())
+          timedCallback();
 
         if(myRenderer->renderComplete() == 0.0f) {
           myRenderer->loadCamera(camera);
@@ -151,7 +152,7 @@ int main(int argc, char* argv[]) {
         }
       }
 
-        //OpenGl rendering goes here...d
+      //OpenGl rendering goes here...d
       glViewport(0, 0, win_width, win_height);
 
       glClearColor(settings->background_color.x, settings->background_color.y,

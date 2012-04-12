@@ -59,6 +59,7 @@ struct Settings {
     photonmap_size = 1024;
     photons = 32*1024;
     gather_radius = 0.5f;
+    photonmap_scaling = 128.0f;
   }
 
   // Screen
@@ -102,6 +103,7 @@ struct Settings {
   size_t photonmap_size;
   size_t photons;
   float gather_radius;
+  float photonmap_scaling;
 };
 
 }

@@ -147,12 +147,13 @@ void BaseTracer::traceImage(float *color_buffer)
     //lights->at(i)->initCaches(nr_threads);
   }
 
-  boost::thread threads[nr_threads];
-  for(int i = 0;i < nr_threads;++i){
+  boost::thread threads[nr_threads-1];
+  for(int i = 0;i < nr_threads-1;++i){
     threads[i] = boost::thread(boost::bind(&BaseTracer::traceImageThread, this, i));
   }
+  traceImageThread(nr_threads); //spawn one less thread by using this thread
   // Wait for threads to complete
-  for(int i = 0;i < nr_threads;++i){
+  for(int i = 0;i < nr_threads-1;++i){
     threads[i].join();
   }
   delete pattern;
