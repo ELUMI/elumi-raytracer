@@ -145,13 +145,14 @@ void Renderer::asyncRender() {
     cout << "Render has no scene!\n";
     return;
   }
+  timer.start();
   m_tracer->runWithGL(); //must be done in master thread
 
   if(renderthread){
     stopRendering();
   }
   initing = true;
-  renderthread = new boost::thread( boost::bind(&Renderer::render, this ));
+  renderthread = new boost::thread( boost::bind(&Renderer::render, this));
 }
 
 void Renderer::stopRendering() {
@@ -242,6 +243,8 @@ void Renderer::render() {
 
   if(abort)
     return;
+  timer.stop();
+  cout << timer.format(2);
 }
 
 float Renderer::renderComplete() {

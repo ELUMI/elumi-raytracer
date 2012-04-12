@@ -14,7 +14,6 @@
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
 #include <boost/thread/mutex.hpp>
-#include <boost/timer/timer.hpp>
 
 #include "../GLData/DeferredTexProcesser.h"
 
@@ -144,7 +143,6 @@ void BaseTracer::initThreads(int nr_threads) {
 }
 
 void BaseTracer::traceImage(float* color_buffer) {
-  boost::timer::cpu_timer timer;
   buffer = color_buffer;
   // Launch threads
   int nr_threads = settings->threads;
@@ -164,8 +162,6 @@ void BaseTracer::traceImage(float* color_buffer) {
     threads[i].join();
   }
   delete pattern;
-  if (!abort)
-    cout << timer.format(2);
 }
 void BaseTracer::traceImageThread(int thread_id) {
   // Synchronize work

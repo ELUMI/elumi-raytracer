@@ -176,17 +176,15 @@ vector<Photon*> PhotonMapper::gather(float& r, vec3 point){
   return photonmap->gatherFromR(point, r);
 }
 
-float PhotonMapper::filterKernel(vec3 interPoint, vec3 normal, const Photon* p, float r) {
+float PhotonMapper::filterKernel(vec3 offset, vec3 normal, float r) {
   //return 1/(M_PI*r*r); //simple filter kernel
 
   //advanced filter kernel (ISPM paper)
-  float dist = length(interPoint - p->position);
-  float rz = 0.1 * r;
-  float t = (dist / r) * (1 - dot((interPoint - p->position) / dist, normal) * (r + rz) / rz);
-  float scale = 0.2;
-  float sigma = r * scale;
-  float a = 1 / (sqrt(2 * M_PI) * sigma);
-  return scale * a * a * a * exp(-t * t / (2 * sigma * sigma));
+  const float sz = 0.1;
+  float dist = length(offset);
+  float t = (dist / r) * (1 - dot(offset / dist, normal) * (r + sz*r) / sz);
+  float sigma = 0.4; //t=1,k<0.1 => sigma<0.45
+  return exp(-t*t/(2*sigma*sigma));
 }
 
 vec3 PhotonMapper::getLuminance(Ray incoming_ray,
@@ -205,7 +203,7 @@ vec3 PhotonMapper::getLuminance(Ray incoming_ray,
     const Photon* p = photons[i];
 
     vec3 b = brdf(-p->direction, incoming_ray.getDirection(), idata.normal, material);
-    float k = filterKernel(idata.interPoint, idata.normal, p, r);
+    float k = filterKernel(idata.interPoint - p->position, idata.normal, r);
     float a = glm::max(0.0f, glm::dot(p->direction, idata.normal));
     //cout << p.power.r << " " << p.power.g << " " << p.power.b << "\n";
     //cout << b << " " << a << " " << k << "\n";
@@ -253,9 +251,10 @@ vec4 PhotonMapper::shade(Ray incoming_ray,
     return settings->background_color;
   }
 
+  Material* mat = scene->getMaterialVector()[idata.material];
   vec3 l = getAmbient(incoming_ray, idata, thread_id, depth);
-  vec3 color = scene->getMaterialVector()[idata.material]->getDiffuse();
-  return vec4(l*color,1);
+  vec3 color = mat->getDiffuse();
+  return vec4(l*color+mat->getEmissive(),1);
 }
 
 }

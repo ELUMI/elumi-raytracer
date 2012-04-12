@@ -33,7 +33,7 @@ protected:
   virtual vec4 shade(Ray ray, IAccDataStruct::IntersectionData idata, float attenuation, unsigned short depth, int thread_id=-1);
   vec3 getLuminance(Ray incoming_ray, IAccDataStruct::IntersectionData idata);
   virtual vec3 getAmbient(Ray incoming_ray, IAccDataStruct::IntersectionData idata, int thread_id, unsigned short depth);
-  float filterKernel(vec3 interPoint, vec3 normal, const Photon* p, float r);
+  float filterKernel(vec3 offset, vec3 normal, float r);
 
   PhotonProcesser* photon_processer;
 

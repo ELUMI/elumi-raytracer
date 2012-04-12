@@ -19,23 +19,16 @@ in vec3 photon_power;
 
 out vec3 ocolor;
 
-#	define M_PI 3.14159265358979323846f
+float filterKernel(in vec3 offset, in vec3 normal, in float r) {
+  //return 1/(M_PI*r*r); //simple filter kernel
 
-float filterKernel(in vec3 interPoint, in vec3 normal) {
-  //return 1/(M_PI*radius*radius); //simple filter kernel
-
-  //return (radius-d)/radius; //inverse distance
-  
   //advanced filter kernel (ISPM paper)
-  float dist = length(interPoint - photon_position);
-  float rz = 0.1 * radius;
-  float t = (dist / radius) * (1 - dot((interPoint - photon_position) / dist, normal) * (radius + rz) / rz);
-  float scale = 4.0;
-  float sigma = radius * scale;
-  float a = 1 / (sqrt(2 * M_PI) * sigma);
-  return scale * a * a * a * exp(-t * t / (2 * sigma * sigma));
+  const float sz = 0.1;
+  float dist = length(offset);
+  float t = (dist / r) * (1 - dot(offset / dist, normal) * (r + sz*r) / sz);
+  float sigma = 0.4; //t=1,k<0.1 => sigma<0.45
+  return exp(-t*t/(2*sigma*sigma));
 }
-
 
 vec3 brdf(in vec3 incoming_direction,
     in vec3 outgoing_direction, in vec3 normal)
@@ -60,17 +53,17 @@ void main()
   p /= p.w;
 
 
-  float d = length(photon_position - vec3(p));
+  float d = length(vec3(p) - photon_position);
   if(d>radius)
   	discard;
 
   vec3 normal = texelFetch(normal_tex, coord, 0).xyz;
+  float k = filterKernel(vec3(p)-photon_position, normal, radius);
 
   vec3 camera_direction = normalize(vec3(p) - camera_position);
   
   vec3 b = brdf(-photon_direction, camera_direction, normal);
   float a = max(0.0f, dot(photon_direction, normal));
-  float k = filterKernel(vec3(p), normal);
   //ocolor = b * photon_power * a * k;
   ocolor = b * photon_power * a * k * scale;
 
