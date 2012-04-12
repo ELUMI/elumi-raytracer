@@ -126,8 +126,12 @@ Scene* XML::importScene(const char* fileName) {
           settings->photonmap_size = photonmapper.attribute("photonmap_size").as_int();
         if(!photonmapper.attribute("photons").empty())
           settings->photons = photonmapper.attribute("photons").as_int();
+        if(!photonmapper.attribute("final_gather_samples").empty())
+          settings->final_gather_samples = photonmapper.attribute("final_gather_samples").as_int();
         if(!photonmapper.attribute("radius").empty())
           settings->gather_radius = photonmapper.attribute("radius").as_float();
+        if(!photonmapper.attribute("scaling").empty())
+          settings->photonmap_scaling = photonmapper.attribute("scaling").as_float();
       }
 
       if(settings->opengl_version<3){

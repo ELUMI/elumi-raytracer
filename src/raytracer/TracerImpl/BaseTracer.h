@@ -42,7 +42,8 @@ public:
 protected:
   virtual vec4 trace(Ray ray, IAccDataStruct::IntersectionData idata, int thread_id);
   virtual vec4 shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata, int thread_id);
-
+  virtual void initThreads(int nr_threads);
+  size_t* position;
 
   Scene* scene;
   Settings* settings;
@@ -55,9 +56,6 @@ protected:
 
   IDeferredProcesser* first_pass;
   IAccDataStruct::IntersectionData* first_intersections;
-
-
-  vec3* colors;
 
 private:
   void traceImageThread(int id);

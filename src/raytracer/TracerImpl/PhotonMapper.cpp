@@ -27,6 +27,7 @@ PhotonMapper::PhotonMapper(Scene* scene)
     break;
   }
   photon_processer = 0;
+  colors = 0;
 }
 
 PhotonMapper::~PhotonMapper() {
@@ -218,8 +219,8 @@ vec3 PhotonMapper::getLuminance(Ray incoming_ray,
 }
 
 vec3 PhotonMapper::getAmbient(Ray incoming_ray,
-    IAccDataStruct::IntersectionData idata, int thread_id) {
-  const size_t final_gather_samples = 0;
+    IAccDataStruct::IntersectionData idata, int thread_id, unsigned short depth) {
+  const size_t final_gather_samples = settings->final_gather_samples;
   vec3 l = vec3(0);
   if(final_gather_samples != 0){
     //final gather
@@ -234,9 +235,9 @@ vec3 PhotonMapper::getAmbient(Ray incoming_ray,
 
     l /= final_gather_samples;
   } else {
-    if(settings->use_first_bounce) {
+    if(settings->use_first_bounce && colors && depth == 0) {
       //l = getLuminance(incoming_ray, idata);
-      //l = colors;
+      return colors[position[thread_id]];
     } else {
       l = getLuminance(incoming_ray, idata);
     }
@@ -246,13 +247,13 @@ vec3 PhotonMapper::getAmbient(Ray incoming_ray,
 
 vec4 PhotonMapper::shade(Ray incoming_ray,
     IAccDataStruct::IntersectionData idata,
-    float attenuation, unsigned short  depth, int thread_id) {
+    float attenuation, unsigned short depth, int thread_id) {
   if(idata.missed()){
     // No intersection
     return settings->background_color;
   }
 
-  vec3 l = getAmbient(incoming_ray, idata, thread_id);
+  vec3 l = getAmbient(incoming_ray, idata, thread_id, depth);
   vec3 color = scene->getMaterialVector()[idata.material]->getDiffuse();
   return vec4(l*color,1);
 }
