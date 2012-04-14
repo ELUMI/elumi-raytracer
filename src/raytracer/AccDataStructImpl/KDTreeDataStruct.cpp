@@ -42,6 +42,8 @@ KDTreeDataStruct::~KDTreeDataStruct() {
 
 IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(Ray* ray,float _min,float _max){
   stack<KDNode*> node_stack;
+  if(_min<0)
+    _min=0;
   stack<float> min_stack;
   stack<float> max_stack;
 
@@ -54,6 +56,8 @@ IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(
   for(size_t axis=0;axis<3;axis++){
     ray_dir[axis] = 1 / ray->getDirection()[axis];
   }
+  IntersectionData return_value = IntersectionData(IntersectionData::NOT_FOUND, vec3(), vec3(), vec2(),vec3(),vec3());
+  float best_t = INFINITY;
   while(!node_stack.empty()){
     KDNode* node = node_stack.top();
     float min = min_stack.top();
@@ -126,8 +130,8 @@ IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(
         }
       }
     }
-    if(closest_t != numeric_limits<float>::infinity( )) {
-
+    if(closest_t != numeric_limits<float>::infinity( ) && closest_t<best_t) {
+      best_t = closest_t;
       vec3 v1v0 = *(closest_tri->getVertices()[1]) - *(closest_tri->getVertices()[0]);
         vec3 v2v1 = *(closest_tri->getVertices()[2]) - *(closest_tri->getVertices()[1]);
         vec3 v2v0 = *(closest_tri->getVertices()[2]) - *(closest_tri->getVertices()[0]);
@@ -158,11 +162,11 @@ IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(
           v2 = v2v0;
         }
 
-      return IntersectionData(closest_tri->getMaterial(), closest_pos, glm::normalize(inter_normal), vec2(inter_tex),
+      return_value = IntersectionData(closest_tri->getMaterial(), closest_pos, glm::normalize(inter_normal), vec2(inter_tex),
             v1,v2);
     }
   }
-  return IntersectionData(IntersectionData::NOT_FOUND, vec3(), vec3(), vec2(),vec3(),vec3());
+  return return_value;
 }
 
 IAccDataStruct::IntersectionData
@@ -175,8 +179,14 @@ KDTreeDataStruct::findClosestIntersection(Ray ray) {
 }
 
 void KDTreeDataStruct::build(){
-  buildSAHTree();
-//  KDTreeDataStruct::buildMedianTree(root,0);
+  switch(settings->tree){
+  case 2:
+    KDTreeDataStruct::buildMedianTree(root,0);
+    break;
+  case 3:
+    buildSAHTree();
+    break;
+  }
 
   if(settings->wireframe==1){
     constructWireframe();
@@ -419,7 +429,6 @@ void KDTreeDataStruct::buildSAHTree(){
       node_stack.push(right);
       node_stack.push(left);
 
-      int left_size = left_vec.size(), right_size = right_vec.size();
       int* triangles_left = new int[left_vec.size()];
       int* triangles_right = new int[right_vec.size()];
 
@@ -504,10 +513,10 @@ void KDTreeDataStruct::buildMedianTree(KDNode* node,int depth){
       for(size_t i=0;i<size;i++){
         float min_triangle = KDTreeDataStruct::triangles[triangles_pos[i]]->getMin()[axis];
         float max_triangle = KDTreeDataStruct::triangles[triangles_pos[i]]->getMax()[axis];
-        if(min_triangle<split){
+        if(min_triangle<=split){
           left_tri.push_back(i);
         }
-        if(max_triangle>split){
+        if(max_triangle>=split){
           right_tri.push_back(i);
         }
       }
@@ -538,6 +547,10 @@ void KDTreeDataStruct::buildMedianTree(KDNode* node,int depth){
 
       size_node.push(right_tri.size());
       size_node.push(left_tri.size());
+      if(right_tri.size()==0)
+        cout << "0 right";
+      else if(left_tri.size()==0)
+        cout << "0 right";
 
       triangle_pos_node.push(right_triangles);
       triangle_pos_node.push(left_triangles);
