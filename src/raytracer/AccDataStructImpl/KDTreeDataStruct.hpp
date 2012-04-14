@@ -34,6 +34,43 @@ private:
   enum Side{
     LEFT=0,RIGHT=1,ROOT=2
   };
+  struct SAHValues
+  {
+    //Axis of the split.
+    int axis;
+    //Split position.
+    float split,cost;
+    //Decision variable. It decides whether the triangles are placed to
+    //the left or right branch.
+    Side side;
+  };
+  struct TravElem
+  {
+    size_t nodeIndex;
+    float t_near;
+    float t_far;
+  };
+
+  //This is some kind of functor which allow sorting the nodes of the tree.
+  struct SortElem
+  {
+    float plane;
+    //The type of node.
+    int type;
+
+    SortElem()
+    {
+      plane = FLT_MAX;
+      type = -1;
+    }
+
+    SortElem(float val, int typ)
+    {
+      plane = val;
+      type = typ;
+    }
+  };
+
   class KDNode{
   public:
     KDNode():left(NULL),right(NULL),leaf(false){};
@@ -66,8 +103,7 @@ private:
   };
   class SortableTriangle {
   public:
-    SortableTriangle(Triangle* tri): min(new float[3]),max(new float[3]),
-    barycenter(new float[3]),triangle(tri)
+    SortableTriangle(Triangle* tri):triangle(tri)
     {
       vector<vec3*> vertices = triangle->getVertices();
       barycenter[0]= (vertices[0]->x + vertices[1]->x + vertices[2]->x)/3;
@@ -87,18 +123,35 @@ private:
         }
       }
     }
-
-    const float& getMax(int axis){return max[axis];}
-    const float& getMin(int axis){return min[axis];}
-    const float& getBarycenter(int axis){return barycenter[axis];}
+    const vec3& getMax(){return max;}
+    const vec3& getMin(){return min;}
+    const vec3& getBarycenter(){return barycenter;}
     Triangle* getTriangle(){return triangle;}
   private:
-    float* min,*max,*barycenter;
+    vec3 min,max,barycenter;
     Triangle* triangle;
 
   };
-  void constructTreeStack(KDNode* node,int depth);
-  void constructTreeNode(KDNode* node,int depth);
+  struct compE
+  {
+    inline bool operator()(SortElem e1, SortElem e2)
+    {
+      if (e1.plane < e2.plane)
+      {
+        return true;
+      }
+      else if (e1.plane == e2.plane)
+      {
+        return e1.type < e2.type;
+      }
+      else{
+        return false;
+      }
+    }
+  };
+
+  void buildMedianTree(KDNode* node,int depth);
+  void buildMedianNode(KDNode* node,int depth);
   void constructWireframe();
   IAccDataStruct::IntersectionData findClosestIntersectionR(KDNode* node,Ray* ray,float min,float max,int depth);
 
@@ -106,7 +159,17 @@ private:
   void quickSort(int* triangles,int top,int bottom,int axis);
   int qsPartition(int* triangles,int top,int bottom,int axis);
 
+  float findMedianSplitting(int* triangles_pos,size_t size,int axis);
 
+  float SAHCost(float P_l, float P_r, int N_l, int N_r);
+  std::pair<float, Side> SAH(AABB V,int axis, float split, int N_l, int N_r, int N_p);
+  /// This method allow finding the "best" splitting plane.
+  SAHValues findPlane(int* triangles,size_t size, AABB volume);
+
+  void buildSAHTree();
+
+  static const float KD_TRAVERSE = 1.0f;
+  static const float KD_INTERSECT = 10.0f;
   KDNode* root;
   AABB* aabb;
   vector<AABB*> splitting_list;

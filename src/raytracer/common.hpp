@@ -44,9 +44,13 @@ class AABB{
     bool intersect(Ray ray,float& min,float& max);
     const vec3& getPos(){return AABB::pos;}
     const vec3& getSize(){return AABB::size;}
+    void setStartAxis(float start,int axis){AABB::size[axis]=start-AABB::pos[axis];AABB::pos[axis] = start;}
+    void setEndAxis(float end,int axis){AABB::size[axis] = AABB::size[axis]-(end-pos[axis]);}
+    float getSurfaceArea(){return 2*(size.x*size.y+size.x*size.z+size.y*size.z);}
     const vector<Line>& getLines(){
       return AABB::lines;
     }
+    std::pair<AABB, AABB> split(float split,int axis);
   private:
     vector<Line> lines;
     vec3  pos,size;

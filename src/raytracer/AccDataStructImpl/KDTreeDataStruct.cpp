@@ -95,7 +95,7 @@ IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(
 
     Triangle* closest_tri = NULL;
     vec3 closest_pos;
-    float closest_t = numeric_limits<float>::infinity( );
+    float closest_t = numeric_limits<float>::infinity();
 
     int* node_triangles_pos = node->getTriangles();
     for(size_t i=0;i<node->getSize();i++){
@@ -175,53 +175,380 @@ KDTreeDataStruct::findClosestIntersection(Ray ray) {
 }
 
 void KDTreeDataStruct::build(){
-  // Launch threads
-  int nr_threads = 1;//boost::thread::hardware_concurrency();
-  boost::thread* threads;
-  int depth = 0;
-  KDNode** nodes;
-  if(nr_threads==1){
-    KDTreeDataStruct::constructTreeStack(root,0);
-    nr_threads = 0;
-  }
-  else if(nr_threads<4){ // Less than 4 threads
-    nr_threads = 2;
-    depth = 1;
-    constructTreeNode(root,0);
-    nodes= new KDNode*[2];
-    nodes[0] = root->getLeft();
-    nodes[1] = root->getRight();
-  }
-  else{ // More than/or equal to 4 threads
-    nr_threads = 4;
-    depth = 2;
-    constructTreeNode(root,0);
-    constructTreeNode(root->getLeft(),1);
-    constructTreeNode(root->getRight(),1);
-    nodes= new KDNode*[4];
-    nodes[0] = root->getLeft()->getLeft();
-    nodes[1] = root->getLeft()->getRight();
-    nodes[2] = root->getRight()->getLeft();
-    nodes[3] = root->getRight()->getRight();
-  }
-
-  if(nr_threads>0){
-    threads = new boost::thread[nr_threads];
-    for (int i = 0; i < nr_threads; ++i) {
-      threads[i] = boost::thread(
-          boost::bind(&KDTreeDataStruct::constructTreeStack, this,nodes[i],depth));
-    }
-    for (int i = 0; i < nr_threads; ++i) {
-      threads[i].join();
-    }
-  }
+  buildSAHTree();
+//  KDTreeDataStruct::buildMedianTree(root,0);
 
   if(settings->wireframe==1){
     constructWireframe();
   }
 }
 
-void KDTreeDataStruct::constructTreeNode(KDNode* node,int depth){
+float KDTreeDataStruct::SAHCost(float P_l, float P_r, int N_l, int N_r)
+{
+  return ((N_l == 0 || N_r == 0) ? 0.8f : 1.0f)
+      * (KD_TRAVERSE + KD_INTERSECT * (P_l * N_l + P_r * N_r));
+}
+
+/// Main method to evaluate the costs.
+/// It returns the value of the heuristic for the given plane.,
+/// if the tringles lying exactly in the plane are put on the left side,
+/// otherwise the are on the right side.
+std::pair<float, KDTreeDataStruct::Side>
+  KDTreeDataStruct::SAH(AABB V,int axis, float split, int N_l, int N_r, int N_p)
+{
+  float SA_V = V.getSurfaceArea();
+
+  std::pair<AABB,AABB> V_split = V.split(split,axis);
+  float P_l = V_split.first.getSurfaceArea()/SA_V;
+  float P_r = V_split.second.getSurfaceArea()/SA_V;
+
+  //The cost function enables us to decide whether to put the triangle.
+  float C_l = SAHCost(P_l, P_r, N_l + N_p, N_r);
+  float C_r = SAHCost(P_l, P_r, N_l, N_p + N_r);
+  std::pair<float, KDTreeDataStruct::Side> ret;
+  if(C_l < C_r)
+  {
+    ret.first = C_l;
+    ret.second = LEFT; // Determines which side the triangles that lies on split to be on
+    return ret;
+  }
+  else
+  {
+    ret.first = C_r;
+    ret.second = RIGHT;
+    return ret;
+  }
+}
+
+KDTreeDataStruct::SAHValues KDTreeDataStruct::findPlane(int* triangles_pos,size_t size, AABB volume){
+  //Splitting plane. By default the splitting plane must tell us that no
+  //further split is possible.
+  SAHValues plane;
+  plane.axis = -1;
+  plane.split = FLT_MAX;
+  plane.cost = FLT_MAX;
+  //Number of triangles to the left, to the right and in the middle.
+  int N_l, N_p, N_r;
+
+  //The area is too small. Therefore, we have to stop.
+  //    if(volume.getArea() < _EPS)
+  //    {
+  //      return plane;
+  //    }
+
+  //Sorting list.
+  std::vector<SortElem> eventList(1);
+
+  //The three branches are checked for all the triangles.
+  for(size_t k = 0; k < 3; k++)
+  {
+    //New event list for each branch.
+    eventList.clear();
+
+    for(size_t i = 0; i < size; i++)
+    {
+      SortableTriangle* tri = triangles[triangles_pos[i]];
+      float triMin = std::max(tri->getMin()[k], volume.getPos()[k]);
+      float triMax = std::min(tri->getMax()[k], volume.getPos()[k]+volume.getSize()[k]);
+      //The cut is in the middle (planar case).
+      if(triMin == triMax)
+      {
+        eventList.push_back(SortElem(triMin, 1));
+      }
+      //We look for new events to the left and right.
+      else
+      {
+        //Starting event.
+        eventList.push_back(SortElem(triMin, 2));
+        //End event.
+        eventList.push_back(SortElem(triMax, 0));
+      }
+    }
+
+    //Sorting the list, based on the costs.
+    sort(eventList.begin(), eventList.end(),compE());
+
+    N_l = 0;
+    N_p = 0;
+    N_r = size;
+
+    //Counters for the iterations.
+    int PPlus, PMinus, PPlanar;
+    //This variable stores the cost of the current plane.
+    float PXi;
+
+    //Based on the list, we find the best splitting plane.
+    size_t i = 0;
+    while(i < eventList.size())
+    {
+      PPlus = 0; PMinus = 0; PPlanar = 0;
+      //Current cost value.
+      PXi = eventList[i].plane;
+//      cout << PXi << "|"<< i << "|" << k << endl;
+
+      //We count all the triangles which are to the left/right and in
+      //the middle.
+      while(i < eventList.size() && eventList[i].plane == PXi
+          && eventList[i].type == 0) // ending (-)
+      {
+        ++PMinus; ++i;
+      }
+      while(i < eventList.size() && eventList[i].plane == PXi
+          && eventList[i].type == 1) // planar (|)
+      {
+        ++PPlanar; ++i;
+      }
+      while(i < eventList.size() && eventList[i].plane == PXi
+          && eventList[i].type == 2) // starting (+)
+      {
+        ++PPlus; ++i;
+      }
+
+      //Found new plane, evaluate SAH for old plane.
+      N_p = PPlanar;
+      N_r -= (PPlanar + PMinus);
+
+      std::pair<float, Side> helpCost;
+      float _EPS = 0.000001f;
+      //If the splitting is far enough from the volume boundaries,
+      //we don't evaluate anything and the cost must be infty so that the
+      //plane cannot be updated afterwards.
+      if(PXi <= volume.getPos()[k] + _EPS || PXi + _EPS >= volume.getPos()[k]+volume.getSize()[k])
+      {
+        helpCost.first = FLT_MAX;
+      }
+      //Otherwise, the cost of the current plane is evaluated.
+      else
+      {
+        helpCost = SAH(volume,k, PXi , N_l, N_r, N_p);
+      }
+
+      //Updating the counts.
+      N_l += (PPlus + PPlanar);
+      N_p = 0;
+
+      ///If the current cost is better than the cost of the plane, the
+      //plane is updated.
+      if (helpCost.first < plane.cost)
+      {
+        plane.cost = helpCost.first;
+        plane.axis = k;
+        plane.split = PXi;
+        plane.side = helpCost.second;
+      }
+
+    }
+  }
+
+  return plane;
+}
+
+
+void KDTreeDataStruct::buildSAHTree(){
+  stack<int> depth_node;
+  stack< int* > triangle_stack;
+  stack<size_t> size_stack;
+  stack< KDNode* > node_stack;
+  stack<AABB> V_stack; //AABB
+
+  root->setTriangles(root_triangles);
+
+  depth_node.push(0);
+  triangle_stack.push(root_triangles);
+  size_stack.push(triangle_count);
+  node_stack.push(root);
+  V_stack.push(*aabb);
+
+
+  while(!node_stack.empty()){
+
+    int depth = depth_node.top();
+    int* triangles_node = triangle_stack.top();
+    size_t size = size_stack.top();
+    KDNode* node = node_stack.top();
+    AABB V = V_stack.top();
+
+    depth_node.pop();
+    size_stack.pop();
+    triangle_stack.pop();
+    V_stack.pop();
+    node_stack.pop();
+
+    SAHValues plane = findPlane(triangles_node,size,V);
+
+    // If it is cheaper to not split end
+    if(KD_INTERSECT*size<=plane.cost){ // Can add depth test also
+      node->setSize(size);
+      node->setTriangles(triangles_node);
+      node->setAxis(plane.axis); //
+      node->setLeaf(true);
+    }
+    else{
+      KDNode* left = new KDNode(),*right = new KDNode();
+
+      float split = plane.split;
+      vector<int> left_vec,right_vec;
+      for(size_t t=0;t<size;t++){
+        float min = triangles[triangles_node[t]]->getMin()[plane.axis];
+        float max = triangles[triangles_node[t]]->getMax()[plane.axis];
+        if(min<split){
+          left_vec.push_back(triangles_node[t]);
+        }
+        else if(max > split){
+          right_vec.push_back(triangles_node[t]);
+        }
+        else{
+          if(plane.side == LEFT){
+            left_vec.push_back(triangles_node[t]);
+          }
+          else{
+            right_vec.push_back(triangles_node[t]);
+          }
+        }
+      }
+      delete[] triangles_node; // Only need triangles in leaf's
+
+      // Push both children to the stack, make sure to put left on bottom to traverse fist
+      node_stack.push(right);
+      node_stack.push(left);
+
+      int* triangles_left = new int[left_vec.size()];
+      int* triangles_right = new int[right_vec.size()];
+
+      copy( left_vec.begin(), left_vec.begin()+left_vec.size(), triangles_left);
+      copy( right_vec.begin(), right_vec.begin()+right_vec.size(), triangles_right);
+
+      triangle_stack.push(triangles_right);
+      triangle_stack.push(triangles_left);
+
+      size_stack.push(right_vec.size());
+      size_stack.push(left_vec.size());
+
+      std::pair<AABB,AABB> V_side = V.split(plane.split,plane.axis);
+
+      V_stack.push(V_side.second);
+      V_stack.push(V_side.first);
+
+      depth_node.push(depth+1);
+      depth_node.push(depth+1);
+
+      node->setAxis(plane.axis);
+      node->setSplit(plane.split);
+      node->setLeft(left);
+      node->setRight(right);
+    }
+  }
+}
+
+float KDTreeDataStruct::findMedianSplitting(int* triangles_pos,size_t size,int axis){
+
+  float first_median = triangles[triangles_pos[size/2-1+size%2]]->getBarycenter()[axis];
+  float second_median = triangles[triangles_pos[size/2]]->getBarycenter()[axis];
+  return (first_median+second_median)/2;
+}
+
+
+/**
+ * Doing a stack implementation instead of a recursive approach because the call_stack may end up loosing some data
+ * or giving corrupt data. This way we will never leave the method and therefor don't risk damaging the call_stack
+ */
+void KDTreeDataStruct::buildMedianTree(KDNode* node,int depth){
+  if(node==NULL||node->isLeaf())
+    return;
+
+  stack<int> depth_node;
+  stack<size_t> size_node;
+  stack<int*> triangle_pos_node;
+  stack< KDNode* > node_stack;
+
+  depth_node.push(depth);
+
+  quickSort(node->getTriangles(),0,node->getSize()-1,0);
+  triangle_pos_node.push(node->getTriangles());
+  size_node.push(node->getSize());
+  node_stack.push(node);
+
+
+  while(!node_stack.empty()){
+    int depth = depth_node.top();
+    int axis = depth%3;
+    int* triangles_pos = triangle_pos_node.top();
+    size_t size = size_node.top();
+    KDNode* node = node_stack.top();
+
+    size_node.pop();
+    depth_node.pop();
+    triangle_pos_node.pop();
+    node_stack.pop();
+
+    float split = findMedianSplitting(triangles_pos,size,axis);
+
+    // If it is cheaper to not split end
+    if(size<=min_size){ // Can add depth test also
+      node->setSize(size);
+      node->setTriangles(triangles_pos);
+      node->setAxis(axis);
+      node->setLeaf(true);
+    }
+    else{
+      vector<int> right_tri,left_tri;
+
+      for(size_t i=0;i<size;i++){
+        float min_triangle = KDTreeDataStruct::triangles[triangles_pos[i]]->getMin()[axis];
+        float max_triangle = KDTreeDataStruct::triangles[triangles_pos[i]]->getMax()[axis];
+        if(min_triangle<split){
+          left_tri.push_back(i);
+        }
+        if(max_triangle>split){
+          right_tri.push_back(i);
+        }
+      }
+
+      int child_axis = (axis+1)%3;
+      int* left_triangles = new int[left_tri.size()];
+      for(size_t t=0;t<left_tri.size();t++){
+        left_triangles[t]= triangles_pos[left_tri[t]];
+      }
+      quickSort(left_triangles,0,left_tri.size()-1,child_axis);
+      int* right_triangles = new int[right_tri.size()];
+      for(size_t t=0;t<right_tri.size();t++){
+        right_triangles[t]= triangles_pos[right_tri[t]];
+      }
+      quickSort(right_triangles,0,right_tri.size()-1,child_axis);
+
+      delete [] triangles_pos;
+
+      // Set the split values and position in the array in which contains the node triangles
+      node->setSplit(split);
+      node->setAxis(axis);
+
+      KDNode* left = new KDNode();
+      KDNode* right = new KDNode();
+
+      left->setSide(KDTreeDataStruct::LEFT);
+      right->setSide(KDTreeDataStruct::RIGHT);
+
+      size_node.push(right_tri.size());
+      size_node.push(left_tri.size());
+
+      triangle_pos_node.push(right_triangles);
+      triangle_pos_node.push(left_triangles);
+
+      // Push both children to the stack, make sure to put left on bottom to traverse fist
+      node_stack.push(right);
+      node_stack.push(left);
+
+      depth_node.push(depth+1);
+      depth_node.push(depth+1);
+
+      node->setLeft(left);
+      node->setRight(right);
+    }
+  }
+
+}
+
+void KDTreeDataStruct::buildMedianNode(KDNode* node,int depth){
   int axis = depth%3;
   int* triangles_pos = node->getTriangles();
   size_t size = node->getSize();
@@ -235,15 +562,15 @@ void KDTreeDataStruct::constructTreeNode(KDNode* node,int depth){
   else{
 
     //Pick median triangle and just select the barycenter, or mean of the two in the middle.
-    float first_median = triangles[triangles_pos[size/2-1+size%2]]->getBarycenter(axis);
-    float second_median = triangles[triangles_pos[size/2]]->getBarycenter(axis);
+    float first_median = triangles[triangles_pos[size/2-1+size%2]]->getBarycenter()[axis];
+    float second_median = triangles[triangles_pos[size/2]]->getBarycenter()[axis];
     float median = (first_median+second_median)/2;
 
     vector<int> right_tri,left_tri;
 
     for(size_t i=0;i<size;i++){
-      float min_triangle = KDTreeDataStruct::triangles[triangles_pos[i]]->getMin(axis);
-      float max_triangle = KDTreeDataStruct::triangles[triangles_pos[i]]->getMax(axis);
+      float min_triangle = KDTreeDataStruct::triangles[triangles_pos[i]]->getMin()[axis];
+      float max_triangle = KDTreeDataStruct::triangles[triangles_pos[i]]->getMax()[axis];
       if(min_triangle<median){
         left_tri.push_back(i);
       }
@@ -287,110 +614,7 @@ void KDTreeDataStruct::constructTreeNode(KDNode* node,int depth){
   }
 }
 
-/**
- * Doing a stack implementation instead of a recursive approach because the call_stack may end up loosing some data
- * or giving corrupt data. This way we will never leave the method and therefor don't risk damaging the call_stack
- */
-void KDTreeDataStruct::constructTreeStack(KDNode* node,int depth){
-  if(node==NULL||node->isLeaf())
-    return;
-  stack<int> depth_node;
-  stack<size_t> size_node;
-  stack<int*> triangle_pos_node;
-  stack< KDNode* > node_stack;
 
-  depth_node.push(depth);
-
-  quickSort(node->getTriangles(),0,node->getSize()-1,0);
-  triangle_pos_node.push(node->getTriangles());
-  size_node.push(node->getSize());
-  node_stack.push(node);
-
-
-  while(!node_stack.empty()){
-    int depth = depth_node.top();
-    int axis = depth%3;
-    int* triangles_pos = triangle_pos_node.top();
-
-    size_t size = size_node.top();
-
-    size_node.pop();
-    depth_node.pop();
-    triangle_pos_node.pop();
-
-    KDNode* node = node_stack.top();
-    node_stack.pop();
-
-    // TODO: Should make size and depth check values so they can be set from a easier location. TODO: test different values for size and depth
-    if(size<=min_size|| depth>20){
-      node->setSize(size);
-      node->setTriangles(triangles_pos);
-      node->setAxis(axis);
-      node->setLeaf(true);
-    }
-    else{
-
-      //Pick median triangle and just select the barycenter, or mean of the two in the middle.
-      float first_median = triangles[triangles_pos[size/2-1+size%2]]->getBarycenter(axis);
-      float second_median = triangles[triangles_pos[size/2]]->getBarycenter(axis);
-      float median = (first_median+second_median)/2;
-
-      vector<int> right_tri,left_tri;
-
-      for(size_t i=0;i<size;i++){
-        float min_triangle = KDTreeDataStruct::triangles[triangles_pos[i]]->getMin(axis);
-        float max_triangle = KDTreeDataStruct::triangles[triangles_pos[i]]->getMax(axis);
-        if(min_triangle<median){
-          left_tri.push_back(i);
-        }
-        if(max_triangle>median){
-          right_tri.push_back(i);
-        }
-      }
-
-      int child_axis = (axis+1)%3;
-      int* left_triangles = new int[left_tri.size()];
-      for(size_t t=0;t<left_tri.size();t++){
-        left_triangles[t]= triangles_pos[left_tri[t]];
-      }
-      quickSort(left_triangles,0,left_tri.size()-1,child_axis);
-      int* right_triangles = new int[right_tri.size()];
-      for(size_t t=0;t<right_tri.size();t++){
-        right_triangles[t]= triangles_pos[right_tri[t]];
-      }
-      quickSort(right_triangles,0,right_tri.size()-1,child_axis);
-
-      delete [] triangles_pos;
-
-      // Set the split values and position in the array in which contains the node triangles
-      node->setSplit(median);
-      node->setAxis(axis);
-
-      KDNode* left = new KDNode();
-      KDNode* right = new KDNode();
-
-      left->setSide(KDTreeDataStruct::LEFT);
-      right->setSide(KDTreeDataStruct::RIGHT);
-
-      size_node.push(right_tri.size());
-      size_node.push(left_tri.size());
-
-      triangle_pos_node.push(right_triangles);
-      triangle_pos_node.push(left_triangles);
-
-      // Push both children to the stack, make sure to put left on bottom to traverse fist
-      node_stack.push(right);
-      node_stack.push(left);
-
-      depth_node.push(depth+1);
-      depth_node.push(depth+1);
-
-      node->setLeft(left);
-      node->setRight(right);
-    }
-  }
-
-}
 void KDTreeDataStruct::constructWireframe(){
   stack<AABB*> aabb_stack;
    stack<KDNode*> node_stack;
@@ -450,6 +674,42 @@ void KDTreeDataStruct::constructWireframe(){
   }
 }
 
+void KDTreeDataStruct::quickSort(int* triangles,int top,int bottom,int axis){
+
+  int middle = 0;
+  if(top<bottom){
+    middle = qsPartition(triangles,top,bottom,axis);
+    quickSort(triangles,top,middle,axis);
+    quickSort(triangles,middle+1,bottom,axis);
+  }
+}
+int KDTreeDataStruct::qsPartition(int* triangles,int top,int bottom,int axis){
+  float t=KDTreeDataStruct::triangles[triangles[top]]->getMax()[axis];
+  int i = top - 1;
+  int j = bottom + 1;
+  int temp;
+  do
+  {
+    do
+    {
+      j--;
+    }while (t < KDTreeDataStruct::triangles[triangles[j]]->getMax()[axis]);
+
+    do
+    {
+      i++;
+    } while (t > KDTreeDataStruct::triangles[triangles[i]]->getMax()[axis]);
+
+    if (i < j)
+    {
+      temp = triangles[j];
+      triangles[j] = triangles[i];
+      triangles[i] = temp;
+    }
+  }while (i < j);
+  return j;
+}
+
 /**
  * Creates three triangle lists that are sorted after x,y,z axises. This is mush faster than
  * sorting every time we create a node. The three triangle lists are also the only triangle lists
@@ -469,39 +729,5 @@ void KDTreeDataStruct::setData(Triangle** triangles,size_t size,AABB* aabb){
   min_size = (int)log10(triangle_count)*8;
   build();
 }
-void KDTreeDataStruct::quickSort(int* triangles,int top,int bottom,int axis){
 
-  int middle = 0;
-  if(top<bottom){
-    middle = qsPartition(triangles,top,bottom,axis);
-    quickSort(triangles,top,middle,axis);
-    quickSort(triangles,middle+1,bottom,axis);
-  }
-}
-int KDTreeDataStruct::qsPartition(int* triangles,int top,int bottom,int axis){
-  float t=KDTreeDataStruct::triangles[triangles[top]]->getBarycenter(axis);
-  int i = top - 1;
-  int j = bottom + 1;
-  int temp;
-  do
-  {
-    do
-    {
-      j--;
-    }while (t < KDTreeDataStruct::triangles[triangles[j]]->getBarycenter(axis));
-
-    do
-    {
-      i++;
-    } while (t > KDTreeDataStruct::triangles[triangles[i]]->getBarycenter(axis));
-
-    if (i < j)
-    {
-      temp = triangles[j];
-      triangles[j] = triangles[i];
-      triangles[i] = temp;
-    }
-  }while (i < j);
-  return j;
-}
 }
