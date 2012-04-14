@@ -63,7 +63,7 @@ IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(
     min_stack.pop();
     max_stack.pop();
 
-    int axis = 0;
+    int axis = -1;
 
     while(!node->isLeaf()){
       axis = node->getAxis();
@@ -377,7 +377,7 @@ void KDTreeDataStruct::buildSAHTree(){
     SAHValues plane = findPlane(triangles_node,size,V);
 
     // If it is cheaper to not split end
-    if(KD_INTERSECT*size<=plane.cost){ // Can add depth test also
+    if(KD_INTERSECT*size<=plane.cost||depth>20){ // Can add depth test also
       node->setSize(size);
       node->setTriangles(triangles_node);
       node->setAxis(plane.axis); //
@@ -391,13 +391,8 @@ void KDTreeDataStruct::buildSAHTree(){
       for(size_t t=0;t<size;t++){
         float min = triangles[triangles_node[t]]->getMin()[plane.axis];
         float max = triangles[triangles_node[t]]->getMax()[plane.axis];
-        if(min<split){
-          left_vec.push_back(triangles_node[t]);
-        }
-        else if(max > split){
-          right_vec.push_back(triangles_node[t]);
-        }
-        else{
+
+        if(split==min&&split==max){
           if(plane.side == LEFT){
             left_vec.push_back(triangles_node[t]);
           }
@@ -405,13 +400,26 @@ void KDTreeDataStruct::buildSAHTree(){
             right_vec.push_back(triangles_node[t]);
           }
         }
+        else{
+          if(min<split){
+            left_vec.push_back(triangles_node[t]);
+          }
+          if(max > split){
+            right_vec.push_back(triangles_node[t]);
+          }
+        }
       }
       delete[] triangles_node; // Only need triangles in leaf's
+
+
+      left->setSide(KDTreeDataStruct::LEFT);
+      right->setSide(KDTreeDataStruct::RIGHT);
 
       // Push both children to the stack, make sure to put left on bottom to traverse fist
       node_stack.push(right);
       node_stack.push(left);
 
+      int left_size = left_vec.size(), right_size = right_vec.size();
       int* triangles_left = new int[left_vec.size()];
       int* triangles_right = new int[right_vec.size()];
 
@@ -617,10 +625,11 @@ void KDTreeDataStruct::buildMedianNode(KDNode* node,int depth){
 
 void KDTreeDataStruct::constructWireframe(){
   stack<AABB*> aabb_stack;
-   stack<KDNode*> node_stack;
+  stack<KDNode*> node_stack;
 
   node_stack.push(root);
   aabb_stack.push(aabb);
+  splitting_list.push_back(aabb);
 
   while(!node_stack.empty()){
     KDNode* node = node_stack.top();
@@ -629,9 +638,6 @@ void KDTreeDataStruct::constructWireframe(){
     node_stack.pop();
     aabb_stack.pop();
     Side side = node->getSide();
-    if(side==ROOT||side==RIGHT){ // Optimization, only need to save one of the AABB. (Need to construct both left/right to traverse down)
-      splitting_list.push_back(s_aabb);
-    }
 
     if(!node->isLeaf()){
       vec3 start,right_end,left_end;
@@ -656,14 +662,17 @@ void KDTreeDataStruct::constructWireframe(){
       else{
         start = vec3(pos[0],pos[1],split);
         right_end = size-vec3(0,0,split-pos.z);
-        left_end = vec3(size.x,size.y,split-pos.z);
+        left_end = vec3(size.x,size.y,size.z-right_end.z);
       }
 
-      if(side==LEFT){
+      if(side == LEFT){
         delete s_aabb;
       }
+
       left_aabb = new AABB(pos,left_end,false,axis); // False -> Don't create any lines
       right_aabb = new AABB(start,right_end,true,axis); // True-> Create only four lines
+
+      splitting_list.push_back(right_aabb);
 
       aabb_stack.push(right_aabb);
       aabb_stack.push(left_aabb);

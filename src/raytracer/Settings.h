@@ -22,7 +22,7 @@ struct Settings {
     width = 400;
     height = 300;
     opengl_version = 2;
-    background_color = vec4(0,0,0,0);
+    background_color = vec4(0.5,0.5,0.5,0);
     use_first_bounce = false;
     wireframe = 0;
     test = 0 ;
