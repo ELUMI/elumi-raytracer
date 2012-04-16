@@ -26,10 +26,10 @@ public:
   virtual ~TestHeightMapDataStruct();
   IAccDataStruct::IntersectionData findClosestIntersection(Ray ray);
   void setData(Triangle** new_triangles,size_t size,AABB* aabb){};
-  vector<AABB*>& getAABBList(){return aabb_list;}
+  vector<AABB>& getAABBList(){return aabb_list;}
 private:
   Heightmap* heightmap;
-  vector<AABB*> aabb_list;
+  vector<AABB> aabb_list;
 };
 
 }

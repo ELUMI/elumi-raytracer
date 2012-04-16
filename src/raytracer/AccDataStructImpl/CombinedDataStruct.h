@@ -19,7 +19,7 @@ public:
 
   IntersectionData findClosestIntersection(Ray ray);
   void setData(Triangle** triangles,size_t size,AABB aabb);
-  vector<AABB*>& getAABBList(){return datastructs[0]->getAABBList();}
+  vector<AABB>& getAABBList(){return datastructs[0]->getAABBList();}
 
 private:
   vector<IAccDataStruct*> datastructs;
