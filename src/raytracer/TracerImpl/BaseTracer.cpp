@@ -151,7 +151,7 @@ void BaseTracer::traceImage(float *color_buffer)
   delete pattern;
 
   if(!abort)
-    cout << timer.format(2);
+    cout << timer.format(2) << endl;
 }
 
 void BaseTracer::traceImageThread(int thread_id) {
