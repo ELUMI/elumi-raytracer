@@ -203,7 +203,6 @@ Scene* XML::importScene(const char* fileName) {
           xml_axis2.attribute("z").as_float());
 
       newLight = new AreaLight(pos,axis1,axis2,samples1,samples2);
-      reinterpret_cast<AreaLight*>(newLight)->addPlane(scene); //add arealight to datastruct
     }
 
     if(newLight != NULL) {
@@ -212,8 +211,11 @@ Scene* XML::importScene(const char* fileName) {
       newLight->setPosition(pos);
       newLight->setDistanceFalloff(ftype);
 
-      ILight* array[] = {newLight};
+      if(type.compare("Area") == 0) {
+        reinterpret_cast<AreaLight*>(newLight)->addPlane(scene); //add arealight to datastruct
+      }
 
+      ILight* array[] = {newLight};
       scene->loadLights(array,1);
     }
   }
