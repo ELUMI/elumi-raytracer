@@ -41,3 +41,17 @@ Release/**/*
 # pdflatex files
 doc/tex/*
 /doc
+/cornell_glossy.png
+/cornell.png
+/cornell_glossy.xml
+/car.png
+/checkerboard.jpg
+/test.png
+/settings.xml
+/tree.xml
+
+/.settings/org.eclipse.cdt.codan.core.prefs
+/.settings/org.eclipse.cdt.managedbuilder.core.prefs
+/.settings/org.eclipse.core.resources.prefs
+/.settings/org.eclipse.core.runtime.prefs
+/3ballz.png
