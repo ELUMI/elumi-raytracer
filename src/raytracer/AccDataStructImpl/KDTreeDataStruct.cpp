@@ -33,6 +33,7 @@ KDTreeDataStruct::KDTreeDataStruct(Settings* settings){
   root->setSide(KDTreeDataStruct::ROOT);
   triangles = NULL;
   root_triangles = NULL;
+  KDTreeDataStruct::settings = settings;
 }
 
 KDTreeDataStruct::KDTreeDataStruct(std::vector<Triangle*> triangles){
