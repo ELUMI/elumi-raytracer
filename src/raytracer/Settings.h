@@ -58,6 +58,9 @@ struct Settings {
     photons = 32*1024;
     gather_radius = 0.5f;
     photonmap_size = 1024;
+
+    // Volume
+    step_size = 0.1f;
   }
 
   // Screen
@@ -100,6 +103,9 @@ struct Settings {
   size_t photons; //32*1024;
   float gather_radius;
   size_t photonmap_size;
+
+  // Volume
+  float step_size;
 };
 
 }

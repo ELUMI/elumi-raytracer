@@ -118,6 +118,12 @@ void Scene::loadTextures(std::vector<raytracer::Texture*> textures) {
   }
 }
 
+void Scene::loadVolumes(std::vector<IVolume*> volumes) {
+  for(size_t i = 0; i < volumes.size();i++) {
+    m_volumes.push_back(volumes.at(i));
+  }
+}
+
 void Scene::setSettings(Settings* settings) {
   m_settings = settings;
 }
@@ -128,6 +134,10 @@ std::vector<ILight*>* Scene::getLightVector() {
 
 const std::vector<Texture*>& Scene::getTextures() {
   return m_textures;
+}
+
+const std::vector<IVolume*>& Scene::getVolumes() {
+  return m_volumes;
 }
 
 const std::vector<Material*>& Scene::getMaterialVector() {

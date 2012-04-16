@@ -304,6 +304,8 @@ Scene* XML::importScene(const char* fileName) {
       scene->setEnvirontmentMap(newEnv);
   }
 
+  // Load volumes
+
   scene->build(); //build everything we have read in
   return scene;
 }
