@@ -51,23 +51,35 @@ private:
     float t_far;
   };
 
-  //This is some kind of functor which allow sorting the nodes of the tree.
-  struct SortElem
+  struct Event
   {
     float plane;
-    //The type of node.
     int type;
 
-    SortElem()
+    Event()
     {
-      plane = FLT_MAX;
+      plane = INFINITY;
       type = -1;
     }
 
-    SortElem(float val, int typ)
+    Event(float val, int typ)
     {
       plane = val;
       type = typ;
+    }
+    inline bool operator()(Event e1, Event e2)
+    {
+      if (e1.plane < e2.plane)
+      {
+        return true;
+      }
+      else if (e1.plane == e2.plane)
+      {
+        return e1.type < e2.type;
+      }
+      else{
+        return false;
+      }
     }
   };
 
@@ -101,9 +113,9 @@ private:
     unsigned char side;
     bool leaf;
   };
-  class SortableTriangle {
+  class KDTriangle {
   public:
-    SortableTriangle(Triangle* tri):triangle(tri)
+    KDTriangle(Triangle* tri):triangle(tri)
     {
       vector<vec3*> vertices = triangle->getVertices();
       barycenter[0]= (vertices[0]->x + vertices[1]->x + vertices[2]->x)/3;
@@ -132,23 +144,6 @@ private:
     Triangle* triangle;
 
   };
-  struct compE
-  {
-    inline bool operator()(SortElem e1, SortElem e2)
-    {
-      if (e1.plane < e2.plane)
-      {
-        return true;
-      }
-      else if (e1.plane == e2.plane)
-      {
-        return e1.type < e2.type;
-      }
-      else{
-        return false;
-      }
-    }
-  };
 
   void buildMedianTree(KDNode* node,int depth);
   void buildMedianNode(KDNode* node,int depth);
@@ -173,7 +168,7 @@ private:
   KDNode* root;
   AABB* aabb;
   vector<AABB*> splitting_list;
-  SortableTriangle** triangles;
+  KDTriangle** triangles;
   int* root_triangles;
   size_t triangle_count;
   Settings* settings;

@@ -212,129 +212,95 @@ std::pair<float, KDTreeDataStruct::Side>
   float P_l = V_split.first.getSurfaceArea()/SA_V;
   float P_r = V_split.second.getSurfaceArea()/SA_V;
 
-  //The cost function enables us to decide whether to put the triangle.
   float C_l = SAHCost(P_l, P_r, N_l + N_p, N_r);
   float C_r = SAHCost(P_l, P_r, N_l, N_p + N_r);
-  std::pair<float, KDTreeDataStruct::Side> ret;
-  if(C_l < C_r)
-  {
-    ret.first = C_l;
-    ret.second = LEFT; // Determines which side the triangles that lies on split to be on
-    return ret;
-  }
-  else
-  {
-    ret.first = C_r;
-    ret.second = RIGHT;
-    return ret;
-  }
+  return (C_l < C_r ?
+      std::pair<float, KDTreeDataStruct::Side>(C_l,LEFT):
+      std::pair<float, KDTreeDataStruct::Side>(C_r,RIGHT)
+  );
 }
 
 KDTreeDataStruct::SAHValues KDTreeDataStruct::findPlane(int* triangles_pos,size_t size, AABB volume){
-  //Splitting plane. By default the splitting plane must tell us that no
-  //further split is possible.
   SAHValues plane;
   plane.axis = -1;
-  plane.split = FLT_MAX;
-  plane.cost = FLT_MAX;
-  //Number of triangles to the left, to the right and in the middle.
+  plane.split = INFINITY;
+  plane.cost = INFINITY;
   int N_l, N_p, N_r;
 
-  //The area is too small. Therefore, we have to stop.
-  //    if(volume.getArea() < _EPS)
-  //    {
-  //      return plane;
-  //    }
+  std::vector<Event> eventList(1);
 
-  //Sorting list.
-  std::vector<SortElem> eventList(1);
-
-  //The three branches are checked for all the triangles.
   for(size_t k = 0; k < 3; k++)
   {
-    //New event list for each branch.
     eventList.clear();
 
     for(size_t i = 0; i < size; i++)
     {
-      SortableTriangle* tri = triangles[triangles_pos[i]];
+      KDTriangle* tri = triangles[triangles_pos[i]];
       float triMin = std::max(tri->getMin()[k], volume.getPos()[k]);
       float triMax = std::min(tri->getMax()[k], volume.getPos()[k]+volume.getSize()[k]);
-      //The cut is in the middle (planar case).
       if(triMin == triMax)
       {
-        eventList.push_back(SortElem(triMin, 1));
+        eventList.push_back(Event(triMin, 1));
       }
-      //We look for new events to the left and right.
       else
       {
         //Starting event.
-        eventList.push_back(SortElem(triMin, 2));
+        eventList.push_back(Event(triMin, 2));
         //End event.
-        eventList.push_back(SortElem(triMax, 0));
+        eventList.push_back(Event(triMax, 0));
       }
     }
 
     //Sorting the list, based on the costs.
-    sort(eventList.begin(), eventList.end(),compE());
+    sort(eventList.begin(), eventList.end(),Event());
 
     N_l = 0;
     N_p = 0;
     N_r = size;
 
-    //Counters for the iterations.
-    int PPlus, PMinus, PPlanar;
-    //This variable stores the cost of the current plane.
-    float PXi;
+    int P_plus, P_minus, P_planar;
+    float split;
 
-    //Based on the list, we find the best splitting plane.
     size_t i = 0;
     while(i < eventList.size())
     {
-      PPlus = 0; PMinus = 0; PPlanar = 0;
+      P_plus = 0; P_minus = 0; P_planar = 0;
       //Current cost value.
-      PXi = eventList[i].plane;
-//      cout << PXi << "|"<< i << "|" << k << endl;
+      split = eventList[i].plane;
 
-      //We count all the triangles which are to the left/right and in
-      //the middle.
-      while(i < eventList.size() && eventList[i].plane == PXi
+      while(i < eventList.size() && eventList[i].plane == split
           && eventList[i].type == 0) // ending (-)
       {
-        ++PMinus; ++i;
+        ++P_minus; ++i;
       }
-      while(i < eventList.size() && eventList[i].plane == PXi
+      while(i < eventList.size() && eventList[i].plane == split
           && eventList[i].type == 1) // planar (|)
       {
-        ++PPlanar; ++i;
+        ++P_planar; ++i;
       }
-      while(i < eventList.size() && eventList[i].plane == PXi
+      while(i < eventList.size() && eventList[i].plane == split
           && eventList[i].type == 2) // starting (+)
       {
-        ++PPlus; ++i;
+        ++P_plus; ++i;
       }
 
       //Found new plane, evaluate SAH for old plane.
-      N_p = PPlanar;
-      N_r -= (PPlanar + PMinus);
+      N_p = P_planar;
+      N_r -= (P_planar + P_minus);
 
       std::pair<float, Side> helpCost;
       float _EPS = 0.000001f;
-      //If the splitting is far enough from the volume boundaries,
-      //we don't evaluate anything and the cost must be infty so that the
-      //plane cannot be updated afterwards.
-      if(PXi <= volume.getPos()[k] + _EPS || PXi + _EPS >= volume.getPos()[k]+volume.getSize()[k])
+      if(split <= volume.getPos()[k] + _EPS || split + _EPS >= volume.getPos()[k]+volume.getSize()[k])
       {
-        helpCost.first = FLT_MAX;
+        helpCost.first = INFINITY;
       }
-      //Otherwise, the cost of the current plane is evaluated.
       else
       {
-        helpCost = SAH(volume,k, PXi , N_l, N_r, N_p);
+        helpCost = SAH(volume,k, split , N_l, N_r, N_p);
       }
 
       //Updating the counts.
-      N_l += (PPlus + PPlanar);
+      N_l += (P_plus + P_planar);
       N_p = 0;
 
       ///If the current cost is better than the cost of the plane, the
@@ -343,7 +309,7 @@ KDTreeDataStruct::SAHValues KDTreeDataStruct::findPlane(int* triangles_pos,size_
       {
         plane.cost = helpCost.first;
         plane.axis = k;
-        plane.split = PXi;
+        plane.split = split;
         plane.side = helpCost.second;
       }
 
@@ -738,10 +704,10 @@ int KDTreeDataStruct::qsPartition(int* triangles,int top,int bottom,int axis){
  * that need to be created because each node has an axis, start and end position.
  */
 void KDTreeDataStruct::setData(Triangle** triangles,size_t size,AABB* aabb){
-  KDTreeDataStruct::triangles = new SortableTriangle*[size];
+  KDTreeDataStruct::triangles = new KDTriangle*[size];
   KDTreeDataStruct::root_triangles = new int[size];
   for(size_t t=0;t<size;t++){
-    KDTreeDataStruct::triangles[t] = new SortableTriangle(triangles[t]);
+    KDTreeDataStruct::triangles[t] = new KDTriangle(triangles[t]);
     KDTreeDataStruct::root_triangles[t] = t;
   }
   KDTreeDataStruct::triangle_count = size;
