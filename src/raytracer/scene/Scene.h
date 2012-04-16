@@ -35,6 +35,7 @@ public:
 	size_t loadMaterials(std::vector<raytracer::Material*> materials);
 	void loadTextures(std::vector<raytracer::Texture*> textures);
 	void loadVolumes(std::vector<IVolume*> volumes);
+	void addVolume(IVolume* volume);
 	void setEnvirontmentMap(IEnvironmentMap* environment_map);
 	void setSettings(Settings* settings);
 

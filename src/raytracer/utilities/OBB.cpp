@@ -139,17 +139,17 @@ OBB::IntervalData OBB::rayInterval(Ray ray) {
       if(t2 < t_max)
         t_max = t2;
       if(t_min > t_max)
-        return IntersectionData(false, false, vec3(), vec3());
+        return IntervalData(false, false, vec3(), vec3());
       if(t_max < 0)
-        return IntersectionData(false, false, vec3(), vec3());
+        return IntervalData(false, false, vec3(), vec3());
 
     } else if(-e-mh.lengthOfVector(h) > 0 ||
         -e+mh.lengthOfVector(h) < 0)
-      return IntersectionData(false, false, vec3(), vec3());
+      return IntervalData(false, false, vec3(), vec3());
   }
   if(t_min > 0)
-    return IntersectionData(true, false, o+t_min*d, o+t_max*d);
-  else return IntersectionData(true, true, vec3(), o+t_max*d);
+    return IntervalData(true, false, o+t_min*d, o+t_max*d);
+  else return IntervalData(true, true, vec3(), o+t_max*d);
 }
 
 }

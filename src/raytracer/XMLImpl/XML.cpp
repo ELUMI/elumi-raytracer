@@ -137,8 +137,7 @@ Scene* XML::importScene(const char* fileName) {
   Scene* scene = new Scene(settings);
 
   //Load objects
-  for (pugi::xml_node obj = doc.child("Object"); obj; obj = obj.next_sibling("Object"))
-  {
+  for (pugi::xml_node obj = doc.child("Object"); obj; obj = obj.next_sibling("Object")) {
     const char* fileName = obj.attribute("fileName").value();
     importer->loadFile(fileName);
     std::vector<raytracer::Triangle*> triangles = importer->getTriangleList();
@@ -149,6 +148,59 @@ Scene* XML::importScene(const char* fileName) {
       size_t material_shift = scene->loadMaterials(materials); //load materials BEFORE triangles!
       scene->loadTriangles(triangles,importer->getAABB(), material_shift);
       scene->loadTextures(textures);
+    }
+  }
+  //Load objects
+  for (pugi::xml_node vol = doc.child("Volume"); vol; vol = vol.next_sibling("Volume")) {
+    string type = vol.attribute("type").value();
+
+    if(type.compare("uniform") == 0) {
+
+      xml_node pos_node = vol.child("Position");
+      xml_node u_node = vol.child("U");
+      xml_node v_node = vol.child("V");
+      xml_node w_node = vol.child("W");
+
+      vec3 pos, u, v, w;
+
+      if(!pos_node) {
+        cerr << "XMLImporter: no valid position!" << endl;
+      } else if(!u_node) {
+        cerr << "XMLImporter: no valid u vector!" << endl;
+      } else if(!v_node) {
+        cerr << "XMLImporter: no valid v vector!" << endl;
+      } else if(!w_node) {
+        cerr << "XMLImporter: no valid w vector!" << endl;
+      }
+      if(!pos_node || !u_node || !v_node || !w_node)
+        break;
+
+      pos = vec3(pos_node.attribute("x").as_float(),
+                 pos_node.attribute("y").as_float(),
+                 pos_node.attribute("z").as_float());
+
+      u = vec3(u_node.attribute("x").as_float(),
+               u_node.attribute("y").as_float(),
+               u_node.attribute("z").as_float());
+
+      v = vec3(v_node.attribute("x").as_float(),
+               v_node.attribute("y").as_float(),
+               v_node.attribute("z").as_float());
+
+      w = vec3(w_node.attribute("x").as_float(),
+               w_node.attribute("y").as_float(),
+               w_node.attribute("z").as_float());
+
+      OBB obb = OBB(pos, u, v, w);
+
+      float sigma_t = vol.attribute("attenuation").as_float();
+      float emission = vol.attribute("emission").as_float();
+
+      IVolume* volume = new UniformVolume(obb, sigma_t, emission);
+      scene->addVolume(volume);
+
+    } else {
+      cerr << "XMLImporter: Invalid volume type" << endl;
     }
   }
   //Load lights

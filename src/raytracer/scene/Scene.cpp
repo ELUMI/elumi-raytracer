@@ -124,6 +124,10 @@ void Scene::loadVolumes(std::vector<IVolume*> volumes) {
   }
 }
 
+void Scene::addVolume(IVolume* volume) {
+  m_volumes.push_back(volume);
+}
+
 void Scene::setSettings(Settings* settings) {
   m_settings = settings;
 }
