@@ -7,8 +7,10 @@
 
 #include "Renderer.h"
 #include "TracerImpl/DebugTracer.h"
-#include "TracerImpl/SimpleTracer.h"
 #include "TracerImpl/StandardTracer.h"
+#include "TracerImpl/PhotonMapper.h"
+#include "TracerImpl/AdvancedTracer.h"
+#include "TracerImpl/PathTracer.h"
 
 #include "XMLImpl/XML.h"
 
@@ -17,7 +19,6 @@
 #include "PostEffectImpl/ClampOperator.h"
 #include "PostEffectImpl/GammaEncode.h"
 
-#include "TracerImpl/PhotonMapper.h"
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
 
@@ -25,7 +26,7 @@ using namespace std;
 
 namespace raytracer {
 
-Renderer::Renderer(int open_gl_version):color_buffer_other(NULL) {
+Renderer::Renderer(int open_gl_version):color_buffer_org(NULL) {
   this->open_gl_version = open_gl_version;
   abort = false;
 
@@ -62,10 +63,6 @@ void Renderer::init() {
     m_tracer = new BaseTracer(m_scene);
     cout << "Using base tracer\n";
     break;
-  case 1:
-    m_tracer = new SimpleTracer(m_scene);
-    cout << "Using simple tracer\n";
-    break;
   case 2:
   default:
     m_tracer = new StandardTracer(m_scene);
@@ -75,6 +72,14 @@ void Renderer::init() {
     m_tracer = new PhotonMapper(m_scene);
     cout << "Using photon mapper tracer\n";
     break;
+  case 4:
+    m_tracer = new AdvancedTracer(m_scene);
+    cout << "Using advanced tracer\n";
+    break;
+  case 5:
+    m_tracer = new PathTracer(m_scene);
+    cout << "Using path tracer\n";
+    break;
   }
   buffer_length = m_scene->getSettings()->width * m_scene->getSettings()->height * 4;
   color_buffer = new float[buffer_length];
@@ -82,7 +87,7 @@ void Renderer::init() {
 }
 
 
-void Renderer::loadTriangles(vector<Triangle*> triangles,AABB* aabb, bool overwrite) {
+void Renderer::loadTriangles(vector<Triangle*> triangles,AABB aabb, bool overwrite) {
   if(m_scene == NULL) {
     cout << "Render has no scene!\n";
     return;
@@ -159,22 +164,25 @@ void Renderer::stopRendering() {
 }
 
 void Renderer::tonemapImage(bool enable){
-
+/*
   if(color_buffer_other==NULL){
-    ReinhardOperator reinhard = ReinhardOperator();
+    Settings* set = m_scene->getSettings();
+    ReinhardOperator reinhard = ReinhardOperator(set->key, set->white);
     GammaEncode gamma = GammaEncode();
     ClampOperator clamp = ClampOperator();
+
     color_buffer_other = new float[buffer_length];
     for(size_t s_buffer=0;s_buffer<buffer_length;s_buffer++){
       color_buffer_other[s_buffer] = color_buffer[s_buffer];
     }
+
     reinhard.run(color_buffer_other,buffer_length / 4, 4);
 
     clamp.run(color_buffer_other,buffer_length / 4, 4);
 
   }
 
-  if((enable&&!tonemapped)||(!enable&&tonemapped)){
+  if ((enable && !tonemapped) || (!enable && tonemapped)) {
     tonemapped=!tonemapped;
     float* color_buffer_temp= new float[buffer_length];;
     for(size_t s_buffer=0;s_buffer<buffer_length;s_buffer++){
@@ -186,14 +194,39 @@ void Renderer::tonemapImage(bool enable){
     }
     delete[] color_buffer_temp;
   }
+*/
+  if(color_buffer_org==NULL){
+    color_buffer_org = new float[buffer_length];
+    for (size_t s_buffer = 0; s_buffer < buffer_length; s_buffer++) {
+      color_buffer_org[s_buffer] = color_buffer[s_buffer];
+    }
+  }
+
+  if (enable) {
+    Settings* set = m_scene->getSettings();
+    ReinhardOperator reinhard = ReinhardOperator(set->key, set->white);
+    GammaEncode gamma = GammaEncode();
+    ClampOperator clamp = ClampOperator();
+
+    for (size_t s_buffer = 0; s_buffer < buffer_length; s_buffer++) {
+      color_buffer[s_buffer] = color_buffer_org[s_buffer];
+    }
+
+    reinhard.run(color_buffer, buffer_length / 4, 4);
+    clamp.run(color_buffer, buffer_length / 4, 4);
+  } else {
+    for (size_t s_buffer = 0; s_buffer < buffer_length; s_buffer++) {
+      color_buffer[s_buffer] = color_buffer_org[s_buffer];
+    }
+  }
 }
 
 void Renderer::render() {
   abort = false;
   tonemapped = false;
-  if(color_buffer_other!=NULL){
-    delete[] color_buffer_other;
-    color_buffer_other = NULL;
+  if(color_buffer_org!=NULL){
+    delete[] color_buffer_org;
+    color_buffer_org = NULL;
   }
 
   if(m_scene == NULL) {
@@ -205,11 +238,9 @@ void Renderer::render() {
 
   if(abort)
     return;
-
-
 }
 
-unsigned int Renderer::renderComplete() {
+float Renderer::renderComplete() {
   if(m_tracer == NULL) {
     cout << "Render has no tracer!\n";
     return -1;

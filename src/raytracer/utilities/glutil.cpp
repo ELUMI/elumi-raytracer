@@ -286,6 +286,7 @@ GLuint loadShaderProgram(const std::string &vertexShader, const std::string &fra
 	glCompileShader(vShader);
 	int compileOk = 0;
 	glGetShaderiv(vShader, GL_COMPILE_STATUS, &compileOk);
+
 	if (!compileOk)
   {
 		std::string err = GetShaderInfoLog(vShader);

@@ -18,34 +18,88 @@ namespace raytracer {
 struct Settings {
 
   Settings() {
-    draw_data_struct = true;
+    // Screen
     width = 400;
     height = 300;
+
     opengl_version = 2;
     background_color = vec4(0.5,0.5,0.5,0);
     use_first_bounce = false;
     wireframe = 0;
     test = 0 ;
     debug_mode=0;
-    tracer = 2;
+
+    // Data acc
     tree = 2;
+    draw_data_struct = true;
+
+    // Tracer
+    tracer = 2;
+    pattern = 1;
+    batches = 0;
+    use_fresnel = true;
+
+    // Recursion
     max_recursion_depth = 5;
     recursion_attenuation_threshold = 0.015625;
+
+    // Threading
+    threads = 0;  // auto
+
+    // Tonemapping
+    key = 0.18;
+    white = 1e20;
+
+    //Supersampling
+    super_sampler_pattern = 0;
+    samples = 1;
+
+    //Photon mapper
+    photons = 32*1024;
+    gather_radius = 0.5f;
+    photonmap_size = 1024;
   }
 
+  // Screen
   int width;
   int height;
-  bool draw_data_struct;
+
   int opengl_version;
   bool use_first_bounce;
   int wireframe;
   vec4 background_color;
   float test;
   int debug_mode;
-  int tracer;
+
+  // Data acc
   int tree;
+  bool draw_data_struct;
+
+  // Tracer
+  int tracer;
+  int pattern;
+  int batches;
+  bool use_fresnel;
+
+  // Recursion
   unsigned int max_recursion_depth;
   float recursion_attenuation_threshold;
+
+  // Threading
+  int threads;
+
+  // Tonemapping
+  float key;
+  float white;
+
+  //Supersampling
+  unsigned int super_sampler_pattern;
+  unsigned int samples;
+
+  //Photon mapper
+  size_t photons; //32*1024;
+  float gather_radius;
+  size_t photonmap_size;
 };
 
 }

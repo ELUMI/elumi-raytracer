@@ -11,17 +11,23 @@
 #include <omp.h>
 #include <glm/gtc/matrix_transform.hpp> //translate, rotate, scale, perspective
 
-#include "boost/thread.hpp"
-#include "boost/bind.hpp"
-#include "boost/thread/mutex.hpp"
+#include <boost/thread.hpp>
+#include <boost/bind.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/timer/timer.hpp>
 
+#include "../utilities/Random.h"
 #include "../RenderPatternImpl/LinePattern.h"
+#include "../RenderPatternImpl/HilbertCurve.h"
+
+#include "../SuperSamplePatternImpl/GridPattern.h"
+#include "../SuperSamplePatternImpl/RandomPattern.h"
+#include "../SuperSamplePatternImpl/JitterPattern.h"
 
 namespace raytracer {
 
 BaseTracer::BaseTracer(Scene* scene) {
   this->scene = scene;
-  rays = NULL;
   datastruct = scene->getAccDataStruct();
 
   first_pass = 0;
@@ -35,9 +41,7 @@ BaseTracer::BaseTracer(Scene* scene) {
 
 BaseTracer::~BaseTracer() {
   stopTracing();
-  if(rays!=NULL)
-    delete[] rays;
-  delete[] posbuff;
+  delete [] posbuff;
 }
 
 void BaseTracer::first_bounce() {
@@ -80,9 +84,9 @@ void BaseTracer::first_bounce() {
 
       //see comment in deferred.frag
       unsigned int material = ceil(normals[i].w - 0.5); //alpha channel is noisy, but this works!
-      assert(material == IAccDataStruct::IntersectionData::NOT_FOUND || material < scene->getMaterialVector().size());
+      assert(material == IAccDataStruct::IntersectionData::NOT_FOUND_INTERNAL || material < scene->getMaterialVector().size());
 
-      first_intersections[i] = IAccDataStruct::IntersectionData(material,
+      first_intersections[i] = IAccDataStruct::IntersectionData(NULL, material,
           vec3(pos) / pos.w, vec3(normals[i]), texcoords[i],vec3(),vec3());
 
     }
@@ -96,7 +100,6 @@ void BaseTracer::first_bounce() {
 void BaseTracer::initTracing()
 {
   lights = scene->getLightVector();
-  pixelsLeft = settings->width * settings->height;
   abort = false;
   cout << "<Position x=\"" << scene->getCamera().getPosition().x
       << "\" y=\"" << scene->getCamera().getPosition().y
@@ -109,88 +112,120 @@ void BaseTracer::initTracing()
       << "\" z=\"" << scene->getCamera().getUpVector().z << "\"/>\n";
 }
 
+
 void BaseTracer::traceImage(float *color_buffer)
 {
+  boost::timer::cpu_timer timer;
+
   buffer = color_buffer;
   initTracing();
-  int number_of_rays = spawnRays();
 
+  //TODO: add first bounce again
 
-  if (settings->use_first_bounce) {
-    // For every pixel
-//#pragma omp parallel for
-    for (size_t i = 0; i < number_of_rays; ++i) {
-      //#pragma omp task
-//#pragma omp flush (abort)
-      if (!abort) {
-        vec4 c = trace(rays[i], first_intersections[i]);
-        buffer[i * 4] = glm::min(1.0f, c.r);
-        buffer[i * 4 + 1] = glm::min(1.0f, c.g);
-        buffer[i * 4 + 2] = glm::min(1.0f, c.b);
-        buffer[i * 4 + 3] = glm::min(1.0f, c.a);
-
-#pragma omp atomic
-        --pixelsLeft;
-      }
-    }
-
-  } else {
-
+  if (settings->pattern == 1)
+    pattern = new HilbertCurve(settings->width, settings->height, settings->batches);
+  else
     pattern = new LinePattern(settings->width, settings->height);
 
-    nr_batches = pattern->getNumberBatches();
-    next_batch = 0;
+  nr_batches = pattern->getNumberBatches();
+  next_batch = 0;
 
-    // Launch threads
-    int nr_threads = boost::thread::hardware_concurrency();
-    boost::thread threads[nr_threads];
-    for (int i = 0; i < nr_threads; ++i) {
-      threads[i] = boost::thread(
-          boost::bind(&BaseTracer::traceImageThread, this, i));
-    }
+  // Launch threads
+  int nr_threads = settings->threads;
+  if(nr_threads == 0)
+    nr_threads= boost::thread::hardware_concurrency();
 
-    // Wait for threads to complete
-    for (int i = 0; i < nr_threads; ++i) {
-      threads[i].join();
-    }
-    delete pattern;
+  // Init shadow caches
+  for(size_t i=0; i<lights->size(); ++i) {
+    //lights->at(i)->initCaches(nr_threads);
   }
+
+  boost::thread threads[nr_threads];
+  for(int i = 0;i < nr_threads;++i){
+    threads[i] = boost::thread(boost::bind(&BaseTracer::traceImageThread, this, i));
+  }
+  // Wait for threads to complete
+  for(int i = 0;i < nr_threads;++i){
+    threads[i].join();
+  }
+  delete pattern;
+
+  if(!abort)
+    cout << timer.format(2);
 }
 
-void BaseTracer::traceImageThread(int id) {
-
+void BaseTracer::traceImageThread(int thread_id) {
   // Synchronize work
   int my_batch = 0;
   pattern_mutex.lock();
   my_batch = next_batch++;
   pattern_mutex.unlock();
 
-  while (my_batch < nr_batches) {
+  int width = settings->width;
+  int height = settings->height;
+
+  Camera camera = scene->getCamera();
+  vec3 camera_position = camera.getPosition();
+  mat4 trans = camera.getViewportToModelMatrix(width, height);
+
+  ISuperSamplePattern* ss_pattern;
+  switch(settings->super_sampler_pattern) {
+  case 0:
+  default:
+    ss_pattern = new GridPattern(settings->samples);
+    break;
+  case 1:
+    ss_pattern = new RandomPattern(settings->samples, thread_id);
+    break;
+  case 2:
+    ss_pattern = new JitterPattern(settings->samples, thread_id);
+    break;
+  }
+
+  while(my_batch < nr_batches){
     //cout << "Thread: " << id << " on batch: " << my_batch << endl;
-
     int length;
-    int* batch = pattern->getBatch(my_batch, &length);
-
-    for (size_t i = 0; i < length; ++i) {
-      if (abort) {
+    int *batch = pattern->getBatch(my_batch, &length);
+    for(size_t b = 0; b<length; ++b){
+      if(abort){
         return;
       }
-      IAccDataStruct::IntersectionData intersection_data =
-          scene->getAccDataStruct()->findClosestIntersection(rays[batch[i]]);
-      vec4 c = trace(rays[batch[i]], intersection_data);
 
-      buffer[batch[i] * 4] = c.r;
-      buffer[batch[i] * 4 + 1] = c.g;
-      buffer[batch[i] * 4 + 2] = c.b;
-      buffer[batch[i] * 4 + 3] = c.a;
+      int i = batch[b];
+      vec2 coord = vec2(i%width, i/width);
 
-      --pixelsLeft;
+      const vec2* offsets = ss_pattern->getNewOffsets();
+
+      vec4 c = vec4(0);
+      for(int s=0; s<ss_pattern->getSize(); ++s) {
+        vec4 pos = trans * vec4(coord.x+offsets[s].x, coord.y+offsets[s].y, -1, 1);
+        Ray ray = Ray::generateRay(camera_position, vec3(pos / pos.w));
+
+        IAccDataStruct::IntersectionData intersection_data;
+        if(settings->use_first_bounce){
+          intersection_data = first_intersections[i];
+        } else {
+          intersection_data = scene->getAccDataStruct()->findClosestIntersection(ray);
+        }
+
+        if(s==0) {
+          posbuff[i] = intersection_data.interPoint;
+        }
+        c += trace(ray, intersection_data, thread_id);
+      }
+      c /= ss_pattern->getSize();
+      buffer[i * 4] = c.r;
+      buffer[i * 4 + 1] = c.g;
+      buffer[i * 4 + 2] = c.b;
+      buffer[i * 4 + 3] = c.a;
     }
 
     pattern_mutex.lock();
     my_batch = next_batch++;
     pattern_mutex.unlock();
   }
+
+  delete ss_pattern;
 }
 
 void BaseTracer::stopTracing() {
@@ -198,58 +233,28 @@ void BaseTracer::stopTracing() {
 }
 
 float BaseTracer::getPixelsLeft() {
-  return (nr_batches - next_batch) / nr_batches;
+  return clamp((float)(nr_batches - next_batch) / (float)nr_batches);
 }
 
-int BaseTracer::spawnRays() {
-  // Local variables
-  int width = settings->width;
-  int height = settings->height;
-
-  // Number of rays to spawn from camera
-  int number_of_rays = width * height;
-  // Initiate ray array
-  rays = new Ray[number_of_rays]; //TODO om man renderar många gånger i samma körning???
-
-  Camera camera = scene->getCamera();
-  vec3 camera_position = camera.getPosition();
-  mat4 trans = camera.getViewportToModelMatrix(width - 1, height - 1);
-
-  //We step over all "pixels" from the cameras viewpoint
-  for (int y = 0; y < height; y++) {
-    for (int x = 0; x < width; x++) {
-      vec4 aray = vec4(x, y, -1, 1);
-      //vec3 r = unProject(vec3(aray), trans, mat4(), vec4(0, 0, width, height));
-      aray = trans * aray;
-      vec3 r = vec3(aray / aray.w);
-      rays[y * width + x] = Ray::generateRay(camera_position, r);
-    }
-  }
-
-  return number_of_rays;
-}
-
-vec4 BaseTracer::trace(Ray ray, IAccDataStruct::IntersectionData idata) {
+vec4 BaseTracer::trace(Ray ray, IAccDataStruct::IntersectionData idata, int thread_id) {
   vec4 color;
 
-  if (idata.material == IAccDataStruct::IntersectionData::NOT_FOUND) {
+  if (idata.missed()) {
     // No intersection
     color = settings->background_color;
   } else {
     // Intersection!
-
-    color = shade(ray, idata);
-
+    color = shade(ray, idata, thread_id);
   }
 
   return color;
 }
 
-vec4 BaseTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata) {
+vec4 BaseTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata, int thread_id) {
   float light = 0;
   for(size_t i = 0; i < lights->size(); ++i){
     //if(!lights->at(i)->isBlocked(datastruct, idata.interPoint)){
-    if (lights->at(i)->calcLight(datastruct, idata.interPoint) > 0.0f) {
+    if (lights->at(i)->calcLight(datastruct, idata.interPoint, thread_id) > 0.0f) {
       light++;
     }
   }

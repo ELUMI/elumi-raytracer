@@ -16,6 +16,7 @@
 #include "Texture.h"
 #include "Camera.h"
 #include "ILight.h"
+#include "../IEnvironmentMap.h"
 #include "../Settings.h"
 
 namespace raytracer {
@@ -25,12 +26,13 @@ public:
 	Scene(Settings* settings);
 	virtual ~Scene();
 
-	void loadTriangles(vector<Triangle*> triangles,AABB* aabb, bool overwrite=false);
+	void loadTriangles(vector<Triangle*> triangles,AABB aabb, size_t material_shift);
 	void loadCamera(Camera camera);
 	void loadLights(ILight** lights, size_t length, bool overwrite=false);
-	void loadMaterials(Material* materials, size_t length);
-	void loadMaterials(std::vector<raytracer::Material*> materials);
+	size_t loadMaterials(Material* materials, size_t length);
+	size_t loadMaterials(std::vector<raytracer::Material*> materials);
 	void loadTextures(std::vector<raytracer::Texture*> textures);
+	void setEnvirontmentMap(IEnvironmentMap* environment_map);
 	void setSettings(Settings* settings);
 
 	Camera& getCamera();
@@ -40,12 +42,14 @@ public:
 	std::vector<ILight*>* getLightVector();
 	const std::vector<Material*>& getMaterialVector();
 	const std::vector<Texture*>& getTextures();
+	IEnvironmentMap* getEnvironmentMap();
 
 	Texture* getTextureAt(int index);
 
 	void drawVertexArray();
 
 	IDraw* getDrawable();
+  void build();
 
 private:
 	Camera m_camera;
@@ -56,6 +60,8 @@ private:
   std::vector<Texture*> m_textures;
 	IDraw* m_drawable;
 	Settings* m_settings;
+  IEnvironmentMap* environment_map;
+  AABB aabb;
 };
 
 }

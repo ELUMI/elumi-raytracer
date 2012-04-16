@@ -26,9 +26,9 @@ public:
   virtual ~KDTreeDataStruct();
 
   IAccDataStruct::IntersectionData findClosestIntersection(Ray ray);
-  void setData(Triangle** triangles,size_t size,AABB* aabb);
+  void setData(Triangle** triangles,size_t size,AABB aabb);
   void build();
-  vector<AABB*>& getAABBList(){return KDTreeDataStruct::splitting_list;}
+  vector<AABB>& getAABBList(){return KDTreeDataStruct::splitting_list;}
 
 private:
   enum Side{
@@ -86,6 +86,12 @@ private:
   class KDNode{
   public:
     KDNode():left(NULL),right(NULL),leaf(false){};
+    ~KDNode() {
+      if(left)
+        delete left;
+      if(right)
+        delete right;
+    }
     void setLeft(KDNode* left){KDNode::left=left;}
     void setRight(KDNode* right){KDNode::right=right;}
     void setLeaf(bool leaf){KDNode::leaf=leaf;}
@@ -166,8 +172,8 @@ private:
   static const float KD_TRAVERSE = 1.0f;
   static const float KD_INTERSECT = 10.0f;
   KDNode* root;
-  AABB* aabb;
-  vector<AABB*> splitting_list;
+  AABB aabb;
+  vector<AABB> splitting_list;
   KDTriangle** triangles;
   int* root_triangles;
   size_t triangle_count;

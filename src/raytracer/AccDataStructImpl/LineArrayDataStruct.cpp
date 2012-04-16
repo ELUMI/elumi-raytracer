@@ -14,11 +14,11 @@
 
 namespace raytracer{
 
-LineArrayDataStruct::LineArrayDataStruct(std::vector<AABB*> aabb){
+LineArrayDataStruct::LineArrayDataStruct(std::vector<AABB> aabb){
 
   vector<vec3> m_lines;
   for(size_t t = 0;t < aabb.size();t++){
-    vector<Line> lines = aabb[t]->getLines();
+    vector<Line> lines = aabb[t].getLines();
     for(size_t l=0;l<lines.size();l++){
       Line line = lines[l];
       m_lines.push_back((line.getStart()));

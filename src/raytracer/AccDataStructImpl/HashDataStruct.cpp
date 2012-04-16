@@ -37,7 +37,7 @@ void getMaxMin(Triangle* t, vec3& min, vec3& max){
   }
 }
 
-void HashDataStruct::setData(Triangle** triangles,size_t size,AABB* aabb){
+void HashDataStruct::setData(Triangle** triangles,size_t size,AABB aabb){
   for(size_t i=0; i<size; ++i){
     Triangle* t = triangles[i];
     vec3 min,max;
@@ -51,9 +51,12 @@ void HashDataStruct::setData(Triangle** triangles,size_t size,AABB* aabb){
       for(float y=min.y; y<max.y+bucketsize; y+=bucketsize){
         for(float z=min.z; z<max.z+bucketsize; z+=bucketsize){
           HashedTriangle i;
-          i.hash = hashpoint.hash(vec3(x,y,z));
+          size_t has2 =    size_t(x / hashpoint.getBucketSize())
+                  +(1<<10)*size_t(y / hashpoint.getBucketSize())
+              +(1<<(2*10))*size_t(z / hashpoint.getBucketSize());
+          i.hash = has2;
           i.triangle = t;
-          hashpoint.addItem(i.hash, i);
+          hashpoint.addItem(vec3(x,y,z), i);
         }
       }
     }
@@ -62,9 +65,9 @@ void HashDataStruct::setData(Triangle** triangles,size_t size,AABB* aabb){
 
 float getTMax(float p, float dir, float size){
   if(dir > 0) {
-    p = (1-mod(p,size))/dir;
+    return (1-mod(p,size))/dir;
   } else {
-    p = mod(p,size)/-dir;
+    return mod(p,size)/-dir;
   }
 }
 
@@ -86,19 +89,22 @@ IAccDataStruct::IntersectionData HashDataStruct::findClosestIntersection(Ray ray
 
   while(--length) {
     size_t hash = hashpoint.hash(point);
+    size_t has2 =   size_t(point.x / hashpoint.getBucketSize())
+           +(1<<10)*size_t(point.y / hashpoint.getBucketSize())
+       +(1<<(2*10))*size_t(point.z / hashpoint.getBucketSize());
     vector<HashedTriangle> list = hashpoint.getBucket(hash);
     vector<Triangle*> goodlist;
     for(size_t i=0; i<list.size(); ++i){
-      if(list[i].hash == hash) {
-        goodlist.push_back(list[i].triangle);
+      if(list[i].hash == has2) {
+        //goodlist.push_back(list[i].triangle);
       }
-      //goodlist.push_back(list[i].triangle);
+      goodlist.push_back(list[i].triangle);
     }
 
     if(goodlist.size()){
-      ads.setData(goodlist.data(),goodlist.size(),NULL);
+      ads.setData(goodlist.data(),goodlist.size(),AABB());
       IAccDataStruct::IntersectionData idata = ads.findClosestIntersection(Ray(point,dir));
-      if(idata.material != IAccDataStruct::IntersectionData::NOT_FOUND){
+      if(idata.missed()){
         return idata;
       }
     }
@@ -123,7 +129,7 @@ IAccDataStruct::IntersectionData HashDataStruct::findClosestIntersection(Ray ray
   }
 
   //not found
-  return IntersectionData(IntersectionData::NOT_FOUND, vec3(), vec3(), vec2(),vec3(),vec3());
+  return IntersectionData::miss();
 }
 
 

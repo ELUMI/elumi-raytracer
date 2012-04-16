@@ -21,13 +21,14 @@ namespace raytracer {
 
 class IImporter {
 public:
+  virtual ~IImporter() {}
 
 	virtual void loadFile(const char* filename) = 0;
 	virtual std::vector<Triangle*>& getTriangleList() =0;
 	virtual std::vector<Material*>& getMaterialList() = 0;
 	virtual std::vector<Texture*>& getTextures() = 0;
 
-	virtual AABB* getAABB() = 0;
+	virtual AABB getAABB() = 0;
 	virtual Camera* getCamera() = 0;
 
 	virtual std::vector<ILight*>& getLightPointList() = 0;

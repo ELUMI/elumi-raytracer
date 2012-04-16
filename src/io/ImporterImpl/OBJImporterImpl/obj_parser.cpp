@@ -26,6 +26,7 @@ int obj_convert_to_list_index(int current_max, int index)
 
 void obj_convert_to_list_index_v(int current_max, int *indices)
 {
+  //TODO: there is something wrong here, not all indices[i] are initialized
 	for(int i=0; i<MAX_VERTEX_COUNT; i++)
 		indices[i] = obj_convert_to_list_index(current_max, indices[i]);
 }
@@ -41,9 +42,9 @@ void obj_set_material_defaults(obj_material *mtl)
 	mtl->spec[0] = 1.0;
 	mtl->spec[1] = 1.0;
 	mtl->spec[2] = 1.0;
-	mtl->emissive[0] = 1.0; //?
-	mtl->emissive[1] = 1.0; //?
-	mtl->emissive[2] = 1.0; //?
+	mtl->emissive[0] = 0.0; //?
+	mtl->emissive[1] = 0.0; //?
+	mtl->emissive[2] = 0.0; //?
 	mtl->reflect = 0.0;
 	mtl->trans[0] = 1;
 	mtl->trans[1] = 1;
@@ -53,6 +54,9 @@ void obj_set_material_defaults(obj_material *mtl)
 	mtl->refract_index = 1;
 	mtl->diffuse_map[0] = '\0';
 	mtl->bump_filename[0] = '\0';
+  mtl->norm_filename[0] = '\0';
+  mtl->ks_filename[0] = '\0';
+  mtl->d_filename[0] = '\0';
 }
 
 int obj_parse_vertex_index(int *vertex_index, int *texture_index, int *normal_index)
@@ -64,10 +68,10 @@ int obj_parse_vertex_index(int *vertex_index, int *texture_index, int *normal_in
 	
 	while( (token = strtok(NULL, WHITESPACE)) != NULL)
 	{
-		if(texture_index != NULL)
+		//if(texture_index != NULL)
 			texture_index[vertex_count] = 0;
-		if(normal_index != NULL)
-		normal_index[vertex_count] = 0;
+		//if(normal_index != NULL)
+		  normal_index[vertex_count] = 0;
 
 		vertex_index[vertex_count] = atoi( token );
 		
@@ -290,6 +294,16 @@ int obj_parse_mtl_file(char *filename, list *material_list)
 		{
 			current_mtl->reflect = atof( strtok(NULL, " \t"));
 		}
+		//reflection spread
+		else if( strequal(current_token, "r_spread") && material_open)
+		{
+		  current_mtl->reflect_spread = atof( strtok(NULL, " \t"));
+		}
+    //reflection samples
+    else if( strequal(current_token, "r_samples") && material_open)
+    {
+      current_mtl->reflect_samples= atof( strtok(NULL, " \t"));
+    }
 		//glossy
 		else if( strequal(current_token, "sharpness") && material_open)
 		{
@@ -300,6 +314,16 @@ int obj_parse_mtl_file(char *filename, list *material_list)
 		{
 			current_mtl->refract_index = atof( strtok(NULL, " \t"));
 		}
+		//refract spread
+		else if( strequal(current_token, "Ni_spread") && material_open)
+		{
+		  current_mtl->refract_spread = atof( strtok(NULL, " \t"));
+		}
+		//refract samples
+		else if( strequal(current_token, "Ni_samples") && material_open)
+		{
+		  current_mtl->refract_samples = atof( strtok(NULL, " \t"));
+		}
 		// illumination type
 		else if( strequal(current_token, "illum") && material_open)
 		{
@@ -309,10 +333,25 @@ int obj_parse_mtl_file(char *filename, list *material_list)
 		{
 			strncpy(current_mtl->diffuse_map, strtok(NULL, " \t"), OBJ_FILENAME_LENGTH);
 		}
-		// bump map
+		// Normal map
+		else if( strequal(current_token, "map_Norm") && material_open)
+		{
+		  strncpy(current_mtl->norm_filename, strtok(NULL, " \t"), OBJ_FILENAME_LENGTH);
+		}
+		// Bump map
 		else if( strequal(current_token, "map_Bump") && material_open)
 		{
 		  strncpy(current_mtl->bump_filename, strtok(NULL, " \t"), OBJ_FILENAME_LENGTH);
+		}
+		// transparency map
+		else if( strequal(current_token, "map_d") && material_open)
+		{
+		  strncpy(current_mtl->d_filename, strtok(NULL, " \t"), OBJ_FILENAME_LENGTH);
+		}
+		//Specular map
+		else if( strequal(current_token, "map_Ks") && material_open)
+		{
+		  strncpy(current_mtl->ks_filename, strtok(NULL, " \t"), OBJ_FILENAME_LENGTH);
 		}
 		else
 		{

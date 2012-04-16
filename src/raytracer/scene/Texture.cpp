@@ -14,6 +14,12 @@ using namespace std;
 
 namespace raytracer {
 
+Texture::Texture() {
+  Texture::width = -1;
+  Texture::height = -1;
+  Texture::data = NULL;
+  Texture::type = TEXTURE;
+}
 
 Texture::Texture(unsigned int width, unsigned int height, unsigned char* data, TextureType type) {
   Texture::width = width;
@@ -29,9 +35,15 @@ Texture::Texture(unsigned int width, unsigned int height, unsigned char* data) {
   Texture::type = TEXTURE;
 }
 
+void Texture::setData(unsigned int width, unsigned int height, unsigned char* data,TextureType type) {
+  Texture::width = width;
+  Texture::height = height;
+  Texture::data = data;
+  Texture::type = type;
+}
+
 Texture::~Texture() {
-  // TODO ? kanske.
-  // vart skapas data, och vart tas det bort?
+  // TODO ILShutdown anropas i SCENES's destructor. Den verkar ta bort datan?
 }
 
 unsigned int Texture::getHeight() {
@@ -47,6 +59,10 @@ int Texture::getMipmapLevels() {
 }
 
 vec3 Texture::getColorAt(int x, int y) {
+  if (data==NULL) {
+    std::cout << "Texture data not loaded!\n";
+    exit(1);
+  }
   return vec3(data[width*y*3+x*3],data[width*y*3+x*3+1],data[width*y*3+x*3+2])/255.0f;
 }
 
@@ -83,12 +99,12 @@ vec2 Texture::getUVCoordinates(vec3 position, Axis axis) {
 vec3 Texture::getColorAt(vec2 coords) {
   int x_coord,y_coord;
   if(coords.x < 0) {
-    x_coord = width+(int)(coords.x*(width))%width;
+    x_coord = width-1+(int)(coords.x*(width))%width;
   } else {
     x_coord = (int)(coords.x*(width))%width;
   }
   if(coords.y < 0) {
-    y_coord = height+(int)(coords.y*(height))%height;
+    y_coord = height-1+(int)(coords.y*(height))%height;
   } else {
     y_coord = (int)(coords.y*(height))%height;
   }
@@ -108,5 +124,4 @@ void Texture::addMipmap() {
 }
 
 }
-
 
