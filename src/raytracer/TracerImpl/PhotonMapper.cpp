@@ -63,12 +63,20 @@ bool PhotonMapper::bounce(Photon& p, int thread_id, bool store) {
   if (rand < reflection) {
     outgoing = glm::reflect(p.direction, p.normal);
     p.power *= mat->getSpecular();
+    //return false;
   } else if (rand < reflection+refraction) {
-    outgoing = glm::refract(p.direction, p.normal, mat->getIndexOfRefraction());
-    p.power *= mat->getDiffuse();
+    const float refraction_sign = glm::sign(
+        glm::dot(p.normal, p.direction));
+    const vec3 refr_normal = -p.normal * refraction_sign;
+    float eta = mat->getIndexOfRefraction();
+    if (refraction_sign == -1.0f)
+      eta = 1 / eta;
+    outgoing = glm::refract(p.direction, refr_normal, eta);
+    //p.power *= mat->getDiffuse();
   } else if(rand < reflection+refraction+diffuse) {  //diffuse interreflection
     outgoing = gen_random_hemisphere(p.normal, thread_id);
     p.power *= mat->getDiffuse();
+    //return false;
   } else { //absorbtion
     return false;
   }
