@@ -28,7 +28,7 @@ OBB::IntervalData UniformVolume::getInterval(Ray ray) {
 }
 
 float UniformVolume::getEmission(vec3 pos, vec3 dir) {
-
+  return emission;
 }
 
 } /* namespace raytracer */

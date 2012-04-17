@@ -333,6 +333,10 @@ vec3 StandardTracer::getAmbient(Ray incoming_ray,
   return color;
 }
 
+float StandardTracer::getIndividualLight(vec3 pos, ILight* light, int thread_id) {
+  return light->calcLight(datastruct, pos, thread_id);
+}
+
 vec3 StandardTracer::getLighting(
     Ray incoming_ray
     , IAccDataStruct::IntersectionData idata
@@ -351,7 +355,7 @@ vec3 StandardTracer::getLighting(
       //do nothing, handled in getAmbient()
     }else{
       /**** NON AMBIENT LIGHT, CALCULATE SHADOW RAYS ***/
-      float in_light = light->calcLight(datastruct, idata.interPoint, thread_id);
+      float in_light = getIndividualLight(idata.interPoint, light, thread_id);
       if(in_light > 0.0f){
         // NOT ENTIRELY IN SHADOW! SHADE!
         Ray light_ray = Ray::generateRay(light->getPosition(), idata.interPoint);

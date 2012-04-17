@@ -82,6 +82,7 @@ Scene* XML::importScene(const char* fileName) {
       xml_node wireframe    = settings_doc.child("Wireframe");
       xml_node supersampling= settings_doc.child("Supersampling");
       xml_node photonmapper = settings_doc.child("Photonmapper");
+      xml_node volume       = settings_doc.child("Volume");
 
       if(screen) {
         settings->width = screen.attribute("width").as_int();
@@ -129,6 +130,10 @@ Scene* XML::importScene(const char* fileName) {
           settings->gather_radius = photonmapper.attribute("radius").as_float();
         if(!photonmapper.attribute("photonmap_size").empty())
           settings->photonmap_size = photonmapper.attribute("photonmap_size").as_int();
+      }
+      if(volume) {
+        if(!volume.attribute("step_size"). empty())
+          settings->step_size = volume.attribute("step_size").as_float();
       }
 
       if(settings->opengl_version<3){
