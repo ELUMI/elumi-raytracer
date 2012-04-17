@@ -211,7 +211,7 @@ Scene* XML::importScene(const char* fileName) {
       newLight->setPosition(pos);
       newLight->setDistanceFalloff(ftype);
 
-      if(type.compare("Area") == 0) {
+      if(type.compare("Area") == 0 && settings->area_light_quad) {
         reinterpret_cast<AreaLight*>(newLight)->addPlane(scene); //add arealight to datastruct
       }
 

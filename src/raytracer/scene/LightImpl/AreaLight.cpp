@@ -125,14 +125,14 @@ float AreaLight::calcLight(IAccDataStruct* datastruct, vec3 point, int thread_id
   float in_light = 0.0f;
 
   BaseLight* light = light_sources;
-  for (unsigned int i=0; i<samples; ++i,light++) {
+  for (unsigned int i=0; i<samples; ++i) {
     vec3 offset = area_offset
                 + gen_random_float(0.0f, 1.0f, thread_id) * delta1
                 + gen_random_float(0.0f, 1.0f, thread_id) * delta2;
-    in_light += light->calcLight(datastruct, point, thread_id, offset) / samples;
+    in_light += light[i].calcLight(datastruct, point, thread_id, offset);
   }
 
-  return in_light;
+  return in_light / samples;
 }
 
 void AreaLight::initCaches(size_t nr_of_threads) {
@@ -143,76 +143,74 @@ void AreaLight::initCaches(size_t nr_of_threads) {
 }
 
 void AreaLight::addPlane(Scene* scene) {
-  if (false) {
-    std::vector<raytracer::Material*> materials;
-    materials.push_back(
-        new Material("Light material", vec3(), color * intensity, vec3(),
-            color * intensity, vec3(1, 1, 1), 0, 0, 0, 0, 1, -1, -1, -1, -1,
-            -1, 0, 0, 0, 0));
-    size_t materials_shift = scene->loadMaterials(materials); //load materials BEFORE triangles!
+  std::vector<raytracer::Material*> materials;
+  materials.push_back(
+      new Material("Light material", vec3(), color * intensity, vec3(),
+          color * intensity, vec3(1, 1, 1), 0, 0, 0, 0, 1, -1, -1, -1, -1,
+          -1, 0, 0, 0, 0));
+  size_t materials_shift = scene->loadMaterials(materials); //load materials BEFORE triangles!
 
-    std::vector<raytracer::Triangle*> triangles;
+  std::vector<raytracer::Triangle*> triangles;
 
-    vec3 top_l = position - 0.5f * axis1 - 0.5f * axis2;
-    vec3 top_r = position - 0.5f * axis1 + 0.5f * axis2;
-    vec3 bot_l = position + 0.5f * axis1 - 0.5f * axis2;
-    vec3 bot_r = position + 0.5f * axis1 + 0.5f * axis2;
+  vec3 top_l = position - 0.5f * axis1 - 0.5f * axis2;
+  vec3 top_r = position - 0.5f * axis1 + 0.5f * axis2;
+  vec3 bot_l = position + 0.5f * axis1 - 0.5f * axis2;
+  vec3 bot_r = position + 0.5f * axis1 + 0.5f * axis2;
 
-    vec3 normal = cross(axis1, axis2);
+  vec3 normal = cross(axis1, axis2);
 
-    vec3 ttop_l(0, 0, 0);
-    vec3 ttop_r(0, 1, 0);
-    vec3 tbot_l(1, 0, 0);
-    vec3 tbot_r(1, 1, 0);
+  vec3 ttop_l(0, 0, 0);
+  vec3 ttop_r(0, 1, 0);
+  vec3 tbot_l(1, 0, 0);
+  vec3 tbot_r(1, 1, 0);
 
-    {
-      vector<vec3*> vertices;
-      vertices.push_back(new vec3(top_l));
-      vertices.push_back(new vec3(top_r));
-      vertices.push_back(new vec3(bot_l));
-      vector<vec3*> normals;
-      normals.push_back(new vec3(normal));
-      normals.push_back(new vec3(normal));
-      normals.push_back(new vec3(normal));
-      vector<vec3*> texCoords;
-      texCoords.push_back(new vec3(ttop_l));
-      texCoords.push_back(new vec3(ttop_r));
-      texCoords.push_back(new vec3(tbot_l));
+  {
+    vector<vec3*> vertices;
+    vertices.push_back(new vec3(top_l));
+    vertices.push_back(new vec3(top_r));
+    vertices.push_back(new vec3(bot_l));
+    vector<vec3*> normals;
+    normals.push_back(new vec3(normal));
+    normals.push_back(new vec3(normal));
+    normals.push_back(new vec3(normal));
+    vector<vec3*> texCoords;
+    texCoords.push_back(new vec3(ttop_l));
+    texCoords.push_back(new vec3(ttop_r));
+    texCoords.push_back(new vec3(tbot_l));
 
-      triangles.push_back(new Triangle(vertices, normals, texCoords, 0));
-    }
-
-    {
-      vector<vec3*> vertices;
-      vertices.push_back(new vec3(top_r));
-      vertices.push_back(new vec3(bot_r));
-      vertices.push_back(new vec3(bot_l));
-      vector<vec3*> normals;
-      normals.push_back(new vec3(normal));
-      normals.push_back(new vec3(normal));
-      normals.push_back(new vec3(normal));
-      vector<vec3*> texCoords;
-      texCoords.push_back(new vec3(ttop_r));
-      texCoords.push_back(new vec3(tbot_r));
-      texCoords.push_back(new vec3(tbot_l));
-
-      triangles.push_back(new Triangle(vertices, normals, texCoords, 0));
-    }
-
-    vec3 mi = top_l;
-    mi = glm::min(mi, top_r);
-    mi = glm::min(mi, bot_l);
-    mi = glm::min(mi, bot_r);
-
-    vec3 ma = top_l;
-    ma = glm::max(mi, top_r);
-    ma = glm::max(mi, bot_l);
-    ma = glm::max(mi, bot_r);
-
-    AABB aabb(mi, ma - mi);
-
-    scene->loadTriangles(triangles, aabb, materials_shift);
+    triangles.push_back(new Triangle(vertices, normals, texCoords, 0));
   }
+
+  {
+    vector<vec3*> vertices;
+    vertices.push_back(new vec3(top_r));
+    vertices.push_back(new vec3(bot_r));
+    vertices.push_back(new vec3(bot_l));
+    vector<vec3*> normals;
+    normals.push_back(new vec3(normal));
+    normals.push_back(new vec3(normal));
+    normals.push_back(new vec3(normal));
+    vector<vec3*> texCoords;
+    texCoords.push_back(new vec3(ttop_r));
+    texCoords.push_back(new vec3(tbot_r));
+    texCoords.push_back(new vec3(tbot_l));
+
+    triangles.push_back(new Triangle(vertices, normals, texCoords, 0));
+  }
+
+  vec3 mi = top_l;
+  mi = glm::min(mi, top_r);
+  mi = glm::min(mi, bot_l);
+  mi = glm::min(mi, bot_r);
+
+  vec3 ma = top_l;
+  ma = glm::max(mi, top_r);
+  ma = glm::max(mi, bot_l);
+  ma = glm::max(mi, bot_r);
+
+  AABB aabb(mi, ma - mi);
+
+  scene->loadTriangles(triangles, aabb, materials_shift);
 }
 
 
