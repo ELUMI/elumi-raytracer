@@ -10,23 +10,30 @@
 
 #include "../IVolume.h"
 #include "../../utilities/OBB.h"
+#include "../../IPhaseFunctor.h"
 
 namespace raytracer {
 
 class UniformVolume : public IVolume {
 public:
-  UniformVolume(OBB obb, float sigma_t, float emission);
+  UniformVolume(OBB obb, float absorption, float scattering, float emission, IPhaseFunctor* pf);
   virtual ~UniformVolume();
 
   float getTau(vec3 from, vec3 to);
   OBB::IntervalData getInterval(Ray ray);
   float getEmission(vec3 pos, vec3 dir);
+  float getPhase(vec3& w_in, vec3& w_out);
+  float getScattering();
 
 private:
   OBB obb;
 
-  float sigma_t; // Extinction coefficient = absorption + out-scattering
+  // Extinction coefficient = absorption + out-scattering
+  float absorption;
+  float scattering;
+
   float emission;
+  IPhaseFunctor* pf;
 };
 
 } /* namespace raytracer */

@@ -21,6 +21,9 @@ using namespace glm;
 #include "../EnvironmentMapImpl/CubeMap.h"
 
 #include "../scene/VolumeImpl/UniformVolume.h"
+#include "../PhaseFunctorImpl/PhaseIsotropic.h"
+#include "../PhaseFunctorImpl/PhaseHG.h"
+#include "../PhaseFunctorImpl/PhaseSchlick.h"
 
 #include <exception>
 #include <iostream>
@@ -160,8 +163,39 @@ Scene* XML::importScene(const char* fileName) {
   }
   //Load objects
   for (pugi::xml_node vol = doc.child("Volume"); vol; vol = vol.next_sibling("Volume")) {
-    string type = vol.attribute("type").value();
 
+
+    // Load phase function for volume
+    xml_node phase_node = vol.child("PhaseFunction");
+
+    IPhaseFunctor* functor;
+    string pf_type = phase_node.attribute("type").value();
+    if(pf_type.compare("isotropic") == 0) {
+      functor = new PhaseIsotropic();
+
+    } else if(pf_type.compare("hg") == 0) {
+      float g = 0.0f;
+      if(!phase_node.attribute("g").empty())
+        g = phase_node.attribute("g").as_float();
+      functor = new PhaseHG(g);
+
+    } else if(pf_type.compare("schlick") == 0) {
+      float k = 0.0f;
+      if(!phase_node.attribute("g").empty()){
+        k = phase_node.attribute("g").as_float();
+        functor = new PhaseSchlick(PhaseSchlick::HGtoSchlick(k));
+      } else if(!phase_node.attribute("k").empty()) {
+        k = phase_node.attribute("k").as_float();
+        functor = new PhaseSchlick(k);
+      }
+
+    } else {
+      functor = new PhaseIsotropic();
+    }
+
+
+    // Load the volume
+    string type = vol.attribute("type").value();
     if(type.compare("uniform") == 0) {
 
       xml_node pos_node = vol.child("Position");
@@ -201,10 +235,11 @@ Scene* XML::importScene(const char* fileName) {
 
       OBB obb = OBB(pos, u, v, w);
 
-      float sigma_t = vol.attribute("attenuation").as_float();
+      float absorption = vol.attribute("absorption").as_float();
+      float scattering = vol.attribute("scattering").as_float();
       float emission = vol.attribute("emission").as_float();
 
-      IVolume* volume = new UniformVolume(obb, sigma_t, emission);
+      IVolume* volume = new UniformVolume(obb, absorption, scattering, emission, functor);
       scene->addVolume(volume);
 
     } else {

@@ -6,13 +6,16 @@
  */
 
 #include "UniformVolume.h"
+#include "../../IPhaseFunctor.h"
 
 namespace raytracer {
 
-UniformVolume::UniformVolume(OBB obb, float sigma_t, float emission) {
+UniformVolume::UniformVolume(OBB obb, float absorption, float scattering, float emission, IPhaseFunctor* pf) {
   UniformVolume::obb = obb;
-  UniformVolume::sigma_t = sigma_t;
+  UniformVolume::absorption = absorption;
+  UniformVolume::scattering = scattering;
   UniformVolume::emission = emission;
+  UniformVolume::pf = pf;
 }
 
 UniformVolume::~UniformVolume() {
@@ -20,7 +23,7 @@ UniformVolume::~UniformVolume() {
 
 float UniformVolume::getTau(vec3 from, vec3 to) {
   float d = glm::distance(from, to);
-  return sigma_t * d;
+  return (absorption + scattering) * d;
 }
 
 OBB::IntervalData UniformVolume::getInterval(Ray ray) {
@@ -29,6 +32,14 @@ OBB::IntervalData UniformVolume::getInterval(Ray ray) {
 
 float UniformVolume::getEmission(vec3 pos, vec3 dir) {
   return emission;
+}
+
+float UniformVolume::getPhase(vec3& w_in, vec3& w_out) {
+  return pf->p(w_in, w_out);
+}
+
+float UniformVolume::getScattering() {
+  return scattering;
 }
 
 } /* namespace raytracer */
