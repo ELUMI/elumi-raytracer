@@ -93,6 +93,7 @@ eclipse
      * ILU (devil manipulations library, used for rotating environment maps)
      * boost_program_options
      * boost_thread
+     * boost_chrono
      * boost_timer
      * boost_system
      * # gomp (openmp)

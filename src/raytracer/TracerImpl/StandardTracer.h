@@ -17,7 +17,6 @@ class StandardTracer: public BaseTracer {
 public:
   StandardTracer(Scene* scene);
   virtual ~StandardTracer();
-
   virtual void traceImage(float* color_buffer);
 
 protected:

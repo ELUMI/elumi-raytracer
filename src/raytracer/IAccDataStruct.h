@@ -54,7 +54,7 @@ public:
   virtual ~IAccDataStruct() {};
   virtual IntersectionData findClosestIntersection(Ray ray)=0;
   virtual void setData(Triangle** triangles,size_t size,AABB aabb) = 0;
-  virtual vector<AABB*>& getAABBList() = 0;
+  virtual vector<AABB>& getAABBList() = 0;
 
   static float instersection_distance(Ray* ray, Triangle* triangle) {
     const vec3 o = ray->getPosition();

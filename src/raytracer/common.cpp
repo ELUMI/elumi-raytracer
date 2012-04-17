@@ -42,6 +42,14 @@ bool AABB::intersect(Ray ray,float& min,float& max){
 
   return true;
 }
+std::pair<AABB, AABB> AABB::split(float split, int axis){
+  AABB left = *this,right = *this;
+  left.size[axis] = split-AABB::pos[axis];
+  right.pos[axis] = split;
+  right.size[axis] = AABB::size[axis]-left.size[axis];
+  return std::pair<AABB,AABB>(left,right);
+}
+
 void AABB::createAABBLines(){
     lines.push_back(Line(pos,vec3(size.x,0,0)));
     lines.push_back(Line(pos,vec3(0,size.y,0)));
