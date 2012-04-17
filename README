@@ -45,6 +45,13 @@ The scene file uses xml-syntax. See example:
     <Left src="data/scenes/textures/environment_maps/land_left.png" />
 </Environment>
 
+<Volume type="uniform" attenuation="1.0" emission="1.0">
+    <Position x="0.0" y="0.0" z="0.0 />
+    <U x="0.0" y="0.0" z="0.0 />
+    <V x="0.0" y="0.0" z="0.0 />
+    <W x="0.0" y="0.0" z="0.0 />
+</Volume>
+
 ############################################################
 
                      Settings-file

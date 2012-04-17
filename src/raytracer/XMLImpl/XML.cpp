@@ -19,6 +19,9 @@ using namespace glm;
 #include "../scene/LightImpl/BaseLight.h"
 #include "../scene/LightImpl/AreaLight.h"
 #include "../EnvironmentMapImpl/CubeMap.h"
+
+#include "../scene/VolumeImpl/UniformVolume.h"
+
 #include <exception>
 #include <iostream>
 using namespace std;

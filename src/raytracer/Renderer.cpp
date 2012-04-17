@@ -11,6 +11,7 @@
 #include "TracerImpl/PhotonMapper.h"
 #include "TracerImpl/AdvancedTracer.h"
 #include "TracerImpl/PathTracer.h"
+#include "TracerImpl/VolumeTracer.h"
 
 #include "XMLImpl/XML.h"
 
@@ -79,6 +80,10 @@ void Renderer::init() {
   case 5:
     m_tracer = new PathTracer(m_scene);
     cout << "Using path tracer\n";
+    break;
+  case 6:
+    m_tracer = new VolumeTracer(m_scene);
+    cout << "Using volumeTracer\n";
     break;
   }
   buffer_length = m_scene->getSettings()->width * m_scene->getSettings()->height * 4;

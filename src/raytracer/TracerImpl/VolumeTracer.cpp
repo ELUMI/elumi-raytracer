@@ -8,9 +8,11 @@
 #include "VolumeTracer.h"
 #include "../scene/IVolume.h"
 
+#include <iostream>
+
 namespace raytracer {
 
-VolumeTracer::VolumeTracer(Scene* scene) : PhotonMapper(scene) {
+VolumeTracer::VolumeTracer(Scene* scene) : StandardTracer(scene) {
   VolumeTracer::scene = scene;
 }
 
@@ -21,7 +23,7 @@ vec4 VolumeTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idat
                          float attenuation, unsigned short depth, int thread_id) {
 
   vec4 base_color = StandardTracer::shade(incoming_ray, idata, attenuation, depth, thread_id);
-  vec4 color = vec4();
+  vec4 color = base_color;
 
   std::vector<IVolume*> volumes = scene->getVolumes();
   float step_size = scene->getSettings()->step_size;
@@ -44,15 +46,15 @@ vec4 VolumeTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idat
     if(intersect.inside)  // If we're inside the box, we have no min, put ray position to min.
       min = incoming_ray.getPosition();
 
-    float dist = distance(min, max);
+    float dist = glm::distance(min, max);
 
     vec3 closest_pos = max;
 
-    if(distance(min, idata.interPoint) < dist)
+    if(glm::distance(min, idata.interPoint) < dist)
       closest_pos = idata.interPoint;
 
-    // Add for base color:
-    color += glm::exp(-volume->getTau(min, closest_pos)) * base_color;
+    // Add base color:
+    color = glm::exp(-volume->getTau(min, closest_pos)) * base_color;
 
     int nr_steps = dist / step_size;
     for(int i = 0; i < nr_steps; ++i) {

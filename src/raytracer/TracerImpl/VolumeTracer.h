@@ -13,7 +13,7 @@
 
 namespace raytracer {
 
-class VolumeTracer: public raytracer::PhotonMapper {
+class VolumeTracer: public raytracer::StandardTracer {
 public:
   VolumeTracer(Scene* scene);
   virtual ~VolumeTracer();
