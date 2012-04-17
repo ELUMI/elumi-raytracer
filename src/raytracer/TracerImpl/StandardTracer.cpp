@@ -235,44 +235,23 @@ inline vec3 StandardTracer::reflection_refraction(Ray incoming_ray,
       glm::dot(normal, incoming_ray.getDirection()));
   const vec3 refr_normal = -normal * refraction_sign;
 
-  /**** REFLECTION RAY ****/
-  if (reflectance > 0.0f) {
-    vec3 offset = refr_normal * offset_size;
-    vec3 refl_dir = glm::reflect(incoming_ray.getDirection(), refr_normal);
-    Ray refl_ray = Ray(idata.interPoint + offset, glm::normalize(refl_dir));
+  //Fresnel reflectance
+  if (material->getFresnelIndex() != 0.0f) {
+  //if (settings->use_fresnel) {
+    //Schlick's approx.
+    // float fresnel_refl = reflectance + (1 - reflectance) * glm::pow(
+    // clamp(1.0f - glm::dot(incoming_ray.getDirection(), normal)), 5.0f);
 
-    vec4 refl_color;
-
-    float reflect_spread = material->getReflectionSpread();
-    int reflect_samples = material->getReflectionSamples();
-
-    //Fresnel reflectance (with Schlick's approx.)
-    if (settings->use_fresnel) {
-      float fresnel_refl = reflectance + (1 - reflectance) * glm::pow(
-          clamp(1.0f + glm::dot(incoming_ray.getDirection(), normal)), 5.0f);
-      reflectance = fresnel_refl;
-    }
-
-    if (reflect_spread > 0.0f && reflect_samples > 0) { // Glossy reflections
-      for (int i = 0; i < reflect_samples; ++i) {
-
-        vec3 sample_dir = glm::normalize(
-            gen_random_cone(refl_dir, reflect_spread, thread_id));
-
-        Ray sample_ray = Ray(idata.interPoint + offset, sample_dir);
-
-        refl_color += tracePrim(sample_ray,
-            attenuation * reflectance / reflect_samples, depth + 1, thread_id)
-            * reflectance / reflect_samples;
-
-      }
-    } else { // Non glossy
-      refl_color = tracePrim(refl_ray, attenuation * reflectance, depth + 1,
-          thread_id) * reflectance;
-    }
-    // SVART BEROR PÅ ATT DEN STUDSAR MOT SIG SJÄLV OCH ALLTID BLIR REFLECTIVE TILLS MAXDJUP
-    //mix with output
-    color = color * (1 - reflectance) + vec3(refl_color);
+    float c = abs(glm::dot(incoming_ray.getDirection(), normal));
+    float g = glm::sqrt( material->getFresnelIndex()*material->getFresnelIndex() + c*c -1 );
+    float gMc = g-c;
+    float gPc = g+c;
+    float fresnel_refl = 0.5 * ((gMc*gMc) / (gPc*gPc)) *
+                         (  1.0f +
+                             ( (c*(gPc)-1)*(c*(gPc)-1) )
+                           / ( (c*(gMc)+1)*(c*(gMc)+1) )
+                         );
+    reflectance = fresnel_refl;
   }
 
   /**** REFRACTION RAY ****/
@@ -317,6 +296,41 @@ inline vec3 StandardTracer::reflection_refraction(Ray incoming_ray,
     //mix with output
     color = color * (1 - transmittance) + vec3(refr_color);
   } // end refraction
+
+  /**** REFLECTION RAY ****/
+  if (reflectance > 0.0f) {
+    vec3 offset = refr_normal * offset_size;
+    vec3 refl_dir = glm::reflect(incoming_ray.getDirection(), refr_normal);
+    Ray refl_ray = Ray(idata.interPoint + offset, glm::normalize(refl_dir));
+
+    vec4 refl_color;
+
+    float reflect_spread = material->getReflectionSpread();
+    int reflect_samples = material->getReflectionSamples();
+
+    if (reflect_spread > 0.0f && reflect_samples > 0) { // Glossy reflections
+      for (int i = 0; i < reflect_samples; ++i) {
+
+        vec3 sample_dir = glm::normalize(
+            gen_random_cone(refl_dir, reflect_spread, thread_id));
+
+        Ray sample_ray = Ray(idata.interPoint + offset, sample_dir);
+
+        refl_color += tracePrim(sample_ray,
+            attenuation * reflectance / reflect_samples, depth + 1, thread_id)
+            * reflectance / reflect_samples;
+
+      }
+    } else { // Non glossy
+      refl_color = tracePrim(refl_ray, attenuation * reflectance, depth + 1,
+          thread_id) * reflectance;
+    }
+    // SVART BEROR PÅ ATT DEN STUDSAR MOT SIG SJÄLV OCH ALLTID BLIR REFLECTIVE TILLS MAXDJUP
+    //mix with output
+    color = color * (1 - reflectance) + vec3(refl_color);
+  }
+
+
 
   return color;
 }

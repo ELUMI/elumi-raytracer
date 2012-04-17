@@ -294,6 +294,11 @@ int obj_parse_mtl_file(char *filename, list *material_list)
 		{
 			current_mtl->reflect = atof( strtok(NULL, " \t"));
 		}
+    //fresnel
+    else if( strequal(current_token, "f") && material_open)
+    {
+      current_mtl->fresnel = atof( strtok(NULL, " \t"));
+    }
 		//reflection spread
 		else if( strequal(current_token, "r_spread") && material_open)
 		{
