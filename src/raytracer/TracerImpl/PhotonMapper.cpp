@@ -254,6 +254,7 @@ vec4 PhotonMapper::shade(Ray incoming_ray,
   Material* mat = scene->getMaterialVector()[idata.material];
   vec3 l = getAmbient(incoming_ray, idata, thread_id, depth);
   vec3 color = mat->getDiffuse();
+  //return vec4(l,1);
   return vec4(l*color+mat->getEmissive(),1);
 }
 

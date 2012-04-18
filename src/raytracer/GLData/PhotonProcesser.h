@@ -31,6 +31,8 @@ private:
   size_t size;
   GLuint photonBuffer;
   GLuint vertexArrayObject;
+  GLuint vertexBuffer;
+  GLuint indexBuffer;
   vector<Photon>* photons;
 };
 }

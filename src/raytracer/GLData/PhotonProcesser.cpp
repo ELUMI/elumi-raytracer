@@ -13,6 +13,22 @@
 
 namespace raytracer {
 
+#define X .525731112119133606
+#define Z .850650808352039932
+
+static GLfloat icosahedron_vertices[12][3] = {
+   {-X, 0.0, Z}, {X, 0.0, Z}, {-X, 0.0, -Z}, {X, 0.0, -Z},
+   {0.0, Z, X}, {0.0, Z, -X}, {0.0, -Z, X}, {0.0, -Z, -X},
+   {Z, X, 0.0}, {-Z, X, 0.0}, {Z, -X, 0.0}, {-Z, -X, 0.0}
+};
+
+static GLint icosahedron_indices[20][3] = {
+   {0,4,1}, {0,9,4}, {9,5,4}, {4,5,8}, {4,8,1},
+   {8,10,1}, {8,3,10}, {5,3,8}, {5,2,3}, {2,7,3},
+   {7,10,3}, {7,6,10}, {7,11,6}, {11,0,6}, {0,1,6},
+   {6,1,10}, {9,0,11}, {9,11,2}, {9,2,5}, {7,2,11} };
+
+
 PhotonProcesser::PhotonProcesser(unsigned int width, unsigned int height) {
 //************************************
   // The loadShaderProgram and linkShaderProgam functions are defined in glutil.cpp and
@@ -24,6 +40,7 @@ PhotonProcesser::PhotonProcesser(unsigned int width, unsigned int height) {
   glBindAttribLocation(shader_program, 3, "power");
   glBindAttribLocation(shader_program, 4, "normal_tex");
   glBindAttribLocation(shader_program, 5, "depth_tex");
+  glBindAttribLocation(shader_program, 6, "vertex");
 
   glBindFragDataLocation(shader_program, 0, "ocolor");
   linkShaderProgram(shader_program);
@@ -78,6 +95,10 @@ PhotonProcesser::PhotonProcesser(unsigned int width, unsigned int height) {
 }
 
 PhotonProcesser::~PhotonProcesser() {
+  glDeleteVertexArrays(1,&vertexArrayObject);
+  glDeleteBuffers(1,&photonBuffer);
+  glDeleteBuffers(1,&vertexBuffer);
+  glDeleteBuffers(1,&indexBuffer);
   glDeleteFramebuffers(1,&fbo);
   glDeleteTextures(1,&color_tex);
   CHECK_GL_ERROR();
@@ -85,93 +106,48 @@ PhotonProcesser::~PhotonProcesser() {
 
 void PhotonProcesser::readPhotons(vector<Photon>& photons) {
   this->photons = &photons;
+
+  CHECK_GL_ERROR();
+
+  glGenVertexArrays(1, &vertexArrayObject);
+  glBindVertexArray(vertexArrayObject);
+
+  glGenBuffers(1, &vertexBuffer);
+  glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+  glBufferData(GL_ARRAY_BUFFER, 12*sizeof(GLfloat)*3, &(icosahedron_vertices[0][0]), GL_STATIC_DRAW);
+
+  glEnableVertexAttribArray(6);
+  glVertexAttribPointer(6, 3, GL_FLOAT, false/*normalized*/, 0/*stride*/, 0/*offset*/);
+
+  glGenBuffers(1, &indexBuffer);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, 20*sizeof(GLint)*3, &(icosahedron_indices[0][0]), GL_STATIC_DRAW);
+
+
   //make buffers
   glGenBuffers(1, &photonBuffer);
   glBindBuffer(GL_ARRAY_BUFFER, photonBuffer);
   glBufferData(GL_ARRAY_BUFFER, photons.size() * sizeof(Photon),
       photons.data(), GL_STATIC_DRAW);
 
-  CHECK_GL_ERROR();
 
-  glGenVertexArrays(1, &vertexArrayObject);
-  glBindVertexArray(vertexArrayObject);
   glBindBuffer(GL_ARRAY_BUFFER, photonBuffer);
-  glVertexAttribPointer(0, 3, GL_FLOAT, false/*normalized*/, sizeof(Photon)/*stride*/, (const GLvoid*)(0*sizeof(vec3))/*offset*/);
-  glVertexAttribPointer(1, 3, GL_FLOAT, false/*normalized*/, sizeof(Photon)/*stride*/, (const GLvoid*)(1*sizeof(vec3))/*offset*/);
-  glVertexAttribPointer(2, 3, GL_FLOAT, false/*normalized*/, sizeof(Photon)/*stride*/, (const GLvoid*)(2*sizeof(vec3))/*offset*/);
-  glVertexAttribPointer(3, 3, GL_FLOAT, false/*normalized*/, sizeof(Photon)/*stride*/, (const GLvoid*)(3*sizeof(vec3))/*offset*/);
-
   glEnableVertexAttribArray(0);
   glEnableVertexAttribArray(1);
   glEnableVertexAttribArray(2);
   glEnableVertexAttribArray(3);
+  glVertexAttribPointer(0, 3, GL_FLOAT, false/*normalized*/, sizeof(Photon)/*stride*/, (const GLvoid*)(0*sizeof(vec3))/*offset*/);
+  glVertexAttribPointer(1, 3, GL_FLOAT, false/*normalized*/, sizeof(Photon)/*stride*/, (const GLvoid*)(1*sizeof(vec3))/*offset*/);
+  glVertexAttribPointer(2, 3, GL_FLOAT, false/*normalized*/, sizeof(Photon)/*stride*/, (const GLvoid*)(2*sizeof(vec3))/*offset*/);
+  glVertexAttribPointer(3, 3, GL_FLOAT, false/*normalized*/, sizeof(Photon)/*stride*/, (const GLvoid*)(3*sizeof(vec3))/*offset*/);
+  glVertexAttribDivisor(0, 1);
+  glVertexAttribDivisor(1, 1);
+  glVertexAttribDivisor(2, 1);
+  glVertexAttribDivisor(3, 1);
+
 
   CHECK_GL_ERROR();
   size = photons.size();
-}
-
-void sphere_pointsize(vec3 _center, float radius, mat4 modelViewProjectionMatrix, int width, int height) {
-  //Quadrics papers
-
-  //get rows
-  vec4 MPV_r0 = row(modelViewProjectionMatrix,0); //vec4(modelViewProjectionMatrix[0][0], modelViewProjectionMatrix[1][0], modelViewProjectionMatrix[2][0], modelViewProjectionMatrix[3][0]);
-  vec4 MPV_r1 = row(modelViewProjectionMatrix,1); //vec4(modelViewProjectionMatrix[0][1], modelViewProjectionMatrix[1][1], modelViewProjectionMatrix[2][1], modelViewProjectionMatrix[3][1]);
-  vec4 MPV_r3 = row(modelViewProjectionMatrix,3); //vec4(modelViewProjectionMatrix[0][3], modelViewProjectionMatrix[1][3], modelViewProjectionMatrix[2][3], modelViewProjectionMatrix[3][3]);
-
-  //screen planes in parameter space
-  vec4 PMVT_c0, PMVT_c1, PMVT_c3;
-  PMVT_c0 = radius*MPV_r0;
-  PMVT_c0.w = dot(_center, vec3(MPV_r0)) + MPV_r0.w;
-
-  PMVT_c1 = radius*MPV_r1;
-  PMVT_c1.w = dot(_center, vec3(MPV_r1)) + MPV_r0.w;
-
-  PMVT_c3 = radius*MPV_r3;
-  PMVT_c3.w = dot(_center, vec3(MPV_r3)) + MPV_r0.w;
-
-  vec4 diag = vec4(1,1,1,-1); //parameter matrix
-  vec4 PMVTD_c0 = diag*PMVT_c0;
-  vec4 PMVTD_c1 = diag*PMVT_c1;
-  vec4 PMVTD_c3 = diag*PMVT_c3;
-
-  //cout << "\t" << PMVT_c0.x;
-  //cout << "\t" << PMVT_c1.y;
-
-  //solve two quadratic equations (x,y)
-  vec4 eqn;
-  eqn.x = dot(PMVTD_c3, PMVT_c0); //-b_x/2
-  eqn.z = dot(PMVTD_c0, PMVT_c0); //c_x
-
-  eqn.y = dot(PMVTD_c3, PMVT_c1); //-b_y/2
-  eqn.w = dot(PMVTD_c1, PMVT_c1); //c_y
-
-  cout << "\t" << eqn.z;
-  eqn = eqn * 1/dot(PMVTD_c3, PMVT_c3);
-  cout << "\t" << 1/dot(PMVTD_c3, PMVT_c3);
-  cout << "\t" << eqn.z;
-
-  cout << "\n";
-  //transformed vertex position
-  cout << "\t" << eqn.x;
-  cout << "\t" << eqn.y;
-  cout << "\t" << eqn.z;
-  cout << "\t" << eqn.w;
-  //gl_Position = vec4(eqn.x,eqn.y,0,1);
-
-  //radius (avoid division by zero)
-  vec2 nradius = vec2(eqn.x*eqn.x-eqn.z, eqn.y*eqn.y-eqn.w);
-
-  nradius = vec2(sqrt(nradius.x), sqrt(nradius.y));
-  //1/sqrt() is faster than sqrt(), and x/sqrt(x) = sqrt(x)
-  //if(nradius.x>0)
-  //  nradius.x *= 1/sqrt(nradius.x);
-  //if(nradius.y>0)
-  //  nradius.y *= 1/sqrt(nradius.y);
-
-  //pointsize
-  //nradius *= viewport_size;
-  cout << "\t" << glm::max(nradius.x*width*2, nradius.y*height*2);
-  cout << "\n";
 }
 
 void PhotonProcesser::render(Scene* scene, int width, int height, GLuint normal_tex, GLuint depth_tex, float radius, float scaling){
@@ -183,8 +159,6 @@ void PhotonProcesser::render(Scene* scene, int width, int height, GLuint normal_
   GLenum buffers_to_render[] = {GL_COLOR_ATTACHMENT0};
   glDrawBuffers(1,buffers_to_render);
 
-  CHECK_GL_ERROR();
-
   glViewport(0, 0, width, height);
   glPixelZoom(1,1);
   glRasterPos2f(-1,1);
@@ -192,8 +166,8 @@ void PhotonProcesser::render(Scene* scene, int width, int height, GLuint normal_
   glClearColor(0,0,0,0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glDisable(GL_ALPHA_TEST);
-  glEnable(GL_DEPTH_TEST);
-  glDisable(GL_CULL_FACE);
+  glDisable(GL_DEPTH_TEST);
+  glEnable(GL_CULL_FACE);
   glEnable(GL_BLEND);
   glBlendFunc (GL_ONE, GL_ONE);
   glBlendEquation(GL_FUNC_ADD);
@@ -205,46 +179,46 @@ void PhotonProcesser::render(Scene* scene, int width, int height, GLuint normal_
 
   glUseProgram(shader_program);
 
-  GLuint loc = glGetUniformLocation(shader_program, "modelViewProjectionMatrix");
-  mat4 viewMatrix = scene->getCamera().getViewMatrix();
-  glUniformMatrix4fv(loc, 1, GL_FALSE, value_ptr(viewMatrix));
-  sphere_pointsize(vec3(0,0,0), 1, viewMatrix, width, height);
+  {
+    GLuint loc = glGetUniformLocation(shader_program, "modelViewProjectionMatrix");
+    mat4 viewMatrix = scene->getCamera().getViewMatrix();
+    glUniformMatrix4fv(loc, 1, GL_FALSE, value_ptr(viewMatrix));
+    //sphere_pointsize(vec3(0,0,0), 1, viewMatrix, width, height);
 
-  loc = glGetUniformLocation(shader_program, "inverseModelViewProjectionMatrix");
-  viewMatrix = scene->getCamera().getViewportToModelMatrix(width, height);
-  glUniformMatrix4fv(loc, 1, GL_FALSE, value_ptr(viewMatrix));
+    loc = glGetUniformLocation(shader_program, "inverseModelViewProjectionMatrix");
+    viewMatrix = scene->getCamera().getViewportToModelMatrix(width, height);
+    glUniformMatrix4fv(loc, 1, GL_FALSE, value_ptr(viewMatrix));
 
-  loc = glGetUniformLocation(shader_program, "radius");
-  glUniform1f(loc, radius);
+    loc = glGetUniformLocation(shader_program, "radius");
+    glUniform1f(loc, radius);
 
-  loc = glGetUniformLocation(shader_program, "camera_position");
-  vec3 camera_position = scene->getCamera().getPosition();
-  glUniform3f(loc, camera_position.x, camera_position.y, camera_position.z);
+    loc = glGetUniformLocation(shader_program, "sz");
+    glUniform1f(loc, 0.1);
 
-  loc = glGetUniformLocation(shader_program, "scale");
-  glUniform1f(loc, scaling/float(size));
+    loc = glGetUniformLocation(shader_program, "camera_position");
+    vec3 camera_position = scene->getCamera().getPosition();
+    glUniform3f(loc, camera_position.x, camera_position.y, camera_position.z);
 
-  loc = glGetUniformLocation(shader_program, "width");
-  glUniform1f(loc, width);
+    loc = glGetUniformLocation(shader_program, "scale");
+    glUniform1f(loc, scaling/float(size));
 
-  loc = glGetUniformLocation(shader_program, "height");
-  glUniform1f(loc, height);
+    glEnable(GL_TEXTURE_2D);
+    setUniformSlow(shader_program, "depth_tex", 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, depth_tex);
+    setUniformSlow(shader_program, "normal_tex", 1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, normal_tex);
+
+    CHECK_GL_ERROR();
+  }
 
   CHECK_GL_ERROR();
-
-  setUniformSlow(shader_program, "depth_tex", 0);
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, depth_tex);
-  glEnable(GL_TEXTURE_2D);
-  setUniformSlow(shader_program, "normal_tex", 1);
-  glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_2D, normal_tex);
 
   glBindVertexArray(vertexArrayObject);
-  glDrawArrays(GL_POINTS, 0, size);
-
+  //glDrawElements(GL_TRIANGLES, 20*3, GL_UNSIGNED_INT, 0);
+  glDrawElementsInstanced(GL_TRIANGLES, 20*3, GL_UNSIGNED_INT, 0, size);
   glUseProgram(0);
-  CHECK_GL_ERROR();
 
   glDisable(GL_BLEND);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER,0); //Returns the default FBO to the DRAW location

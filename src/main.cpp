@@ -333,11 +333,6 @@ void drawDrawables(IDraw **drawables, size_t n) {
     for (size_t i = 0; i < n; ++i) {
       drawables[i]->drawWithView(view, loc);
     }
-
-    GLUquadricObj *quadobj;
-    quadobj = gluNewQuadric();
-    gluSphere(quadobj, 1.0, 10,10);
-    gluDeleteQuadric(quadobj);
     glUseProgram(0);
   } else if (settings->opengl_version < 3) {
     for (size_t i = 0; i < n; ++i) {

@@ -8,6 +8,7 @@ uniform sampler2D depth_tex;
 
 uniform float radius = 0.1;
 uniform float scale;
+uniform float sz = 0.1;
 uniform vec3 camera_position;
 
 uniform mat4 inverseModelViewProjectionMatrix;
@@ -25,10 +26,9 @@ float filterKernel(in vec3 offset, in vec3 normal, in float r) {
   //return 1/(M_PI*r*r); //simple filter kernel
 
   //advanced filter kernel (ISPM paper)
-  const float sz = 0.1;
   float dist = length(offset);
   float t = (dist / r) * (1 - dot(offset / dist, normal) * (r + sz*r) / sz);
-  float sigma = 0.4; //t=1,k<0.1 => sigma<0.45
+  float sigma = 0.3; //t=1,k<0.1 => sigma<0.45
   return 1/(M_PI*r*r) * exp(-t*t/(2*sigma*sigma));
 }
 
@@ -54,21 +54,21 @@ void main()
   p = inverseModelViewProjectionMatrix*p;
   p /= p.w;
 
-
   float d = length(vec3(p) - photon_position);
-  //if(d>radius)
-  //	discard;
+  if(d>radius)
+  	discard;
 
   vec3 normal = texelFetch(normal_tex, coord, 0).xyz;
-  float k = filterKernel(vec3(p)-photon_position, normal, radius);
+  float k = filterKernel(vec3(p)-photon_position, photon_normal, radius);
 
   vec3 camera_direction = normalize(vec3(p) - camera_position);
-  
+
   vec3 b = brdf(-photon_direction, camera_direction, normal);
   float a = max(0.0f, dot(photon_direction, normal));
+  float c = dot(photon_normal, normal);
   //ocolor = b * photon_power * a * k;
-  ocolor = b * photon_power * a * k * scale;
-  ocolor.b=1;
-  if(d>radius)
-    ocolor.r=1;
+  ocolor = b * a * photon_power * k * c * scale;
+  //if(d>radius)
+  //  ocolor = vec4(0,1,0,1);
+
 }
