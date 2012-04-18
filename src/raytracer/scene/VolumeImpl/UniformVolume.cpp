@@ -23,7 +23,7 @@ UniformVolume::~UniformVolume() {
 
 float UniformVolume::getTau(vec3 from, vec3 to) {
   float d = glm::distance(from, to);
-  return (absorption + scattering) * d;
+  return (absorption/* + scattering*/) * d;
 }
 
 OBB::IntervalData UniformVolume::getInterval(Ray ray) {

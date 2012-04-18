@@ -20,7 +20,9 @@ VolumeTracer::~VolumeTracer() {
 }
 
 float VolumeTracer::getIndividualLight(vec3 pos, ILight* light_source, int thread_id) {
-  float base_light = StandardTracer::getIndividualLight(pos, light_source, thread_id);
+  float base_light;
+  return StandardTracer::getIndividualLight(pos, light_source, thread_id);
+  //float base_light = StandardTracer::getIndividualLight(pos, light_source, thread_id);
   float light = base_light;
 
   std::vector<IVolume*> volumes = scene->getVolumes();
@@ -93,7 +95,8 @@ vec4 VolumeTracer::shade(Ray ray, IAccDataStruct::IntersectionData idata,
         vec3 w_out = normalize(-ray.getDirection());
         float p = volume->getPhase(w_in, w_out);
 
-        float Ld = getIndividualLight(pos, light, thread_id);
+        //float Ld = getIndividualLight(pos, light, thread_id);
+        float Ld = light->calcLight(datastruct, pos, thread_id);
 
         in_scattered += p * Ld * step_size;
 
