@@ -9,11 +9,12 @@
 #include "PhotonProcesser.h"
 #include "glutil.h"
 #include <glm/gtc/type_ptr.hpp> //value_ptr
+#include <glm/gtc/matrix_access.hpp> //value_ptr
 
 namespace raytracer {
 
 PhotonProcesser::PhotonProcesser(unsigned int width, unsigned int height) {
-  //************************************
+//************************************
   // The loadShaderProgram and linkShaderProgam functions are defined in glutil.cpp and
   // do exactly what we did in lab1 but are hidden for convenience
   shader_program = loadShaderProgram("data/gl_shaders/photon.vert", "data/gl_shaders/photon.frag");
@@ -109,7 +110,72 @@ void PhotonProcesser::readPhotons(vector<Photon>& photons) {
   size = photons.size();
 }
 
+void sphere_pointsize(vec3 _center, float radius, mat4 modelViewProjectionMatrix, int width, int height) {
+  //Quadrics papers
+
+  //get rows
+  vec4 MPV_r0 = row(modelViewProjectionMatrix,0); //vec4(modelViewProjectionMatrix[0][0], modelViewProjectionMatrix[1][0], modelViewProjectionMatrix[2][0], modelViewProjectionMatrix[3][0]);
+  vec4 MPV_r1 = row(modelViewProjectionMatrix,1); //vec4(modelViewProjectionMatrix[0][1], modelViewProjectionMatrix[1][1], modelViewProjectionMatrix[2][1], modelViewProjectionMatrix[3][1]);
+  vec4 MPV_r3 = row(modelViewProjectionMatrix,3); //vec4(modelViewProjectionMatrix[0][3], modelViewProjectionMatrix[1][3], modelViewProjectionMatrix[2][3], modelViewProjectionMatrix[3][3]);
+
+  //screen planes in parameter space
+  vec4 PMVT_c0, PMVT_c1, PMVT_c3;
+  PMVT_c0 = radius*MPV_r0;
+  PMVT_c0.w = dot(_center, vec3(MPV_r0)) + MPV_r0.w;
+
+  PMVT_c1 = radius*MPV_r1;
+  PMVT_c1.w = dot(_center, vec3(MPV_r1)) + MPV_r0.w;
+
+  PMVT_c3 = radius*MPV_r3;
+  PMVT_c3.w = dot(_center, vec3(MPV_r3)) + MPV_r0.w;
+
+  vec4 diag = vec4(1,1,1,-1); //parameter matrix
+  vec4 PMVTD_c0 = diag*PMVT_c0;
+  vec4 PMVTD_c1 = diag*PMVT_c1;
+  vec4 PMVTD_c3 = diag*PMVT_c3;
+
+  //cout << "\t" << PMVT_c0.x;
+  //cout << "\t" << PMVT_c1.y;
+
+  //solve two quadratic equations (x,y)
+  vec4 eqn;
+  eqn.x = dot(PMVTD_c3, PMVT_c0); //-b_x/2
+  eqn.z = dot(PMVTD_c0, PMVT_c0); //c_x
+
+  eqn.y = dot(PMVTD_c3, PMVT_c1); //-b_y/2
+  eqn.w = dot(PMVTD_c1, PMVT_c1); //c_y
+
+  cout << "\t" << eqn.z;
+  eqn = eqn * 1/dot(PMVTD_c3, PMVT_c3);
+  cout << "\t" << 1/dot(PMVTD_c3, PMVT_c3);
+  cout << "\t" << eqn.z;
+
+  cout << "\n";
+  //transformed vertex position
+  cout << "\t" << eqn.x;
+  cout << "\t" << eqn.y;
+  cout << "\t" << eqn.z;
+  cout << "\t" << eqn.w;
+  //gl_Position = vec4(eqn.x,eqn.y,0,1);
+
+  //radius (avoid division by zero)
+  vec2 nradius = vec2(eqn.x*eqn.x-eqn.z, eqn.y*eqn.y-eqn.w);
+
+  nradius = vec2(sqrt(nradius.x), sqrt(nradius.y));
+  //1/sqrt() is faster than sqrt(), and x/sqrt(x) = sqrt(x)
+  //if(nradius.x>0)
+  //  nradius.x *= 1/sqrt(nradius.x);
+  //if(nradius.y>0)
+  //  nradius.y *= 1/sqrt(nradius.y);
+
+  //pointsize
+  //nradius *= viewport_size;
+  cout << "\t" << glm::max(nradius.x*width*2, nradius.y*height*2);
+  cout << "\n";
+}
+
 void PhotonProcesser::render(Scene* scene, int width, int height, GLuint normal_tex, GLuint depth_tex, float radius, float scaling){
+
   CHECK_GL_ERROR();
   // set rendering destination to FBO
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
@@ -142,6 +208,7 @@ void PhotonProcesser::render(Scene* scene, int width, int height, GLuint normal_
   GLuint loc = glGetUniformLocation(shader_program, "modelViewProjectionMatrix");
   mat4 viewMatrix = scene->getCamera().getViewMatrix();
   glUniformMatrix4fv(loc, 1, GL_FALSE, value_ptr(viewMatrix));
+  sphere_pointsize(vec3(0,0,0), 1, viewMatrix, width, height);
 
   loc = glGetUniformLocation(shader_program, "inverseModelViewProjectionMatrix");
   viewMatrix = scene->getCamera().getViewportToModelMatrix(width, height);
@@ -156,6 +223,13 @@ void PhotonProcesser::render(Scene* scene, int width, int height, GLuint normal_
 
   loc = glGetUniformLocation(shader_program, "scale");
   glUniform1f(loc, scaling/float(size));
+
+  loc = glGetUniformLocation(shader_program, "width");
+  glUniform1f(loc, width);
+
+  loc = glGetUniformLocation(shader_program, "height");
+  glUniform1f(loc, height);
+
   CHECK_GL_ERROR();
 
   setUniformSlow(shader_program, "depth_tex", 0);

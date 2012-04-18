@@ -42,7 +42,7 @@ private:
 	glm::vec3 m_direction;
 	glm::vec3 m_up_vector;
 
-	float m_fov;
+	float m_fov; //should be stored in radians
 	float m_aspect_ratio;
 
 };

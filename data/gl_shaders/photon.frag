@@ -19,6 +19,8 @@ in vec3 photon_power;
 
 out vec3 ocolor;
 
+#define M_PI 3.14159265358979323846f
+
 float filterKernel(in vec3 offset, in vec3 normal, in float r) {
   //return 1/(M_PI*r*r); //simple filter kernel
 
@@ -27,7 +29,7 @@ float filterKernel(in vec3 offset, in vec3 normal, in float r) {
   float dist = length(offset);
   float t = (dist / r) * (1 - dot(offset / dist, normal) * (r + sz*r) / sz);
   float sigma = 0.4; //t=1,k<0.1 => sigma<0.45
-  return exp(-t*t/(2*sigma*sigma));
+  return 1/(M_PI*r*r) * exp(-t*t/(2*sigma*sigma));
 }
 
 vec3 brdf(in vec3 incoming_direction,
@@ -54,8 +56,8 @@ void main()
 
 
   float d = length(vec3(p) - photon_position);
-  if(d>radius)
-  	discard;
+  //if(d>radius)
+  //	discard;
 
   vec3 normal = texelFetch(normal_tex, coord, 0).xyz;
   float k = filterKernel(vec3(p)-photon_position, normal, radius);
@@ -66,5 +68,7 @@ void main()
   float a = max(0.0f, dot(photon_direction, normal));
   //ocolor = b * photon_power * a * k;
   ocolor = b * photon_power * a * k * scale;
-
+  ocolor.b=1;
+  if(d>radius)
+    ocolor.r=1;
 }

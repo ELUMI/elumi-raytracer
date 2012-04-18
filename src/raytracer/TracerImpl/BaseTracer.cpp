@@ -130,7 +130,6 @@ void BaseTracer::initTracing()
       << "\" z=\"" << scene->getCamera().getUpVector().z << "\"/>\n";
 }
 
-
 void BaseTracer::initThreads(int nr_threads) {
   // Init shadow caches
   for (size_t i = 0; i < lights->size(); ++i) {
