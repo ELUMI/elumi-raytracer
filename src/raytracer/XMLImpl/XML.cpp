@@ -161,6 +161,9 @@ Scene* XML::importScene(const char* fileName) {
     //Falloff
     string falloff = light.attribute("falloff").value();
 
+    //visible
+    bool visible = light.attribute("visible").as_int();
+
     if(falloff.compare("Quadratic") == 0) {
       ftype = ILight::QUADRATIC;
     } else if(falloff.compare("Linear") == 0) {
@@ -211,7 +214,7 @@ Scene* XML::importScene(const char* fileName) {
       newLight->setPosition(pos);
       newLight->setDistanceFalloff(ftype);
 
-      if(type.compare("Area") == 0) {
+      if(type.compare("Area") == 0 && visible) {
         reinterpret_cast<AreaLight*>(newLight)->addPlane(scene); //add arealight to datastruct
       }
 

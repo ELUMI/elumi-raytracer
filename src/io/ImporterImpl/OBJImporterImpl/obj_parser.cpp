@@ -46,6 +46,7 @@ void obj_set_material_defaults(obj_material *mtl)
 	mtl->emissive[1] = 0.0; //?
 	mtl->emissive[2] = 0.0; //?
 	mtl->reflect = 0.0;
+	mtl->fresnel = 0.0;
 	mtl->trans[0] = 1;
 	mtl->trans[1] = 1;
 	mtl->trans[2] = 1;
@@ -57,6 +58,11 @@ void obj_set_material_defaults(obj_material *mtl)
   mtl->norm_filename[0] = '\0';
   mtl->ks_filename[0] = '\0';
   mtl->d_filename[0] = '\0';
+  mtl->reflect_spread = 0.0;
+  mtl->reflect_samples = 0.0;
+  mtl->refract = 0.0;
+  mtl->refract_spread = 0.0;
+  mtl->refract_samples = 0.0;
 }
 
 int obj_parse_vertex_index(int *vertex_index, int *texture_index, int *normal_index)

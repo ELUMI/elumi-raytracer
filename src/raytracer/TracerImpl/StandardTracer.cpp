@@ -239,8 +239,11 @@ inline vec3 StandardTracer::reflection_refraction(Ray incoming_ray,
   if (material->getFresnelIndex() != 0.0f) {
   //if (settings->use_fresnel) {
     //Schlick's approx.
-    // float fresnel_refl = reflectance + (1 - reflectance) * glm::pow(
-    // clamp(1.0f - glm::dot(incoming_ray.getDirection(), normal)), 5.0f);
+//    float fresnel_refl = reflectance + (1 - reflectance) * glm::pow(
+//    clamp(1.0f - abs(glm::dot(-incoming_ray.getDirection(), normal))), 5.0f);
+//
+//    cout << fresnel_refl << "\n";
+
 
     float c = abs(glm::dot(incoming_ray.getDirection(), normal));
     float g = glm::sqrt( material->getFresnelIndex()*material->getFresnelIndex() + c*c -1 );
@@ -255,7 +258,7 @@ inline vec3 StandardTracer::reflection_refraction(Ray incoming_ray,
   }
 
   /**** REFRACTION RAY ****/
-  if (transmittance > 0.0f && reflectance < 1.0f) {
+  if (transmittance > 0.0f /*&& reflectance < 1.0f*/) {
 
     float refract_spread = material->getRefractionSpread();
     int refract_samples = material->getRefractionSamples();
