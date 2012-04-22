@@ -20,14 +20,14 @@ public:
 
   IntersectionData findClosestIntersection(Ray ray);
   void setData(Triangle** triangles,size_t size,AABB aabb);
-  vector<AABB*>& getAABBList(){return aabb_list;}
+  vector<AABB>& getAABBList(){return aabb_list;}
 private:
   struct HashedTriangle {
     size_t hash;
     Triangle* triangle;
   };
 
-  vector<AABB*> aabb_list;
+  vector<AABB> aabb_list;
   HashPoint<HashedTriangle> hashpoint;
 };
 

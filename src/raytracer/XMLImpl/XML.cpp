@@ -167,6 +167,9 @@ Scene* XML::importScene(const char* fileName) {
     //Falloff
     string falloff = light.attribute("falloff").value();
 
+    //visible
+    bool visible = light.attribute("visible").as_int();
+
     if(falloff.compare("Quadratic") == 0) {
       ftype = ILight::QUADRATIC;
     } else if(falloff.compare("Linear") == 0) {
@@ -209,7 +212,6 @@ Scene* XML::importScene(const char* fileName) {
           xml_axis2.attribute("z").as_float());
 
       newLight = new AreaLight(pos,axis1,axis2,samples1,samples2);
-      reinterpret_cast<AreaLight*>(newLight)->addPlane(scene); //add arealight to datastruct
     }
 
     if(newLight != NULL) {
@@ -218,8 +220,11 @@ Scene* XML::importScene(const char* fileName) {
       newLight->setPosition(pos);
       newLight->setDistanceFalloff(ftype);
 
-      ILight* array[] = {newLight};
+      if(type.compare("Area") == 0 && visible) {
+        reinterpret_cast<AreaLight*>(newLight)->addPlane(scene); //add arealight to datastruct
+      }
 
+      ILight* array[] = {newLight};
       scene->loadLights(array,1);
     }
   }

@@ -17,7 +17,7 @@ AdvancedTracer::~AdvancedTracer() {
 
 void AdvancedTracer::tracePhoton(Photon p, int thread_id)
 {
-  if(!bounce(p,false)) //first bounce should not be saved
+  if(!bounce(p, thread_id, false)) //first bounce should not be saved
     return;
   for(size_t k = 0;k < settings->max_recursion_depth;++k){
     if(abort)

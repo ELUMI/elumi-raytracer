@@ -38,5 +38,4 @@ vector<Photon*> HashPM::gatherFromR(vec3 point, float r) const {
 void HashPM::balance(){
 }
 
-
 }

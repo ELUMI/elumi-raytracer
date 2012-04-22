@@ -244,7 +244,7 @@ void Renderer::render() {
   if(abort)
     return;
   timer.stop();
-  cout << timer.format(2);
+  cout << timer.format(2) << endl;
 }
 
 float Renderer::renderComplete() {

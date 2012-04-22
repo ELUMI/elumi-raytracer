@@ -162,6 +162,7 @@ void BaseTracer::traceImage(float* color_buffer) {
   }
   delete pattern;
 }
+
 void BaseTracer::traceImageThread(int thread_id) {
   // Synchronize work
   int my_batch = 0;

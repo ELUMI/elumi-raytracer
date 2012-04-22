@@ -20,10 +20,10 @@ ArrayDataStruct::ArrayDataStruct(int size) {
 //  triangles.reserve(size);
 }
 ArrayDataStruct::~ArrayDataStruct() {
-
+  delete[] ArrayDataStruct::triangles;
 }
 
-IAccDataStruct::IntersectionData 
+IAccDataStruct::IntersectionData
 ArrayDataStruct::findClosestIntersection(Ray ray) {
   vec3 o = ray.getPosition();
   vec3 d = ray.getDirection();
@@ -47,7 +47,7 @@ ArrayDataStruct::findClosestIntersection(Ray ray) {
 
     vec3 dxe2 = cross(d, e2);
     vec3 sxe1 = cross(s, e1);
-    vec3 res = ( 1.0f /  dot(dxe2, e1) ) * 
+    vec3 res = ( 1.0f /  dot(dxe2, e1) ) *
       vec3( dot(sxe1, e2), dot(dxe2, s), dot(sxe1, d) );
 
     float t = res.x;
@@ -112,7 +112,7 @@ void ArrayDataStruct::setData(Triangle** triangles,size_t size,AABB aabb) {
   }
   ArrayDataStruct::size = size;
   ArrayDataStruct::aabb = aabb;
-  aabb_list.push_back(&(ArrayDataStruct::aabb));
+  aabb_list.push_back(ArrayDataStruct::aabb);
 }
 
 }
