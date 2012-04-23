@@ -18,7 +18,7 @@ TestHeightMapDataStruct::TestHeightMapDataStruct() {
   image = ilGenImage();
   ilBindImage(image);
 
-  ilLoadImage("heightmap.png");
+  ilLoadImage("heightmap2.png");
 
   if(ilGetError() == IL_NO_ERROR) {
     cout << "Heightmap loaded" << endl;

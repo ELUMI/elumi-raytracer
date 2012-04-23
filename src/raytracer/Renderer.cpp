@@ -64,6 +64,7 @@ void Renderer::init() {
     cout << "Using base tracer\n";
     break;
   case 2:
+
   default:
     m_tracer = new StandardTracer(m_scene);
     cout << "Using standard tracer\n";
