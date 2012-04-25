@@ -96,21 +96,23 @@ bool PhotonMapper::bounce(Photon& p, int thread_id, bool store) {
   Material* mat = scene->getMaterialVector()[idata.material];
 
   float reflection = mat->getReflection()/3;
-  float refraction = mat->getReflection()/3;
+  //float refraction = mat->getRefrection()/3;
+  float transmittance = (1 - mat->getOpacity())/3;
   float absorbtion = 1/3;
-  float diffuse    = 1 - reflection - refraction - absorbtion;
+  float diffuse    = 1 - reflection - transmittance - absorbtion;
   vec3 outgoing;
 
-  assert(reflection <= 1 && refraction <= 1 && absorbtion <= 1 && diffuse <= 1);
-  assert(reflection+refraction+diffuse+absorbtion==1.0f);
+  assert(reflection <= 1 && transmittance <= 1 && absorbtion <= 1 && diffuse <= 1);
+  assert(reflection >= 0 && transmittance >= 0 && absorbtion >= 0 && diffuse >= 0);
+  assert(reflection+transmittance+diffuse+absorbtion==1.0f);
 
   //russian roulette
   float rand = gen_random_float(thread_id);
   if (rand < reflection) {
     outgoing = glm::reflect(p.direction, p.normal);
     p.power *= mat->getSpecular();
-    //return false;
-  } else if (rand < reflection+refraction) {
+    return false;
+  } else if (rand < reflection+transmittance) {
     const float refraction_sign = glm::sign(
         glm::dot(p.normal, p.direction));
     const vec3 refr_normal = -p.normal * refraction_sign;
@@ -119,10 +121,11 @@ bool PhotonMapper::bounce(Photon& p, int thread_id, bool store) {
       eta = 1 / eta;
     outgoing = glm::refract(p.direction, refr_normal, eta);
     //p.power *= mat->getDiffuse();
-  } else if(rand < reflection+refraction+diffuse) {  //diffuse interreflection
+    //return false;
+  } else if(rand < reflection+transmittance+diffuse) {  //diffuse interreflection
     outgoing = gen_random_hemisphere(p.normal, thread_id);
     p.power *= mat->getDiffuse();
-    //return false;
+    return false;
   } else { //absorbtion
     return false;
   }
@@ -137,6 +140,8 @@ bool PhotonMapper::bounce(Photon& p, int thread_id, bool store) {
 
 void PhotonMapper::tracePhoton(Photon p, int thread_id)
 {
+  if(!bounce(p, thread_id, false))
+    return;
   for(size_t k = 0;k < settings->max_recursion_depth;++k){
     if(abort)
       break;
