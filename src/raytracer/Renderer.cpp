@@ -243,6 +243,9 @@ void Renderer::render() {
 
   if(abort)
     return;
+
+  tonemapImage(true);
+
   timer.stop();
   cout << timer.format(2) << endl;
 }

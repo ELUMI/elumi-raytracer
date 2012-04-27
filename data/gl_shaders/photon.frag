@@ -32,11 +32,11 @@ float filterKernel(in vec3 offset, in vec3 normal, in float r) {
   return 1/(M_PI*r*r) * exp(-t*t/(2*sigma*sigma));
 }
 
-vec3 brdf(in vec3 incoming_direction,
+float brdf(in vec3 incoming_direction,
     in vec3 outgoing_direction, in vec3 normal)
 {
   //diffuse
-  vec3 color = max(0.0f, dot(-incoming_direction, normal));
+  float color = max(0.0f, dot(-incoming_direction, normal));
 
   //specular
   //vec3 h = normalize(-outgoing_direction - incoming_direction);
@@ -63,7 +63,7 @@ void main()
 
   vec3 camera_direction = normalize(vec3(p) - camera_position);
 
-  vec3 b = brdf(-photon_direction, camera_direction, normal);
+  float b = brdf(-photon_direction, camera_direction, normal);
   float a = max(0.0f, dot(photon_direction, normal));
   float c = dot(photon_normal, normal);
   //ocolor = b * photon_power * a * k;

@@ -1,4 +1,4 @@
-#version 110
+#version 130
 
 in vec3 direction; //pointing away from position, by convention
 in vec3 position;
