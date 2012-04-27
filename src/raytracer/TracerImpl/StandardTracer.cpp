@@ -122,7 +122,7 @@ vec3 StandardTracer::brdf(vec3 incoming_direction,
   return color + specular;
 }
 
-vec2 StandardTracer::getTextureCoordinates(int texture_index,
+vec2 StandardTracer::getTextureCoordinates(int texture_index, Material* material,
     IAccDataStruct::IntersectionData idata, vec3 displacement) {
 
   vec2 texture_coordinates = vec2();
@@ -131,9 +131,7 @@ vec2 StandardTracer::getTextureCoordinates(int texture_index,
   if(texture_index != -1){
     Texture *texture = scene->getTextureAt(texture_index);
     if(true){
-      texture_coordinates = texture->getUVCoordinates(p/7.0f,idata.normal);
-      //texture_coordinates = texture->getUVCoordinatesFromCylinder(idata.normal, idata.interPoint,YAXIS);
-      //texture_coordinates = texture->getUVCoordinatesFromSphere(idata.normal);
+      texture_coordinates = texture->getUVCoordinates(p*material->getScale(),idata.normal, 1.0, material->getProjector(),YAXIS);
     }else{
       //We have texture coordinates
       texture_coordinates = idata.texcoord;
@@ -144,8 +142,6 @@ vec2 StandardTracer::getTextureCoordinates(int texture_index,
 }
 
 vec3 StandardTracer::getParallax(Material* material,IAccDataStruct::IntersectionData idata,vec2 tex_coords) {
-  //Parallax mapping
-
   if(material->getBumpMap() != -1) {
     Texture* bump_map = scene->getTextureAt(material->getBumpMap());
     float height = glm::length(bump_map->getColorAt(tex_coords));
@@ -168,8 +164,7 @@ vec3 StandardTracer::getTextureColor(Material* material,
     return material->getDiffuse();
   } else {
     Texture* texture = scene->getTextureAt(material->getDiffuseMap());
-
-    return texture->getColorAt(tex_coords,MIRROR);
+    return texture->getColorAt(tex_coords,material->getCorresponder());
   }
   return vec3();
 }
@@ -191,7 +186,6 @@ inline vec3 StandardTracer::reflection_refraction(Ray incoming_ray,
   if(material->getTransparencyMap() != -1) {
     Texture* transparencymap = scene->getTextureAt(material->getTransparencyMap());
     transmittance = glm::length(transparencymap->getColorAt(tex_coords));
-    cout << transmittance << endl;
   }
 
   // REFRACTION_SIGN: //missledande namn, tecknet är vilket håll offsetten typ förskjuts
@@ -199,6 +193,11 @@ inline vec3 StandardTracer::reflection_refraction(Ray incoming_ray,
   // Ray leaves mesh => 1
   const float refraction_sign = glm::sign(glm::dot(normal, incoming_ray.getDirection()));
   const vec3 refr_normal = -normal * refraction_sign;
+
+  if(material->getReflectionMap() != -1) {
+    Texture* reflectionmap = scene->getTextureAt(material->getReflectionMap());
+    reflectance = glm::length(reflectionmap->getColorAt(tex_coords));
+  }
 
   /**** REFLECTION RAY ****/
   if(reflectance > 0.0f){
@@ -323,38 +322,37 @@ vec3 StandardTracer::getLighting(
     if(light->getFalloffType() == ILight::NONE){
       //do nothing, handled in getAmbient()
     }else{
-
-      float s = 1.0f;
-
-      if(material->getBumpMap() != -1) {
-        vec2 t1 = getTextureCoordinates(material->getBumpMap(),idata,parallax);
-        Texture* bump_map = scene->getTextureAt(material->getBumpMap());
-        float height = glm::length(bump_map->getColorAt(t1));
-
-        vec3 parallax = normalize(light->getPosition()-idata.interPoint);
-
-        parallax = -height*faceforward(parallax,vec3(0,1,0),idata.normal)/(float)(bump_map->getWidth());
-
-        vec2 t2;
-
-        for(float i = 1; i <= 5; i++) {
-
-          vec3 p = parallax * i;
-
-          t2 = getTextureCoordinates(material->getBumpMap(),idata,parallax+p);
-          float h = glm::length(bump_map->getColorAt(t2));
-
-          if (p.y < h/255.0f) {
-            s -= 0.2f;
-          }
-        }
-
-        s = glm::clamp(s,0.0f,1.0f);
-      }
-
       /**** NON AMBIENT LIGHT, CALCULATE SHADOW RAYS ***/
       float in_light = light->calcLight(datastruct, idata.interPoint, thread_id);
       if(in_light > 0.0f){
+
+        float s = 1.0f;
+
+//        if(material->getBumpMap() != -1) {
+//          vec2 t1 = getTextureCoordinates(material->getBumpMap(),material, idata,parallax);
+//          Texture* bump_map = scene->getTextureAt(material->getBumpMap());
+//          float h0 = glm::length(bump_map->getColorAt(t1));
+//
+//          vec3 view = normalize(light->getPosition()-idata.interPoint);
+//          view = -normalize(faceforward(view,vec3(0,1,0),idata.normal));
+//
+//          float bias = 0.5f;
+//
+//          for(float i = 2; i <= 5; i++) {
+//
+//            vec3 p = view *  i;
+//            vec3 p_new = normalize(faceforward(p,idata.normal,vec3(0,1,0)));
+//
+//            vec2 t2 = getTextureCoordinates(material->getBumpMap(),material,idata,p_new);
+//            float h = glm::length(bump_map->getColorAt(t2));
+//
+//            if (p.y*bias + h0 < h)
+//              s -= 0.2f;
+//          }
+//          s = glm::clamp(s,0.0f,1.0f);
+//        }
+
+
         // NOT ENTIRELY IN SHADOW! SHADE!
         Ray light_ray = Ray::generateRay(light->getPosition(), idata.interPoint);
         color += s*light->getColor() * in_light * brdf(light_ray.getDirection(), incoming_ray.getDirection(), normalize(normal+perturbed_normal), material, texture_color);
@@ -371,23 +369,6 @@ vec4 StandardTracer::shade(Ray incoming_ray,
 {
   if(idata.missed()){
     // No intersection
-
-    //    vec3 light_color = vec3(0,0,0);
-    //
-    //    for(unsigned int i=0; i<lights->size(); ++i) {
-    //      ILight* light  = lights->at(i);
-    //      light_color += light->getColor();
-    //      Ray light_ray = Ray::generateRay(light->getPosition(), scene->getCamera().getPosition());
-    //      vec3 l = normalize(light_ray.getDirection());
-    //      vec3 r = normalize(incoming_ray.getDirection());
-    //      float li = dot(l,r);
-    //      light_color *= li*li;
-    //      //vec3 lc = light->getPosition()-scene->getCamera().getPosition();
-    //      //light_color *= light->getIntensity(lc.length());
-    //    }
-    //files
-    //    return settings->background_color + vec4(light_color.r,light_color.g,light_color.b,1.0f);
-
     if (using_environment_map)
       return vec4(scene->getEnvironmentMap()->getColor(incoming_ray), 1.0f);
     return settings->background_color;
@@ -398,9 +379,9 @@ vec4 StandardTracer::shade(Ray incoming_ray,
   vec3 normal = idata.normal;
   vec3 color = material->getEmissive();
 
-  vec2 tex_coords = getTextureCoordinates(material->getDiffuseMap(),idata,vec3(0,0,0));
+  vec2 tex_coords = getTextureCoordinates(material->getDiffuseMap(),material,idata,vec3(0,0,0));
   vec3 parallax = getParallax(material,idata,tex_coords);
-  tex_coords = getTextureCoordinates(material->getDiffuseMap(),idata,parallax);
+  tex_coords = getTextureCoordinates(material->getDiffuseMap(),material,idata,parallax);
 
   color += getAmbient(incoming_ray, idata, thread_id);
   color += getLighting(incoming_ray, idata, normal, material, tex_coords, thread_id, parallax);
