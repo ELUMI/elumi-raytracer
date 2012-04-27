@@ -16,7 +16,9 @@ namespace raytracer {
 
 enum Axis { XAXIS, YAXIS, ZAXIS };
 
-enum Corresponder { REPEAT, MIRROR, CLAMP };
+enum Projector { CUBE, PLANE, SPHERE, CYLINDER };
+
+enum Corresponder { REPEAT, MIRROR, CLAMP, BORDER };
 
 class Texture {
 public:
@@ -38,11 +40,8 @@ public:
 	vec3 getColorAt(vec2 coords, vec3 border_color, float scale); //Border corresponder
 	vec3 getInterpolatedColor(vec2 coords);
 	vec2 getUVCoordinates(vec3 point, vec3 v1v0, vec3 v2v0);
-	vec2 getUVCoordinates(vec3 point, Axis axis);
-	vec2 getUVCoordinates(vec3 position, vec3 normal);
-	vec2 getUVCoordinatesFromSphere(vec3 normal);
-	vec2 getUVCoordinatesFromSphere(vec3 normal, Axis axis);
-	vec2 getUVCoordinatesFromCylinder(vec3 normal, vec3 position, Axis axis);
+	vec2 getUVCoordinates(vec3 position, vec3 normal, double scale, Projector projector, Axis axis);
+
 	void addMipmap();
 
 private:
@@ -50,6 +49,11 @@ private:
 	vec3 clampImage(vec2 coords);
 	vec3 mirrorImage(vec2 coords);
 
+	//Projector functions
+	vec2 cubeMapping(vec3 position, vec3 normal);
+	vec2 planeMapping(vec3 point, Axis axis);
+	vec2 sphereMapping(vec3 normal, Axis axis);
+	vec2 cylinderMapping(vec3 normal, vec3 position, Axis axis);
 
   int width, height;
   unsigned char* data;

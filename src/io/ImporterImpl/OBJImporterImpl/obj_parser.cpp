@@ -56,7 +56,12 @@ void obj_set_material_defaults(obj_material *mtl)
 	mtl->bump_filename[0] = '\0';
   mtl->norm_filename[0] = '\0';
   mtl->ks_filename[0] = '\0';
+  mtl->r_filename[0] = '\0';
   mtl->d_filename[0] = '\0';
+  mtl->projector = 0.0;
+  mtl->scale = 1.0;
+  mtl->corresponder = 0.0;
+  mtl->relief = false;
 }
 
 int obj_parse_vertex_index(int *vertex_index, int *texture_index, int *normal_index)
@@ -352,6 +357,31 @@ int obj_parse_mtl_file(char *filename, list *material_list)
 		else if( strequal(current_token, "map_Ks") && material_open)
 		{
 		  strncpy(current_mtl->ks_filename, strtok(NULL, " \t"), OBJ_FILENAME_LENGTH);
+		}
+		//Reflection map
+		else if( strequal(current_token, "map_R") && material_open)
+		{
+		  strncpy(current_mtl->r_filename, strtok(NULL, " \t"), OBJ_FILENAME_LENGTH);
+		}
+		//Projector
+		else if( strequal(current_token, "projector") && material_open)
+		{
+		  current_mtl->projector= atof( strtok(NULL, " \t"));
+		}
+		//Corresponder
+		else if( strequal(current_token, "corresponder") && material_open)
+		{
+		  current_mtl->corresponder= atof( strtok(NULL, " \t"));
+		}
+		//Scale
+		else if( strequal(current_token, "scale") && material_open)
+		{
+		  current_mtl->scale = atof( strtok(NULL, " \t"));
+		}
+		//Parallax
+		else if( strequal(current_token, "relief") && material_open)
+		{
+		  current_mtl->relief = true;
 		}
 		else
 		{

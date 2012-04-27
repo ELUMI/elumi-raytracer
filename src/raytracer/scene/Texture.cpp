@@ -79,8 +79,28 @@ vec2 Texture::getUVCoordinates(vec3 position, vec3 v1v0, vec3 v2v0) {
   return coords;
 }
 
+vec2 Texture::getUVCoordinates(vec3 position, vec3 normal, double scale, Projector projector, Axis axis) {
+  switch (projector) {
+    case PLANE:
+      return planeMapping(position, axis);
+      break;
+    case CUBE:
+      return cubeMapping(position, normal);
+      break;
+    case SPHERE:
+      return sphereMapping(normal,axis);
+      break;
+    case CYLINDER:
+      return cylinderMapping(normal,position, axis);
+      break;
+    default:
+      return cubeMapping(position, normal);
+      break;
+  }
+}
+
 //Get UV-coordinates by dropping one axis
-vec2 Texture::getUVCoordinates(vec3 position, Axis axis) {
+vec2 Texture::planeMapping(vec3 position, Axis axis) {
   switch (axis) {
     case XAXIS:
       return vec2(position.y,position.z);
@@ -97,8 +117,7 @@ vec2 Texture::getUVCoordinates(vec3 position, Axis axis) {
   }
 }
 
-vec2 Texture::getUVCoordinates(vec3 position, vec3 normal) {
-
+vec2 Texture::cubeMapping(vec3 position, vec3 normal) {
   float x = abs(normal.x);
   float y = abs(normal.y);
   float z = abs(normal.z);
@@ -112,7 +131,7 @@ vec2 Texture::getUVCoordinates(vec3 position, vec3 normal) {
   }
 }
 
-vec2 Texture::getUVCoordinatesFromSphere(vec3 normal, Axis axis) {
+vec2 Texture::sphereMapping(vec3 normal, Axis axis) {
 
   normal = normalize(normal);
 
@@ -132,7 +151,7 @@ vec2 Texture::getUVCoordinatesFromSphere(vec3 normal, Axis axis) {
   }
 }
 
-vec2 Texture::getUVCoordinatesFromCylinder(vec3 normal, vec3 position, Axis axis) {
+vec2 Texture::cylinderMapping(vec3 normal, vec3 position, Axis axis) {
   float y = round(position.y * 100000.0f)/100000.0f;
   vec2 p;
 
@@ -156,27 +175,15 @@ vec2 Texture::getUVCoordinatesFromCylinder(vec3 normal, vec3 position, Axis axis
   }
 }
 
-vec2 Texture::getUVCoordinatesFromSphere(vec3 normal) {
-  return getUVCoordinatesFromSphere(normal, ZAXIS);
-}
-
 vec3 Texture::getColorAt(vec2 coords) {
-  return repeatImage(coords);
+  //return repeatImage(coords);
+  return getColorAt(width*coords.u,height*coords.v);
 }
 
 vec3 Texture::repeatImage(vec2 coords) {
-  int x_coord,y_coord;
-  if(coords.x < 0) {
-    x_coord = width-1+(int)(coords.x*(width))%width;
-  } else {
-    x_coord = (int)(coords.x*(width))%width;
-  }
-  if(coords.y < 0) {
-    y_coord = height-1+(int)(coords.y*(height))%height;
-  } else {
-    y_coord = (int)(coords.y*(height))%height;
-  }
-  return getColorAt(x_coord,y_coord);
+  int x = ((int)((coords.x-floor(coords.x))*width))%width;
+  int y = ((int)((coords.y-floor(coords.y))*height))%height;
+  return getColorAt(x,y);
 }
 
 vec3 Texture::clampImage(vec2 coords) {

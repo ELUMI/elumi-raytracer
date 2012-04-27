@@ -48,6 +48,8 @@ struct obj_material
 	char d_filename[OBJ_FILENAME_LENGTH];
 	char norm_filename[OBJ_FILENAME_LENGTH];
 	char ks_filename[OBJ_FILENAME_LENGTH];
+	char r_filename[OBJ_FILENAME_LENGTH];
+	double projector;
 	double amb[3];
 	double diff[3];
 	double spec[3];
@@ -62,7 +64,9 @@ struct obj_material
 	double shiny;
 	double glossy;
 	double refract_index;
-
+	double scale;
+	double corresponder;
+	bool relief;
 };
 
 struct obj_camera

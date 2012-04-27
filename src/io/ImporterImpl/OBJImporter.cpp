@@ -83,24 +83,68 @@ void OBJImporter::loadFile(const char* filename){
 		int   _reflect_samples      = material->reflect_samples;
 		float _refract_spread       = material->refract_spread;
 		int   _refract_samples      = material->refract_samples;
+		float _scale                = material->scale;
+		int projector               = material->projector;
+		int corresponder            = material->corresponder;
+		bool use_relief             = material->relief;
 		std::string _diffuse_map    = material->diffuse_map;
 		std::string _bump_map       = material->bump_filename;
 		std::string _norm_map       = material->norm_filename;
 		std::string _ks_map         = material->ks_filename;
 		std::string _d_map          = material->d_filename;
+		std::string _r_map          = material->r_filename;
+
+		Projector _projector         = CUBE;
+		Corresponder _corresponder   = REPEAT;
 
     replace(_diffuse_map.begin(), _diffuse_map.end(), '\n', '\0');
     replace(_bump_map.begin(), _bump_map.end(), '\n', '\0');
     replace(_norm_map.begin(), _norm_map.end(), '\n', '\0');
     replace(_ks_map.begin(), _ks_map.end(), '\n', '\0');
     replace(_d_map.begin(), _d_map.end(), '\n', '\0');
-
-// (const ILstring)
+    replace(_r_map.begin(), _r_map.end(), '\n', '\0');
 
 		ILuint image;
 		int diff_map_index = -1, bump_map = -1, ks_map = -1, norm_map = -1,
-		    d_map = -1;
+		    d_map = -1, r_map = -1;
 
+		//Projector function
+		switch (projector) {
+      case 0:
+        _projector = PLANE;
+        break;
+      case 1:
+        _projector = CUBE;
+        break;
+      case 2:
+        _projector = SPHERE;
+        break;
+      case 3:
+        _projector = CYLINDER;
+        break;
+      default:
+        _projector = CUBE;
+        break;
+    }
+
+		//Corresponder function
+		switch (corresponder) {
+      case 0:
+        _corresponder = REPEAT;
+        break;
+      case 1:
+        _corresponder = MIRROR;
+        break;
+      case 2:
+        _corresponder = CLAMP;
+        break;
+      case 3:
+        _corresponder = BORDER;
+        break;
+      default:
+        _corresponder = REPEAT;
+        break;
+    }
 
 		//Texture
     if(!_diffuse_map.empty()) {
@@ -119,16 +163,6 @@ void OBJImporter::loadFile(const char* filename){
 
         textures.push_back(new Texture(w,h,ilGetData()));
         diff_map_index = textures.size()-1;
-
-        //Mip maps
-        /*if(iluBuildMipmaps()) {
-          for(int i = 0;ilActiveMipmap(i);i++) {
-            w = ilGetInteger(IL_IMAGE_WIDTH);
-            h = ilGetInteger(IL_IMAGE_HEIGHT);
-            textures.push_back(new Texture(w,h,ilGetData()));
-            textures.at(diff_map_index)->addMipmap();
-          }
-        }*/
 
       } else {
         //Image not loaded (?)
@@ -201,6 +235,29 @@ void OBJImporter::loadFile(const char* filename){
       }
     }
 
+    //Reflection map
+    if(!_r_map.empty()) {
+      image = ilGenImage();
+      ilBindImage(image);
+
+      ilLoadImage(_r_map.c_str());
+
+      if(ilGetError() == IL_NO_ERROR) {
+        ILuint w,h;
+
+        w = ilGetInteger(IL_IMAGE_WIDTH);
+        h = ilGetInteger(IL_IMAGE_HEIGHT);
+
+        cout << "Reflection map loaded: " << _r_map << "\n";
+
+        textures.push_back(new Texture(w,h,ilGetData()));
+        r_map = textures.size()-1;
+      } else {
+        //Image not loaded (?)
+        cout << "Reflection map not loaded error code: " << ilGetError() << endl;
+      }
+    }
+
     //Transparency map
     if(!_d_map.empty()) {
       image = ilGenImage();
@@ -237,11 +294,16 @@ void OBJImporter::loadFile(const char* filename){
 				bump_map,
 				norm_map,
 				ks_map,
+				r_map,
 				d_map,
 				_reflect_spread,
 				_reflect_samples,
 				_refract_spread,
-				_refract_samples));
+				_refract_samples,
+				_projector,
+				_corresponder,
+				_scale,
+				use_relief));
 	}
 
   float inf=std::numeric_limits<float>::infinity();
