@@ -48,13 +48,13 @@ DeferredProcesser::DeferredProcesser(unsigned int width, unsigned int height) {
   // create a renderbuffer object to store depth info
   glGenRenderbuffersEXT(1, &normal_rbo);
   glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, normal_rbo);
-  glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGBA32F, width, height);
+  glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGB32F, width, height);
   glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
 
   // create a renderbuffer object to store depth info
   glGenRenderbuffersEXT(1, &texcoord_rbo);
   glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, texcoord_rbo);
-  glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RG32F, width, height);
+  glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGB32F, width, height);
   glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
 
   CHECK_GL_ERROR();
@@ -96,13 +96,11 @@ void DeferredProcesser::render(Scene* scene, mat4 viewMatrix, int width, int hei
   GLenum buffers_to_render[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
   glDrawBuffers(2,buffers_to_render);
 
-  void glDrawBuffers( GLsizei n, const GLenum *bufs );
-
   glViewport(0, 0, width, height);
   glPixelZoom(1,1);
   glRasterPos2f(-1,1);
   // clear buffers
-  glClearColor(0,0,0,-1);
+  glClearColor(0,0,-1,0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glDisable(GL_ALPHA_TEST);
   glDisable(GL_BLEND);
@@ -123,21 +121,21 @@ void DeferredProcesser::render(Scene* scene, mat4 viewMatrix, int width, int hei
 }
 
 
-void DeferredProcesser::readNormals(unsigned int width, unsigned int height, vec4* buffer){
+void DeferredProcesser::readNormals(unsigned int width, unsigned int height, vec3* buffer){
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
 
   glReadBuffer(GL_COLOR_ATTACHMENT0_EXT);
-  glReadPixels(0, 0, width, height, GL_RGBA, GL_FLOAT, buffer);
+  glReadPixels(0, 0, width, height, GL_RGB, GL_FLOAT, buffer);
 
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
   CHECK_GL_ERROR();
 }
 
-void DeferredProcesser::readTexCoords(unsigned int width, unsigned int height, vec2* buffer){
+void DeferredProcesser::readTexCoords(unsigned int width, unsigned int height, vec3* buffer){
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
 
   glReadBuffer(GL_COLOR_ATTACHMENT1_EXT);
-  glReadPixels(0, 0, width, height, GL_RG, GL_FLOAT, buffer);
+  glReadPixels(0, 0, width, height, GL_RGB, GL_FLOAT, buffer);
 
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
   CHECK_GL_ERROR();

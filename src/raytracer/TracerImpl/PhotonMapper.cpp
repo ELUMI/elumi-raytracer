@@ -7,25 +7,71 @@
 
 #include "PhotonMapper.h"
 #include "../PhotonMapImpl/HashPM.h"
+#include "../PhotonMapImpl/GridPM.h"
+#include "../PhotonMapImpl/ArrayPM.h"
 #include "../utilities/Random.h"
 
 namespace raytracer {
 
 PhotonMapper::PhotonMapper(Scene* scene)
 : StandardTracer(scene) {
-  radius = settings->gather_radius;
-  photonmap = new HashPM(radius, settings->photonmap_size);
+  switch(settings->photonmap) {
+  case 0:
+    photonmap = new ArrayPM(settings->photonmap_size);
+    cout << "Using array photonmap\n";
+    break;
+  case 1:
+  default:
+    photonmap = new HashPM(settings->gather_radius, settings->photonmap_size);
+    cout << "Using hash photonmap\n";
+    break;
+  }
+  photon_processer = 0;
+  colors = 0;
 }
 
 PhotonMapper::~PhotonMapper() {
-  // TODO Auto-generated destructor stub
   delete photonmap;
+  if(photon_processer)
+    delete photon_processer;
+  if(colors)
+    delete [] colors;
 }
 
 void PhotonMapper::initTracing(){
   StandardTracer::initTracing();
-  getPhotons();
+  if(!settings->use_first_bounce) {
+    getPhotons();
+  }
   photonmap->balance();
+}
+
+void PhotonMapper::first_bounce() {
+  StandardTracer::first_bounce();
+  int width = settings->width;
+  int height = settings->width;
+  int size = width * height;
+
+  if(!photon_processer) {
+    getPhotons();
+
+    photon_processer = new PhotonProcesser(width, height);
+
+    assert(photonmap->getNumberOfBuckets() == 1);
+    photon_processer->readPhotons(photonmap->getBucket(0));
+  }
+
+  mat4 view_matrix = scene->getCamera().getViewMatrix();
+  GLuint normal_tex = first_pass->getNormalTex();
+  GLuint depth_tex  = first_pass->getDepthTex();
+
+  photon_processer->render(scene, width, height, normal_tex, depth_tex, settings->gather_radius, settings->photonmap_scaling);
+
+  if(!colors) {
+    colors = new vec3[size];
+  }
+  photon_processer->readColors(width, height, colors);
+
 }
 
 void PhotonMapper::storeInMap(Photon p){
@@ -63,12 +109,20 @@ bool PhotonMapper::bounce(Photon& p, int thread_id, bool store) {
   if (rand < reflection) {
     outgoing = glm::reflect(p.direction, p.normal);
     p.power *= mat->getSpecular();
+    //return false;
   } else if (rand < reflection+refraction) {
-    outgoing = glm::refract(p.direction, p.normal, mat->getIndexOfRefraction());
-    p.power *= mat->getDiffuse();
+    const float refraction_sign = glm::sign(
+        glm::dot(p.normal, p.direction));
+    const vec3 refr_normal = -p.normal * refraction_sign;
+    float eta = mat->getIndexOfRefraction();
+    if (refraction_sign == -1.0f)
+      eta = 1 / eta;
+    outgoing = glm::refract(p.direction, refr_normal, eta);
+    //p.power *= mat->getDiffuse();
   } else if(rand < reflection+refraction+diffuse) {  //diffuse interreflection
     outgoing = gen_random_hemisphere(p.normal, thread_id);
     p.power *= mat->getDiffuse();
+    //return false;
   } else { //absorbtion
     return false;
   }
@@ -92,8 +146,7 @@ void PhotonMapper::tracePhoton(Photon p, int thread_id)
   }
 }
 
-void PhotonMapper::getPhotons()
-{
+void PhotonMapper::getPhotons() {
   size_t n = settings->photons; //NUMBER_OF_PHOTONS;
   float totalpower = 0;
   for(size_t i = 0;i < lights->size();++i){
@@ -127,8 +180,19 @@ void PhotonMapper::getPhotons()
 }
 
 vector<Photon*> PhotonMapper::gather(float& r, vec3 point){
-  r = radius;
+  r = settings->gather_radius;
   return photonmap->gatherFromR(point, r);
+}
+
+float PhotonMapper::filterKernel(vec3 offset, vec3 normal, float r) {
+  //return 1/(M_PI*r*r); //simple filter kernel
+
+  //advanced filter kernel (ISPM paper)
+  const float sz = 0.1;
+  float dist = length(offset);
+  float t = (dist / r) * (1 - dot(offset / dist, normal) * (r + sz*r) / sz);
+  float sigma = 0.4; //t=1,k<0.1 => sigma<0.45
+  return exp(-t*t/(2*sigma*sigma));
 }
 
 vec3 PhotonMapper::getLuminance(Ray incoming_ray,
@@ -144,23 +208,10 @@ vec3 PhotonMapper::getLuminance(Ray incoming_ray,
   if(photons.size() == 0)
     return vec3(0);
   for(size_t i=0; i<photons.size(); ++i){
-    Photon* p = photons[i];
+    const Photon* p = photons[i];
 
     vec3 b = brdf(-p->direction, incoming_ray.getDirection(), idata.normal, material);
-
-    float k;
-    //k = 1/(M_PI*r*r); //simple filter kernel
-
-    { //advanced filter kernel (ISPM paper)
-      float dist = length(idata.interPoint-p->position);
-      float rz = 0.1 * r;
-      float t = (dist/r)*(1-dot((idata.interPoint-p->position) / dist, idata.normal)*(r+rz)/rz);
-      float scale = 0.2;
-      float sigma = r*scale;
-      float a = 1/(sqrt(2*M_PI)*sigma);
-      k = a*a*a*exp(-t*t/(2*sigma*sigma));
-      k *= scale;
-    }
+    float k = filterKernel(idata.interPoint - p->position, idata.normal, r);
     float a = glm::max(0.0f, glm::dot(p->direction, idata.normal));
     //cout << p.power.r << " " << p.power.g << " " << p.power.b << "\n";
     //cout << b << " " << a << " " << k << "\n";
@@ -168,15 +219,14 @@ vec3 PhotonMapper::getLuminance(Ray incoming_ray,
     //l += a;
   }
   l /= photonmap->getTotalPhotons();
-  l *= 128.0f; //magic scaling
+  l *= settings->photonmap_scaling; //magic scaling
 
   return l;
 }
 
-
 vec3 PhotonMapper::getAmbient(Ray incoming_ray,
-    IAccDataStruct::IntersectionData idata, int thread_id) {
-  const size_t final_gather_samples = 0;
+    IAccDataStruct::IntersectionData idata, int thread_id, unsigned short depth) {
+  const size_t final_gather_samples = settings->final_gather_samples;
   vec3 l = vec3(0);
   if(final_gather_samples != 0){
     //final gather
@@ -191,23 +241,29 @@ vec3 PhotonMapper::getAmbient(Ray incoming_ray,
 
     l /= final_gather_samples;
   } else {
-    l = getLuminance(incoming_ray, idata);
+    if(settings->use_first_bounce && colors && depth == 0) {
+      //l = getLuminance(incoming_ray, idata);
+      return colors[position[thread_id]];
+    } else {
+      l = getLuminance(incoming_ray, idata);
+    }
   }
   return l;
 }
 
 vec4 PhotonMapper::shade(Ray incoming_ray,
     IAccDataStruct::IntersectionData idata,
-    float attenuation, unsigned short  depth, int thread_id) {
+    float attenuation, unsigned short depth, int thread_id) {
   if(idata.missed()){
     // No intersection
     return settings->background_color;
   }
 
-  vec3 l = getAmbient(incoming_ray, idata, thread_id);
-  vec3 color = scene->getMaterialVector()[idata.material]->getDiffuse();
-  return vec4(l*color,1);
+  Material* mat = scene->getMaterialVector()[idata.material];
+  vec3 l = getAmbient(incoming_ray, idata, thread_id, depth);
+  vec3 color = mat->getDiffuse();
+  //return vec4(l,1);
+  return vec4(l*color+mat->getEmissive(),1);
 }
-
 
 }

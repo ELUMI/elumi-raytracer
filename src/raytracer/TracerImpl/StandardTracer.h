@@ -24,6 +24,7 @@ protected:
   virtual vec4 tracePrim(Ray ray, float attenuation, unsigned short depth, int thread_id);
   virtual vec4 shade(Ray ray, IAccDataStruct::IntersectionData idata, float attenuation, unsigned short depth, int thread_id);
   virtual void initTracing();
+  virtual void first_bounce();
 
 
   const unsigned short MAX_RECURSION_DEPTH;
@@ -34,7 +35,7 @@ protected:
   vec3 getTextureColor(Material* material, IAccDataStruct::IntersectionData idata);
   vec3 reflection_refraction(Ray incoming_ray, IAccDataStruct::IntersectionData idata, float attenuation, unsigned short  depth, Material *material, vec3 normal, vec3 color, int thread_id);
   vec3 getLighting(Ray incoming_ray, IAccDataStruct::IntersectionData idata, vec3 normal, Material *material, int thread_id);
-  virtual vec3 getAmbient(Ray incoming_ray, IAccDataStruct::IntersectionData idata, int thread_id);
+  virtual vec3 getAmbient(Ray incoming_ray, IAccDataStruct::IntersectionData idata, int thread_id, unsigned short depth);
 
 private:
   bool using_environment_map;

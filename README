@@ -29,7 +29,7 @@ The scene file uses xml-syntax. See example:
     <Normal x="0" y="1" z="0"/>
 </Camera>
 
-<Light type="Area" intensity="1.5" falloff="Quadratic">
+<Light type="Area" intensity="1.5" falloff="Quadratic" visible="0">
     <Position x="0.1" y="1.2" z="0.2"/>
     <Color r="1" g="1" b="1"/>
     <Axis1 x="0.5" y="0" z="0" samples="3"/>
@@ -58,7 +58,7 @@ The settings file uses xml-syntax. See example:
 <Tree version="2"/>
 <Wireframe enable="0"/>
 <Supersampling samples="1" pattern="0" />
-<Photonmapper photons="1024" radius="0.5" photonmap_size="1024" />
+<Photonmapper photonmap="0" photonmap_size="65536" final_gather_samples="0" photons="65536" radius="0.3" scaling="256" />
 
 ############################################################
 

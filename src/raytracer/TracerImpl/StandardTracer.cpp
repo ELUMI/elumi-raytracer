@@ -28,6 +28,10 @@ void StandardTracer::initTracing() {
   BaseTracer::initTracing();
 }
 
+void StandardTracer::first_bounce(){
+  BaseTracer::first_bounce();
+}
+
 void StandardTracer::traceImage(float* color_buffer) {
   if (scene->getEnvironmentMap() != NULL)
     using_environment_map = true;
@@ -239,8 +243,11 @@ inline vec3 StandardTracer::reflection_refraction(Ray incoming_ray,
   if (material->getFresnelIndex() != 0.0f) {
   //if (settings->use_fresnel) {
     //Schlick's approx.
-    // float fresnel_refl = reflectance + (1 - reflectance) * glm::pow(
-    // clamp(1.0f - glm::dot(incoming_ray.getDirection(), normal)), 5.0f);
+//    float fresnel_refl = reflectance + (1 - reflectance) * glm::pow(
+//    clamp(1.0f - abs(glm::dot(-incoming_ray.getDirection(), normal))), 5.0f);
+//
+//    cout << fresnel_refl << "\n";
+
 
     float c = abs(glm::dot(incoming_ray.getDirection(), normal));
     float g = glm::sqrt( material->getFresnelIndex()*material->getFresnelIndex() + c*c -1 );
@@ -255,7 +262,7 @@ inline vec3 StandardTracer::reflection_refraction(Ray incoming_ray,
   }
 
   /**** REFRACTION RAY ****/
-  if (transmittance > 0.0f && reflectance < 1.0f) {
+  if (transmittance > 0.0f /*&& reflectance < 1.0f*/) {
 
     float refract_spread = material->getRefractionSpread();
     int refract_samples = material->getRefractionSamples();
@@ -336,7 +343,7 @@ inline vec3 StandardTracer::reflection_refraction(Ray incoming_ray,
 }
 
 vec3 StandardTracer::getAmbient(Ray incoming_ray,
-    IAccDataStruct::IntersectionData idata, int thread_id) {
+    IAccDataStruct::IntersectionData idata, int thread_id, unsigned short depth) {
   Material *material = scene->getMaterialVector()[idata.material];
   vec3 color = vec3(0);
   for (unsigned int i = 0; i < lights->size(); ++i) {
@@ -411,7 +418,7 @@ vec4 StandardTracer::shade(Ray incoming_ray,
   Material *material = scene->getMaterialVector()[idata.material];
   vec3 normal = bumpMap(incoming_ray, idata, material);
   vec3 color = material->getEmissive();
-  color += getAmbient(incoming_ray, idata, thread_id);
+  color += getAmbient(incoming_ray, idata, thread_id, depth);
   color += getLighting(incoming_ray, idata, normal, material, thread_id);
   color = reflection_refraction(incoming_ray, idata, attenuation, depth,
       material, normal, color, thread_id);

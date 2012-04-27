@@ -5,22 +5,20 @@
  *      Author: ulvinge
  */
 
-//#include <GL/glew.h>
-//#include "../AccDataStructImpl/VertexArrayDataStruct.h"
-#include "../scene/Scene.h"
+#include "../IDeferredProcesser.h"
 
 #ifndef DEFERREDPROCESSER_H_
 #define DEFERREDPROCESSER_H_
 
 namespace raytracer {
-class DeferredProcesser {
+class DeferredProcesser : public IDeferredProcesser {
 public:
   DeferredProcesser(unsigned int width, unsigned int height);
   virtual ~DeferredProcesser();
 
   void render(Scene* scene, mat4 viewMatrix, int width, int height);
-  void readNormals(unsigned int width, unsigned int height, vec4* buffer);
-  void readTexCoords(unsigned int width, unsigned int height, vec2* buffer);
+  void readNormals(unsigned int width, unsigned int height, vec3* buffer);
+  void readTexCoords(unsigned int width, unsigned int height, vec3* buffer);
   void readDepths(unsigned int width, unsigned int height, float* buffer);
 
 private:

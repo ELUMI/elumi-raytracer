@@ -7,7 +7,7 @@ namespace po = boost::program_options;
 
 #include "io/ExporterImpl/PNGExporter.h"
 #include "raytracer/Renderer.h"
-#include "raytracer/utilities/glutil.h"
+#include "raytracer/GLData/glutil.h"
 #include "raytracer/utilities/Random.h"
 #include "raytracer/TracerImpl/PhotonMapper.h"
 
@@ -15,7 +15,7 @@ namespace po = boost::program_options;
 #include "raytracer/XMLImpl/XML.h"
 
 #include "raytracer/common.hpp"
-#include "raytracer/AccDataStructImpl/LineArrayDataStruct.hpp"
+#include "raytracer/GLData/LineArrayDataStruct.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -40,8 +40,9 @@ vec2 mousePrev;
 double prevTime;
 int renderMode = 2;
 raytracer::Renderer* myRenderer;
+bool auto_render = false;
 
-enum DebugVariable { TEST, KEY, WHITE };
+enum DebugVariable { TEST, KEY, WHITE, RADIUS };
 DebugVariable var = TEST;
 
 void timedCallback();
@@ -141,6 +142,16 @@ int main(int argc, char* argv[]) {
     }
 
     while (running) {
+      if(auto_render) {
+        while(myRenderer->renderComplete())
+          timedCallback();
+
+        if(myRenderer->renderComplete() == 0.0f) {
+          myRenderer->loadCamera(camera);
+          myRenderer->asyncRender();
+        }
+      }
+
       //OpenGl rendering goes here...d
       glViewport(0, 0, win_width, win_height);
 
@@ -166,8 +177,7 @@ int main(int argc, char* argv[]) {
       case 2:
         glRasterPos2f(-1,-1);
         glPixelZoom((float) win_width / settings->width, (float) win_height / settings->height);
-        glDrawPixels(settings->width, settings->height, GL_RGBA,
-            GL_FLOAT, buffer);
+        glDrawPixels(settings->width, settings->height, GL_RGBA, GL_FLOAT, buffer);
         break;
       case 3:
         drawDrawables(drawables, n_drawables);
@@ -402,6 +412,34 @@ void mouse(int button, int action) {
   }
   //mouseMove(pos.x,pos.y);
 }
+
+void adjustValue(double speed) {
+  switch (var) {
+  case TEST:
+    myRenderer->stopRendering();
+    settings->test += speed * 0.1;
+    myRenderer->asyncRender();
+    cout << "test: " << settings->test << "\n";
+    break;
+  case KEY:
+    settings->key += speed * 0.01;
+    myRenderer->tonemapImage(true);
+    cout << "key: " << settings->key << "\n";
+    break;
+  case WHITE:
+    settings->white += speed * 0.1;
+    myRenderer->tonemapImage(true);
+    cout << "white: " << settings->white << "\n";
+    break;
+  case RADIUS:
+    myRenderer->stopRendering();
+    settings->gather_radius += speed;
+    myRenderer->asyncRender();
+    cout << "photonmap gather radius: " << settings->gather_radius << "\n";
+    break;
+  }
+}
+
 void timedCallback() {
   double diffTime = glfwGetTime() - prevTime;
   prevTime += diffTime;
@@ -410,6 +448,9 @@ void timedCallback() {
 
   if (glfwGetKey(GLFW_KEY_LCTRL)) {
     speed /= 100;
+  }
+  if (glfwGetKey(GLFW_KEY_LSHIFT)) {
+    speed *= 100;
   }
   if (glfwGetKey('W')) {
     camera.translate(vec3(speed, 0, 0));
@@ -433,16 +474,21 @@ void timedCallback() {
     camera.translate(vec3(0, 0, -speed));
   }
   if (glfwGetKey(GLFW_KEY_UP)) {
-    camera.rotate(vec2(0,-1));
+    camera.rotate(vec2(0,-speed));
   }
   if (glfwGetKey(GLFW_KEY_DOWN)) {
-    camera.rotate(vec2(0,1));
-  }
-  if (glfwGetKey(GLFW_KEY_RIGHT)) {
-    camera.rotate(vec2(1,0));
+    camera.rotate(vec2(0,speed));
   }
   if (glfwGetKey(GLFW_KEY_LEFT)) {
-    camera.rotate(vec2(-1,0));
+    camera.rotate(vec2(-speed,0));
+  }
+  if (glfwGetKey(GLFW_KEY_RIGHT)) {
+    camera.rotate(vec2(speed,0));
+  }
+  if (glfwGetKey(GLFW_KEY_TAB)) {
+    auto_render = !auto_render;
+    cout << "Autorender: " << auto_render << "\n";
+    glfwSleep(0.5);
   }
   if (glfwGetKey('1')) {
     renderMode = 1;
@@ -514,37 +560,14 @@ void timedCallback() {
   if (glfwGetKey(GLFW_KEY_F3)) {
     var = WHITE;
   }
+  if (glfwGetKey(GLFW_KEY_F4)) {
+    var = RADIUS;
+  }
   if (glfwGetKey(GLFW_KEY_KP_ADD)) {
-    if (var == TEST) {
-      myRenderer->stopRendering();
-      settings->test += speed/100;
-      myRenderer->asyncRender();
-      cout << "test: " << settings->test << "\n";
-    } else if (var == KEY) {
-      settings->key += 0.01;
-      myRenderer->tonemapImage(true);
-      cout << "key: " << settings->key << "\n";
-    } else if (var == WHITE) {
-      settings->white += 0.1;
-      myRenderer->tonemapImage(true);
-      cout << "white: " << settings->white << "\n";
-    }
+    adjustValue(speed);
   }
   if (glfwGetKey(GLFW_KEY_KP_SUBTRACT)) {
-    if (var == TEST) {
-      myRenderer->stopRendering();
-      settings->test -= speed/100;
-      myRenderer->asyncRender();
-      cout << "test: " << settings->test << "\n";
-    } else if (var == KEY) {
-      settings->key -= 0.01;
-      myRenderer->tonemapImage(true);
-      cout << "key: " << settings->key << "\n";
-    } else if (var == WHITE) {
-      settings->white -= 0.1;
-      myRenderer->tonemapImage(true);
-      cout << "white: " << settings->white << "\n";
-    }
+    adjustValue(-speed);
   }
   if (glfwGetKey(GLFW_KEY_KP_MULTIPLY)) {
     myRenderer->stopRendering();

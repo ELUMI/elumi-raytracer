@@ -6,9 +6,9 @@ in vec2		texCoordIn;	// incoming texcoord from the texcoord array
 in vec3		normal;
 in float	material;
 
-out float	fmaterial;
-varying vec3	fnormal;
-varying vec2	ftexcoord;	// outgoing interpolated texcoord to fragshader
+out float    fmaterial;
+varying vec3 fnormal;
+varying vec2 ftexcoord; // outgoing interpolated texcoord to fragshader
 
 uniform mat4 modelViewProjectionMatrix; 
 

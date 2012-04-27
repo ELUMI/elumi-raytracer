@@ -15,9 +15,9 @@
 
 #include <iostream>
 #include <boost/thread.hpp>
+#include <boost/timer/timer.hpp>
+
 #include "glm/glm.hpp"
-
-
 using namespace glm;
 
 namespace raytracer {
@@ -57,6 +57,9 @@ private:
 
   bool tonemapped;
   boost::thread* renderthread;
+  bool initing;
+
+  boost::timer::cpu_timer timer;
 };
 
 }

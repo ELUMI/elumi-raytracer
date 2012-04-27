@@ -120,12 +120,18 @@ Scene* XML::importScene(const char* fileName) {
         settings->super_sampler_pattern = supersampling.attribute("pattern").as_int();
       }
       if(photonmapper){
-        if(!photonmapper.attribute("photons").empty())
-          settings->photons = photonmapper.attribute("photons").as_int();
-        if(!photonmapper.attribute("radius").empty())
-          settings->gather_radius = photonmapper.attribute("radius").as_float();
+        if(!photonmapper.attribute("photonmap").empty())
+          settings->photonmap = photonmapper.attribute("photonmap").as_int();
         if(!photonmapper.attribute("photonmap_size").empty())
           settings->photonmap_size = photonmapper.attribute("photonmap_size").as_int();
+        if(!photonmapper.attribute("photons").empty())
+          settings->photons = photonmapper.attribute("photons").as_int();
+        if(!photonmapper.attribute("final_gather_samples").empty())
+          settings->final_gather_samples = photonmapper.attribute("final_gather_samples").as_int();
+        if(!photonmapper.attribute("radius").empty())
+          settings->gather_radius = photonmapper.attribute("radius").as_float();
+        if(!photonmapper.attribute("scaling").empty())
+          settings->photonmap_scaling = photonmapper.attribute("scaling").as_float();
       }
 
       if(settings->opengl_version<3){
@@ -160,6 +166,9 @@ Scene* XML::importScene(const char* fileName) {
 
     //Falloff
     string falloff = light.attribute("falloff").value();
+
+    //visible
+    bool visible = light.attribute("visible").as_int();
 
     if(falloff.compare("Quadratic") == 0) {
       ftype = ILight::QUADRATIC;
@@ -211,7 +220,7 @@ Scene* XML::importScene(const char* fileName) {
       newLight->setPosition(pos);
       newLight->setDistanceFalloff(ftype);
 
-      if(type.compare("Area") == 0 && settings->area_light_quad) {
+      if(type.compare("Area") == 0 && visible) { // || tracer==pathtracer
         reinterpret_cast<AreaLight*>(newLight)->addPlane(scene); //add arealight to datastruct
       }
 

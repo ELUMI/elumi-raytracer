@@ -9,14 +9,14 @@ in float	fmaterial;
 varying vec3 fnormal;
 varying vec2 ftexcoord;
 
-out vec4 onormal;
-out vec2 otexcoord;
+out vec3 onormal;
+out vec3 otexcoord;
 
-//we save the material as a float in the w component of the normals
-//the normals.w must be cleared to -1
+//we save the material as a float in the z component of the texcoords
+//the texcoords.z must be cleared to -1
 
 void main() 
 {
-  onormal = vec4(normalize(fnormal),fmaterial);
-  otexcoord = ftexcoord; 
+  onormal = normalize(fnormal);
+  otexcoord = vec3(ftexcoord.x,ftexcoord.y,fmaterial);
 }
