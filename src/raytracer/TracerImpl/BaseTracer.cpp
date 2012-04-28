@@ -54,11 +54,7 @@ BaseTracer::~BaseTracer() {
 }
 
 void BaseTracer::runWithGL() {
-  if (!settings->use_first_bounce) {
-    return;
-  }
-  if (settings->opengl_version < 3) {
-    settings->use_first_bounce = false;
+  if (!settings->use_first_bounce || settings->opengl_version<3) {
     return;
   }
   first_bounce();
@@ -155,7 +151,7 @@ void BaseTracer::traceImage(float* color_buffer) {
     threads[i] = boost::thread(
         boost::bind(&BaseTracer::traceImageThread, this, i));
   }
-  traceImageThread(nr_threads); //spawn one less thread by using this thread
+  traceImageThread(nr_threads-1); //spawn one less thread by using this thread
   // Wait for threads to complete
   for (int i = 0; i < nr_threads - 1; ++i) {
     threads[i].join();
@@ -256,13 +252,14 @@ vec4 BaseTracer::trace(Ray ray, IAccDataStruct::IntersectionData idata, int thre
 
 vec4 BaseTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata, int thread_id) {
   float light = 0;
-  for(size_t i = 0; i < lights->size(); ++i){
+  /*for(size_t i = 0; i < lights->size(); ++i){
     //if(!lights->at(i)->isBlocked(datastruct, idata.interPoint)){
     if (lights->at(i)->calcLight(datastruct, idata.interPoint, thread_id) > 0.0f) {
       light++;
     }
   }
-  light /= lights->size();
+  light /= lights->size();*/
+  light=1;
   vec3 color = scene->getMaterialVector()[idata.material]->getDiffuse();
   return vec4(color * light, 1);
 }

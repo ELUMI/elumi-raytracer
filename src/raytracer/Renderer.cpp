@@ -141,18 +141,29 @@ void Renderer::setSettings(Settings* settings) {
 }
 
 void Renderer::asyncRender() {
-  if(m_scene == NULL) {
-    cout << "Render has no scene!\n";
-    return;
-  }
-  timer.start();
-  m_tracer->runWithGL(); //must be done in master thread
-
   if(renderthread){
     stopRendering();
   }
+
+  timer.start();
   initing = true;
-  renderthread = new boost::thread( boost::bind(&Renderer::render, this));
+  abort = false;
+
+  m_tracer->initTracing();
+  m_tracer->runWithGL(); //must be done in master thread
+
+  renderthread = new boost::thread( boost::bind(&Renderer::doRender, this));
+}
+
+void Renderer::render() {
+  timer.start();
+  initing = true;
+  abort = false;
+
+  m_tracer->initTracing();
+  m_tracer->runWithGL();
+
+  doRender();
 }
 
 void Renderer::stopRendering() {
@@ -224,8 +235,10 @@ void Renderer::tonemapImage(bool enable){
   }
 }
 
-void Renderer::render() {
-  abort = false;
+void Renderer::doRender() {
+  if(abort)
+    return;
+
   tonemapped = false;
   if(color_buffer_org!=NULL){
     delete[] color_buffer_org;
@@ -237,7 +250,6 @@ void Renderer::render() {
     return;
   }
 
-  m_tracer->initTracing();
   initing = false;
   m_tracer->traceImage(color_buffer);
 

@@ -54,6 +54,7 @@ private:
   int open_gl_version;
   float* color_buffer_org;
   float* color_buffer;
+  void doRender();
 
   bool tonemapped;
   boost::thread* renderthread;

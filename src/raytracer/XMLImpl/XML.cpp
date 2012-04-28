@@ -94,6 +94,8 @@ Scene* XML::importScene(const char* fileName) {
 
         if(!tracer.attribute("use_fresnel").empty())
           settings->use_fresnel = tracer.attribute("use_fresnel").as_int();
+        if(!tracer.attribute("first_bounce").empty())
+          settings->use_first_bounce = tracer.attribute("first_bounce").as_bool();
       }
       if(recursion) {
         settings->max_recursion_depth = recursion.attribute("maxDepth").as_int();
