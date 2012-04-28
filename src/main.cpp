@@ -61,7 +61,7 @@ void readPhotonMap();
 int opengl_version = 2;
 bool headless=false;
 unsigned int win_width, win_height;
-string inputFileName, outputFileName;
+string inputFileName, outputFileName, settingsFileName="";
 
 int main(int argc, char* argv[]) {
   init_generators();
@@ -109,7 +109,11 @@ int main(int argc, char* argv[]) {
 
   // CREATE RENDERER AND LOAD SCENE DATA
   myRenderer = new Renderer(opengl_version);
-  myRenderer->loadSceneFromXML(inputFileName.c_str());
+  if(settingsFileName == "") {
+    myRenderer->loadSceneFromXML(inputFileName.c_str(), 0);
+  } else {
+    myRenderer->loadSceneFromXML(inputFileName.c_str(), settingsFileName.c_str());
+  }
   Scene* myScene = myRenderer->getScene();
   settings = myScene->getSettings();
   camera = myScene->getCamera();
@@ -292,6 +296,9 @@ void getArguments(int argc, char *argv[]) {
   } else {
     cout << "Saving file to default destination (out.png)." << endl;
     outputFileName = "out.png";
+  }
+  if (vm.count("settings-file")) {
+    settingsFileName = vm["settings-file"].as<string> ();
   }
   if (vm.count("gl-version")) {
     opengl_version = vm["gl-version"].as<int> ();

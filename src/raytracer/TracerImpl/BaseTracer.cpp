@@ -252,14 +252,13 @@ vec4 BaseTracer::trace(Ray ray, IAccDataStruct::IntersectionData idata, int thre
 
 vec4 BaseTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata, int thread_id) {
   float light = 0;
-  /*for(size_t i = 0; i < lights->size(); ++i){
+  for(size_t i = 0; i < lights->size(); ++i){
     //if(!lights->at(i)->isBlocked(datastruct, idata.interPoint)){
     if (lights->at(i)->calcLight(datastruct, idata.interPoint, thread_id) > 0.0f) {
       light++;
     }
   }
-  light /= lights->size();*/
-  light=1;
+  light /= lights->size();
   vec3 color = scene->getMaterialVector()[idata.material]->getDiffuse();
   return vec4(color * light, 1);
 }

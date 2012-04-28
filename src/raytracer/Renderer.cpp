@@ -112,11 +112,11 @@ void Renderer::loadLights(ILight** lights, int length, bool overwrite) {
   m_scene->loadLights(lights,length,overwrite);
 }
 
-void Renderer::loadSceneFromXML(const char* filename) {
+void Renderer::loadSceneFromXML(const char* filename, const char* settingsFileName) {
   XML xml = XML(open_gl_version);
   if(m_scene != NULL)
     delete m_scene;
-  m_scene = xml.importScene(filename);
+  m_scene = xml.importScene(filename, settingsFileName);
   init();
 }
 

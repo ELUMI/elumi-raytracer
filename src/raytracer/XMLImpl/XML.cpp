@@ -27,11 +27,10 @@ namespace raytracer {
 
 class file_not_found: public exception
 {
-  virtual const char* what() const throw(){
+  const virtual char* what() const throw () {
     return "File not found exception";
   }
 } fnf_exception;
-
 IImporter* importer;
 
 XML::XML(int open_gl_version) {
@@ -43,103 +42,110 @@ XML::~XML() {
   delete importer;
 }
 
-Scene* XML::importScene(const char* fileName) {
-
-  ilInit();
-  iluInit();
-
-  xml_document doc;
-  pugi::xml_parse_result result = doc.load_file(fileName);
-
-  if(!result) {
+void XML::getSettings(const char* xml_file, Settings* settings) {
+  xml_document settings_doc;
+  pugi::xml_parse_result result = settings_doc.load_file(xml_file);
+  if (!result) {
     throw fnf_exception;
   }
 
+  xml_node screen = settings_doc.child("Screen");
+  xml_node tracer = settings_doc.child("Tracer");
+  xml_node recursion = settings_doc.child("Recursion");
+  xml_node threading = settings_doc.child("Threading");
+  xml_node tonemapping = settings_doc.child("Tonemapping");
+  xml_node tree = settings_doc.child("Tree");
+  xml_node wireframe = settings_doc.child("Wireframe");
+  xml_node supersampling = settings_doc.child("Supersampling");
+  xml_node photonmapper = settings_doc.child("Photonmapper");
+  if (screen) {
+    settings->width = screen.attribute("width").as_int();
+    settings->height = screen.attribute("height").as_int();
+  }
+  if (tracer) {
+    settings->tracer = tracer.attribute("version").as_int();
+    if (!tracer.attribute("pattern").empty())
+      settings->pattern = tracer.attribute("pattern").as_int();
+
+    if (!tracer.attribute("batches").empty())
+      settings->batches = tracer.attribute("batches").as_int();
+
+    if (!tracer.attribute("use_fresnel").empty())
+      settings->use_fresnel = tracer.attribute("use_fresnel").as_int();
+
+    if (!tracer.attribute("first_bounce").empty())
+      settings->use_first_bounce = tracer.attribute("first_bounce").as_bool();
+  }
+  if (recursion) {
+    settings->max_recursion_depth = recursion.attribute("maxDepth").as_int();
+    settings->recursion_attenuation_threshold = recursion.attribute(
+        "attenuationThreshold").as_float();
+  }
+  if (threading) {
+    settings->threads = threading.attribute("threads").as_int();
+  }
+  if (tonemapping) {
+    if (!tonemapping.attribute("key").empty())
+      settings->key = tonemapping.attribute("key").as_float();
+
+    if (!tonemapping.attribute("white").empty())
+      settings->white = tonemapping.attribute("white").as_float();
+  }
+  if (tree) {
+    settings->tree = tree.attribute("version").as_int();
+  }
+  if (wireframe) {
+    settings->wireframe = wireframe.attribute("enable").as_int();
+  }
+  if (supersampling) {
+    settings->samples = supersampling.attribute("samples").as_int();
+    settings->super_sampler_pattern =
+        supersampling.attribute("pattern").as_int();
+  }
+  if (photonmapper) {
+    if (!photonmapper.attribute("photonmap").empty())
+      settings->photonmap = photonmapper.attribute("photonmap").as_int();
+
+    if (!photonmapper.attribute("photonmap_size").empty())
+      settings->photonmap_size =
+          photonmapper.attribute("photonmap_size").as_int();
+
+    if (!photonmapper.attribute("photons").empty())
+      settings->photons = photonmapper.attribute("photons").as_int();
+
+    if (!photonmapper.attribute("final_gather_samples").empty())
+      settings->final_gather_samples = photonmapper.attribute(
+          "final_gather_samples").as_int();
+
+    if (!photonmapper.attribute("radius").empty())
+      settings->gather_radius = photonmapper.attribute("radius").as_float();
+
+    if (!photonmapper.attribute("scaling").empty())
+      settings->photonmap_scaling =
+          photonmapper.attribute("scaling").as_float();
+  }
+  if (settings->opengl_version < 3) {
+    settings->wireframe = 0;
+  }
+}
+
+Scene* XML::importScene(const char* fileName, const char* settingsFileName) {
+  ilInit();
+  iluInit();
+  xml_document doc;
+  pugi::xml_parse_result result = doc.load_file(fileName);
+  if (!result) {
+    throw fnf_exception;
+  }
   Settings* settings = new Settings(); // TODO LÄS IN FRÅN FIL
   settings->opengl_version = open_gl_version;
-
   //Load settings. If any...
   xml_node xml_settings = doc.child("Settings");
-
-  if(xml_settings) {
+  if(settingsFileName) {
+    getSettings(settingsFileName, settings);
+  } else if (xml_settings) {
     const char* xml_file = xml_settings.attribute("fileName").value();
-
-    xml_document settings_doc;
-    result = settings_doc.load_file(xml_file);
-
-    if(!result) {
-      throw fnf_exception;
-    } else {
-      xml_node screen       = settings_doc.child("Screen");
-      xml_node tracer       = settings_doc.child("Tracer");
-      xml_node recursion    = settings_doc.child("Recursion");
-      xml_node threading    = settings_doc.child("Threading");
-      xml_node tonemapping  = settings_doc.child("Tonemapping");
-      xml_node tree         = settings_doc.child("Tree");
-      xml_node wireframe    = settings_doc.child("Wireframe");
-      xml_node supersampling= settings_doc.child("Supersampling");
-      xml_node photonmapper = settings_doc.child("Photonmapper");
-
-      if(screen) {
-        settings->width = screen.attribute("width").as_int();
-        settings->height = screen.attribute("height").as_int();
-      }
-      if(tracer) {
-        settings->tracer = tracer.attribute("version").as_int();
-
-        if(!tracer.attribute("pattern").empty())
-          settings->pattern = tracer.attribute("pattern").as_int();
-        if(!tracer.attribute("batches").empty())
-          settings->batches = tracer.attribute("batches").as_int();
-
-        if(!tracer.attribute("use_fresnel").empty())
-          settings->use_fresnel = tracer.attribute("use_fresnel").as_int();
-        if(!tracer.attribute("first_bounce").empty())
-          settings->use_first_bounce = tracer.attribute("first_bounce").as_bool();
-      }
-      if(recursion) {
-        settings->max_recursion_depth = recursion.attribute("maxDepth").as_int();
-        settings->recursion_attenuation_threshold = recursion.attribute("attenuationThreshold").as_float();
-      }
-      if(threading) {
-        settings->threads = threading.attribute("threads").as_int();
-      }
-      if(tonemapping) {
-        if(!tonemapping.attribute("key").empty())
-          settings->key = tonemapping.attribute("key").as_float();
-
-        if(!tonemapping.attribute("white").empty())
-          settings->white = tonemapping.attribute("white").as_float();
-      }
-      if(tree){
-        settings->tree = tree.attribute("version").as_int();
-      }
-      if(wireframe){
-        settings->wireframe = wireframe.attribute("enable").as_int();
-      }
-      if(supersampling){
-        settings->samples = supersampling.attribute("samples").as_int();
-        settings->super_sampler_pattern = supersampling.attribute("pattern").as_int();
-      }
-      if(photonmapper){
-        if(!photonmapper.attribute("photonmap").empty())
-          settings->photonmap = photonmapper.attribute("photonmap").as_int();
-        if(!photonmapper.attribute("photonmap_size").empty())
-          settings->photonmap_size = photonmapper.attribute("photonmap_size").as_int();
-        if(!photonmapper.attribute("photons").empty())
-          settings->photons = photonmapper.attribute("photons").as_int();
-        if(!photonmapper.attribute("final_gather_samples").empty())
-          settings->final_gather_samples = photonmapper.attribute("final_gather_samples").as_int();
-        if(!photonmapper.attribute("radius").empty())
-          settings->gather_radius = photonmapper.attribute("radius").as_float();
-        if(!photonmapper.attribute("scaling").empty())
-          settings->photonmap_scaling = photonmapper.attribute("scaling").as_float();
-      }
-
-      if(settings->opengl_version<3){
-        settings->wireframe = 0;
-      }
-    }
+    getSettings(xml_file, settings);
   }
 
   Scene* scene = new Scene(settings);
