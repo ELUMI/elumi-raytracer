@@ -5,23 +5,24 @@
  *      Author: julian
  */
 
-#include "PointLight.h"
+#include "SpotLight.h"
 #include "../../utilities/Random.h"
+#include <glm/ext.hpp>
 
 namespace raytracer {
 
+SpotLight::~SpotLight() {
 
-PointLight::~PointLight() {
 }
 
-void PointLight::getRays(Ray* rays, size_t n, int thread_id) {
+void SpotLight::getRays(Ray* rays, size_t n, int thread_id) {
   for(size_t i = 0; i<n; ++i){
     rays[i] = Ray(position, gen_random_cone(dir, outer, thread_id));
   }
 }
 
-float PointLight::calcLight(IAccDataStruct* datastruct, vec3 point, int thread_id, vec3 offset = vec3(0.0f,0.0f,0.0f)) {
-  float angle = glm::angle(point - position, dir);
+float SpotLight::calcLight(IAccDataStruct* datastruct, vec3 point, int thread_id, vec3 offset) {
+  float angle = glm::angle(glm::normalize(point - position), dir);
   if(angle >= outer) // Outside spotlight
     return 0.0f;
 
@@ -29,7 +30,7 @@ float PointLight::calcLight(IAccDataStruct* datastruct, vec3 point, int thread_i
 
   float falloff_length  = outer - inner;
   if(angle > inner && falloff_length > 0.0f) { // Between inner and outer angle, fall off the light linearly
-    float diff = angle - inner;
+    float diff = outer - angle;
     return (diff / falloff_length) * light;
   } else {
     return light;

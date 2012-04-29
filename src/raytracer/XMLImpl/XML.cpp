@@ -18,6 +18,7 @@ using namespace glm;
 #include "../scene/ILight.h"
 #include "../scene/LightImpl/BaseLight.h"
 #include "../scene/LightImpl/AreaLight.h"
+#include "../scene/LightImpl/SpotLight.h"
 #include "../EnvironmentMapImpl/CubeMap.h"
 
 #include "../scene/VolumeImpl/UniformVolume.h"
@@ -299,6 +300,29 @@ Scene* XML::importScene(const char* fileName) {
 
       newLight = new AreaLight(pos,axis1,axis2,samples1,samples2);
       reinterpret_cast<AreaLight*>(newLight)->addPlane(scene); //add arealight to datastruct
+    } else if(type.compare("Spot") == 0) {
+      xml_node dir_node = light.child("Direction");
+
+      vec3 dir = vec3(dir_node.attribute("x").as_float(),
+                      dir_node.attribute("y").as_float(),
+                      dir_node.attribute("z").as_float());
+
+      float outer;
+      if(!light.attribute("outer").empty())
+        outer = light.attribute("outer").as_float();
+      else
+        outer = -1;
+
+      float inner;
+      if(!light.attribute("inner").empty())
+        inner = light.attribute("inner").as_float();
+      else
+        inner = outer;
+
+      if(outer > 0)
+        newLight = new SpotLight(pos, dir, inner, outer);
+      else
+        newLight = new SpotLight(pos, dir);
     }
 
     if(newLight != NULL) {
