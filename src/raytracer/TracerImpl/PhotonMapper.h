@@ -21,6 +21,7 @@ public:
 
   IPhotonMap* photonmap;
 protected:
+
   Photon* photons;
   void getPhotons();
   void storeInMap(Photon p);
@@ -38,7 +39,6 @@ protected:
   PhotonProcesser* photon_processer;
 
   vec3* colors;
-
 };
 
 }
