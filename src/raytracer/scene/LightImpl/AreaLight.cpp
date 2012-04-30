@@ -125,14 +125,14 @@ float AreaLight::calcLight(IAccDataStruct* datastruct, vec3 point,
   float in_light = 0.0f;
 
   BaseLight* light = light_sources;
-  for (unsigned int i = 0; i < samples; ++i, light++) {
-    vec3 offset = area_offset + gen_random_float(0.0f, 1.0f, thread_id)
-        * delta1 + gen_random_float(0.0f, 1.0f, thread_id) * delta2;
-    in_light += light->calcLight(datastruct, point, thread_id, offset)
-        / samples;
+  for (unsigned int i=0; i<samples; ++i) {
+    vec3 offset = area_offset
+                + gen_random_float(0.0f, 1.0f, thread_id) * delta1
+                + gen_random_float(0.0f, 1.0f, thread_id) * delta2;
+    in_light += light[i].calcLight(datastruct, point, thread_id, offset);
   }
 
-  return in_light;
+  return in_light / samples;
 }
 
 void AreaLight::initCaches(size_t nr_of_threads) {
@@ -146,8 +146,8 @@ void AreaLight::addPlane(Scene* scene) {
   std::vector<raytracer::Material*> materials;
   materials.push_back(
       new Material("Light material", vec3(), color * intensity, vec3(),
-          color * intensity, vec3(1, 1, 1), 0, 0, 0, 0, 1, -1, -1, -1, -1, -1,
-          0, 0, 0, 0));
+          color * intensity, vec3(1, 1, 1), 0, 0, 0, 0, 1, -1, -1, -1, -1,
+          -1, 0, 0, 0, 0));
   size_t materials_shift = scene->loadMaterials(materials); //load materials BEFORE triangles!
 
   std::vector<raytracer::Triangle*> triangles;
@@ -197,6 +197,7 @@ void AreaLight::addPlane(Scene* scene) {
 
     triangles.push_back(new Triangle(vertices, normals, texCoords, 0));
   }
+
 
   vec3 mi = top_l;
   mi = glm::min(mi, top_r);

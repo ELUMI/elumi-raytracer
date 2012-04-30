@@ -11,12 +11,16 @@
 #include "../PhotonMapImpl/ArrayPM.h"
 #include "../utilities/Random.h"
 
+#include <boost/thread.hpp>
+#include <boost/bind.hpp>
+
 namespace raytracer {
 
 PhotonMapper::PhotonMapper(Scene* scene)
 : StandardTracer(scene) {
   switch(settings->photonmap) {
   case 0:
+  case 2:
     photonmap = new ArrayPM(settings->photonmap_size);
     cout << "Using array photonmap\n";
     break;
@@ -40,7 +44,7 @@ PhotonMapper::~PhotonMapper() {
 
 void PhotonMapper::initTracing(){
   StandardTracer::initTracing();
-  if(!settings->use_first_bounce) {
+  if(!(settings->use_first_bounce && settings->photonmap==0)) {
     getPhotons();
   }
   photonmap->balance();
@@ -48,6 +52,9 @@ void PhotonMapper::initTracing(){
 
 void PhotonMapper::first_bounce() {
   StandardTracer::first_bounce();
+  if(settings->photonmap != 0)
+    return;
+
   int width = settings->width;
   int height = settings->width;
   int size = width * height;
@@ -75,7 +82,9 @@ void PhotonMapper::first_bounce() {
 }
 
 void PhotonMapper::storeInMap(Photon p){
+  photonmap_mutex.lock();
   photonmap->addPhoton(p);
+  photonmap_mutex.unlock();
 }
 
 bool PhotonMapper::bounce(Photon& p, int thread_id, bool store) {
@@ -155,8 +164,19 @@ void PhotonMapper::tracePhoton(Photon p, int thread_id)
   }
 }
 
+void PhotonMapper::tracePhotons(Photon* photons, size_t m, int thread_id) {
+  //cout << "Thread:" << thread_id << " doing:\t" << m << "photons\n";
+  for(int i=0;i<m;++i){
+    tracePhoton(photons[i], thread_id);
+  }
+}
+
+
 void PhotonMapper::getPhotons() {
   size_t n = settings->photons; //NUMBER_OF_PHOTONS;
+  Photon *photons = new Photon[n];
+  size_t pp = 0;
+
   float totalpower = 0;
   for(size_t i = 0;i < lights->size();++i){
     totalpower += lights->at(i)->getPower();
@@ -181,11 +201,32 @@ void PhotonMapper::getPhotons() {
       p.direction = -ray.getDirection();
       p.position = ray.getPosition();
 
-      tracePhoton(p, thread_id);
+      photons[pp++] = p;
     }
 
     delete [] rays;
   }
+
+  if(abort)
+    return;
+
+  // Launch threads
+  int nr_threads = settings->threads;
+  if (nr_threads == 0)
+    nr_threads = boost::thread::hardware_concurrency();
+  boost::thread threads[nr_threads - 1];
+  int m = n/nr_threads;
+  for (int i = 0; i < nr_threads - 1; ++i) {
+    threads[i] = boost::thread(
+        boost::bind(&PhotonMapper::tracePhotons, this, photons+m*i, m, i));
+  }
+  tracePhotons(photons+m*(nr_threads-1), pp-m*(nr_threads-1), nr_threads-1);  //spawn one less thread by using this thread
+
+  // Wait for threads to complete
+  for (int i = 0; i < nr_threads - 1; ++i) {
+    threads[i].join();
+  }
+  delete [] photons;
 }
 
 vector<Photon*> PhotonMapper::gather(float& r, vec3 point){

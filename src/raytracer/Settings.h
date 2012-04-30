@@ -23,7 +23,7 @@ struct Settings {
     height = 300;
 
     opengl_version = 2;
-    background_color = vec4(0.5,0.5,0.5,0);
+    background_color = vec4(0.2,0.2,0.3,0);
     use_first_bounce = false;
     wireframe = 0;
     test = 0 ;
@@ -73,6 +73,7 @@ struct Settings {
   vec4 background_color;
   float test;
   int debug_mode;
+  bool area_light_quad;
 
   // Data acc
   int tree;

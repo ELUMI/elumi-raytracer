@@ -58,17 +58,21 @@ void drawPointsPhoton();
 void writePhotonMap();
 void readPhotonMap();
 
-int open_gl_version = 2;
+int opengl_version = 2;
+bool headless=false;
 unsigned int win_width, win_height;
-string inputFileName, outputFileName;
+string inputFileName, outputFileName, settingsFileName="";
 
 int main(int argc, char* argv[]) {
   init_generators();
   int running = GL_TRUE;
   getArguments(argc, argv);
 
+  if(!opengl_version)
+    headless = true;
+
   // INIT OPEN GL
-  if (open_gl_version) {
+  if (!headless) {
     win_width = 50;
     win_height = 50;
 
@@ -84,26 +88,43 @@ int main(int argc, char* argv[]) {
     CHECK_GL_ERROR();
     glfwSetMouseButtonCallback(mouse);
     glfwSetMousePosCallback(mouseMove);
+  } else if(!opengl_version) {
+      cout << "Not using OpenGL" << endl;
   } else {
-    cout << "Not using OpenGL" << endl;
+    glfwInit();
+    //a window is almost necessary for an opengl context
+    if (!glfwOpenWindow(1, 1, 0, 0, 0, 0, 0, 0,
+        GLFW_WINDOW)) {
+      cerr << "Failed to open window";
+
+      glfwTerminate();
+      exit(EXIT_FAILURE);
+    }
+    initGL();
+    CHECK_GL_ERROR();
   }
-  cout << "OpenGL version: " << open_gl_version << "\n";
+  cout << "OpenGL version: " << opengl_version << "\n";
 
 
 
   // CREATE RENDERER AND LOAD SCENE DATA
-  myRenderer = new Renderer(open_gl_version);
-  myRenderer->loadSceneFromXML(inputFileName.c_str());
+  myRenderer = new Renderer(opengl_version);
+  if(settingsFileName == "") {
+    myRenderer->loadSceneFromXML(inputFileName.c_str(), 0);
+  } else {
+    myRenderer->loadSceneFromXML(inputFileName.c_str(), settingsFileName.c_str());
+  }
   Scene* myScene = myRenderer->getScene();
   settings = myScene->getSettings();
   camera = myScene->getCamera();
+
 
 //
 //  cout << myScene->getEnvironmentMap()->getColor(Ray::generateRay(vec3(0,0,0), vec3(1,0,0))).x;
 //  exit(1);
 
   // RESIZE
-  if (open_gl_version) {
+  if (!headless) {
     glfwSetWindowSize(settings->width, settings->height);
   }
 
@@ -125,7 +146,7 @@ int main(int argc, char* argv[]) {
     buffer[i * 4 + 11] = 0;
   }
 
-  if (!settings->opengl_version) {
+  if (headless) {
     myRenderer->render();
   } else {
     myRenderer->asyncRender();
@@ -250,10 +271,12 @@ void readPhotonMap() {
 void getArguments(int argc, char *argv[]) {
   // Declare the supported options.
   po::options_description desc("Allowed options");
-  desc.add_options()("help,h", "produce help message")("gl-version,v",po::value<int>(),
-      "Open GL version")("input-file,i", po::value<string>(), "Input file")(
-          "output-file,o", po::value<string>(), "Output file")("settings-file,s",
-              po::value<string>(), "Settings file");
+  desc.add_options()("help,h", "produce help message")
+      ("gl-version,v",po::value<int>(),"Open GL version")
+      ("input-file,i", po::value<string>(), "Input file")
+      ("output-file,o", po::value<string>(), "Output file")
+      ("settings-file,s",po::value<string>(), "Settings file")
+      ("headless,l", "run headless");
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
   po::notify(vm);
@@ -274,15 +297,23 @@ void getArguments(int argc, char *argv[]) {
     cout << "Saving file to default destination (out.png)." << endl;
     outputFileName = "out.png";
   }
+  if (vm.count("settings-file")) {
+    settingsFileName = vm["settings-file"].as<string> ();
+  }
   if (vm.count("gl-version")) {
-    open_gl_version = vm["gl-version"].as<int> ();
+    opengl_version = vm["gl-version"].as<int> ();
   } else {
-    cout << "Using default OpenGL version: " << open_gl_version << "\n";
+    cout << "Using default OpenGL version: " << opengl_version << "\n";
+  }
+
+  if (vm.count("headless")) {
+    headless = true;
+    cout << "Running headless\n";
   }
 }
 
 void initGL() {
-  if(open_gl_version == 2) {
+  if(opengl_version == 2) {
     return;
   }
   glewInit();

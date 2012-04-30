@@ -54,11 +54,7 @@ BaseTracer::~BaseTracer() {
 }
 
 void BaseTracer::runWithGL() {
-  if (!settings->use_first_bounce) {
-    return;
-  }
-  if (settings->opengl_version < 3) {
-    settings->use_first_bounce = false;
+  if (!settings->use_first_bounce || settings->opengl_version<3) {
     return;
   }
   first_bounce();
@@ -155,7 +151,7 @@ void BaseTracer::traceImage(float* color_buffer) {
     threads[i] = boost::thread(
         boost::bind(&BaseTracer::traceImageThread, this, i));
   }
-  traceImageThread(nr_threads); //spawn one less thread by using this thread
+  traceImageThread(nr_threads-1); //spawn one less thread by using this thread
   // Wait for threads to complete
   for (int i = 0; i < nr_threads - 1; ++i) {
     threads[i].join();

@@ -30,7 +30,7 @@ public:
   Scene* getScene();
   ITracer* getTracer();
 
-  void loadSceneFromXML(const char* filename);
+  void loadSceneFromXML(const char* filename, const char* settingsFileName);
   void loadTriangles(vector<Triangle*> triangles,AABB aabb, bool overwrite=false);
   void loadCamera(Camera& camera);
   void loadLights(ILight** lights, int length, bool overwrite=false);
@@ -54,6 +54,7 @@ private:
   int open_gl_version;
   float* color_buffer_org;
   float* color_buffer;
+  void doRender();
 
   bool tonemapped;
   boost::thread* renderthread;

@@ -12,6 +12,8 @@
 #include "../IPhotonMap.h"
 #include "../GLData/PhotonProcesser.h"
 
+#include <boost/thread/mutex.hpp>
+
 namespace raytracer {
 
 class PhotonMapper: public StandardTracer {
@@ -26,6 +28,7 @@ protected:
   void getPhotons();
   void storeInMap(Photon p);
   bool bounce(Photon& p, int thread_id, bool store=true);
+  void tracePhotons(Photon* photons, size_t m, int thread_id);
   virtual void tracePhoton(Photon p, int thread_id);
 
   virtual void initTracing();
@@ -37,8 +40,9 @@ protected:
   float filterKernel(vec3 offset, vec3 normal, float r);
 
   PhotonProcesser* photon_processer;
-
   vec3* colors;
+  boost::mutex photonmap_mutex;
+
 };
 
 }

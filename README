@@ -58,7 +58,15 @@ The settings file uses xml-syntax. See example:
 <Tree version="2"/>
 <Wireframe enable="0"/>
 <Supersampling samples="1" pattern="0" />
-<Photonmapper photonmap="0" photonmap_size="65536" final_gather_samples="0" photons="65536" radius="0.3" scaling="256" />
+<Photonmapper photonmap="1" photonmap_size="65536" final_gather_samples="0" photons="65536" radius="0.3" scaling="256" />
+
+
+Description:
+photonmap:
+ 0 GPU gatherer/arrayPM
+ 1 CPU gatherer/hashPM
+ 2 CPU gatherer/arrayPM
+
 
 ############################################################
 

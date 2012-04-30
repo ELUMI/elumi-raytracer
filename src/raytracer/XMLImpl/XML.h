@@ -21,10 +21,11 @@ public:
   XML(int open_gl_version);
   ~XML();
 
-  Scene* importScene(const char* fileName);
+  Scene* importScene(const char* fileName, const char* settingsFileName);
   void exportScene(Scene scene, const char* fileName);
 
-private:
+  private:
+  void getSettings(const char* xml_file, Settings* settings);
   int open_gl_version;
 };
 
