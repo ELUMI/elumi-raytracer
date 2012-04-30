@@ -122,13 +122,12 @@ bool PhotonMapper::bounce(Photon& p, int thread_id, bool store) {
   //russian roulette
   float rand = gen_random_float(thread_id);
   if (rand < transmittance || refraction_sign<0) {
-    const vec3 refr_normal = -p.normal * refraction_sign;
+    const vec3 refr_normal = p.normal * refraction_sign;
     float eta = mat->getIndexOfRefraction();
-    if (refraction_sign == -1.0f)
+    if (refraction_sign < 0.0f)
       eta = 1 / eta;
     outgoing = glm::refract(-p.direction, refr_normal, eta);
     //p.power *= vec3(0,1,0);
-    p.power *= mat->getSpecular();
     //return false;
   } else if (rand < transmittance+reflection) {
     outgoing = glm::reflect(-p.direction, p.normal);
@@ -153,8 +152,8 @@ bool PhotonMapper::bounce(Photon& p, int thread_id, bool store) {
 
 void PhotonMapper::tracePhoton(Photon p, int thread_id)
 {
-  //if(!bounce(p, thread_id, false))
-  //  return;
+  if(!bounce(p, thread_id, false))
+    return;
   for(size_t k = 0;k < settings->max_recursion_depth;++k){
     if(abort)
       break;
@@ -312,7 +311,7 @@ vec4 PhotonMapper::shade(Ray incoming_ray,
   Material* mat = scene->getMaterialVector()[idata.material];
   vec3 l = getAmbient(incoming_ray, idata, thread_id, depth);
   vec3 color = mat->getDiffuse();
-  //return vec4(l,1);
+  return vec4(l,1);
   return vec4(l*color+mat->getEmissive(),1);
 }
 
