@@ -115,15 +115,6 @@ void BaseTracer::initTracing()
 
   lights = scene->getLightVector();
   abort = false;
-  cout << "<Position x=\"" << scene->getCamera().getPosition().x
-      << "\" y=\"" << scene->getCamera().getPosition().y
-      << "\" z=\"" << scene->getCamera().getPosition().z
-      << "\"/>\n<Direction x=\"" << scene->getCamera().getDirection().x
-      << "\" y=\"" << scene->getCamera().getDirection().y
-      << "\" z=\"" << scene->getCamera().getDirection().z
-      << "\"/>\n<Normal x=\"" << scene->getCamera().getUpVector().x
-      << "\" y=\"" << scene->getCamera().getUpVector().y
-      << "\" z=\"" << scene->getCamera().getUpVector().z << "\"/>\n";
 }
 
 void BaseTracer::initThreads(int nr_threads) {

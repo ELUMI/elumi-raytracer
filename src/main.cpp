@@ -454,12 +454,14 @@ void adjustValue(double speed) {
     break;
   case KEY:
     settings->key += speed * 0.01;
-    myRenderer->tonemapImage(true);
+    settings->tonemap = true;
+    myRenderer->tonemapImage();
     cout << "key: " << settings->key << "\n";
     break;
   case WHITE:
     settings->white += speed * 0.1;
-    myRenderer->tonemapImage(true);
+    settings->tonemap = true;
+    myRenderer->tonemapImage();
     cout << "white: " << settings->white << "\n";
     break;
   case RADIUS:
@@ -566,10 +568,12 @@ void timedCallback() {
     myRenderer->asyncRender();
   }
   if (glfwGetKey('U')) {
-    myRenderer->tonemapImage(true);
+    settings->tonemap = true;
+    myRenderer->tonemapImage();
   }
   if (glfwGetKey('I')) {
-    myRenderer->tonemapImage(false);
+    settings->tonemap = false;
+    myRenderer->tonemapImage();
   }
   if (glfwGetKey('F')) {
     myRenderer->stopRendering();
@@ -625,6 +629,16 @@ void timedCallback() {
   if (glfwGetKey('Q')) {
     cout << "Percent left: " << myRenderer->renderComplete() << endl;
   }
-
+  if (glfwGetKey('C')) {
+    cout << "<Position x=\"" << camera.getPosition().x
+        << "\" y=\"" << camera.getPosition().y
+        << "\" z=\"" << camera.getPosition().z
+        << "\"/>\n<Direction x=\"" << camera.getDirection().x
+        << "\" y=\"" << camera.getDirection().y
+        << "\" z=\"" << camera.getDirection().z
+        << "\"/>\n<Normal x=\"" << camera.getUpVector().x
+        << "\" y=\"" << camera.getUpVector().y
+        << "\" z=\"" << camera.getUpVector().z << "\"/>\n";
+  }
 }
 

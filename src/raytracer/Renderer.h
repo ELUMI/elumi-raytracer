@@ -41,7 +41,7 @@ public:
   void render();       // synchronic
   void asyncRender();  // asynchronic
   void stopRendering();// synchronic
-  void tonemapImage(bool enable);
+  void tonemapImage();
   
   float renderComplete();
   
