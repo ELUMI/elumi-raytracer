@@ -22,7 +22,7 @@ public:
   Material();
   Material(std::string name,glm::vec3 ambient,glm::vec3 diffuse,glm::vec3 specular,
       glm::vec3 emissive,glm::vec3 opacity,float shininess,float sharpness,
-      float reflection ,float index_of_refraction, int diffuse_map,int bump_map,
+      float reflection ,float index_of_refraction, float fresnel, int diffuse_map,int bump_map,
       int norm_map, int specular_map,int r_map, int d_map,
       float reflect_spread, int reflect_samples,
       float refract_spread, int refract_samples, Projector projector,
@@ -34,6 +34,7 @@ public:
   glm::vec3 getDiffuse() const;
   glm::vec3 getEmissive() const;
   float getIndexOfRefraction() const;
+  float getFresnelIndex() const;
   float getReflection() const;
   float getSharpness() const;
   float getShininess() const;
@@ -71,6 +72,7 @@ private:
   float shininess;			    // (Ns)
   float index_of_refraction;// (Ni)
   float reflection;         // (r)
+  float fresnel;            // (f)
   float sharpness;			    // ???????????????????????????????????????????????
 
   float reflect_spread;     // (r_spread)

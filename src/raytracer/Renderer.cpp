@@ -29,6 +29,7 @@ namespace raytracer {
 Renderer::Renderer(int open_gl_version):color_buffer_org(NULL) {
   this->open_gl_version = open_gl_version;
   abort = false;
+  initing = false;
 
   Settings* set = new Settings();
   set->opengl_version = open_gl_version;
@@ -112,11 +113,11 @@ void Renderer::loadLights(ILight** lights, int length, bool overwrite) {
   m_scene->loadLights(lights,length,overwrite);
 }
 
-void Renderer::loadSceneFromXML(const char* filename) {
+void Renderer::loadSceneFromXML(const char* filename, const char* settingsFileName) {
   XML xml = XML(open_gl_version);
   if(m_scene != NULL)
     delete m_scene;
-  m_scene = xml.importScene(filename);
+  m_scene = xml.importScene(filename, settingsFileName);
   init();
 }
 
@@ -141,16 +142,29 @@ void Renderer::setSettings(Settings* settings) {
 }
 
 void Renderer::asyncRender() {
-  if(m_scene == NULL) {
-    cout << "Render has no scene!\n";
-    return;
-  }
-  m_tracer->first_bounce(); //must be done in master thread
-
   if(renderthread){
     stopRendering();
   }
-  renderthread = new boost::thread( boost::bind(&Renderer::render, this ));
+
+  timer.start();
+  initing = true;
+  abort = false;
+
+  m_tracer->initTracing();
+  m_tracer->runWithGL(); //must be done in master thread
+
+  renderthread = new boost::thread( boost::bind(&Renderer::doRender, this));
+}
+
+void Renderer::render() {
+  timer.start();
+  initing = true;
+  abort = false;
+
+  m_tracer->initTracing();
+  m_tracer->runWithGL();
+
+  doRender();
 }
 
 void Renderer::stopRendering() {
@@ -164,7 +178,8 @@ void Renderer::stopRendering() {
   }
 }
 
-void Renderer::tonemapImage(bool enable){
+void Renderer::tonemapImage(){
+  bool enable = m_scene->getSettings()->tonemap;
 /*
   if(color_buffer_other==NULL){
     Settings* set = m_scene->getSettings();
@@ -222,8 +237,10 @@ void Renderer::tonemapImage(bool enable){
   }
 }
 
-void Renderer::render() {
-  abort = false;
+void Renderer::doRender() {
+  if(abort)
+    return;
+
   tonemapped = false;
   if(color_buffer_org!=NULL){
     delete[] color_buffer_org;
@@ -235,10 +252,16 @@ void Renderer::render() {
     return;
   }
 
+  initing = false;
   m_tracer->traceImage(color_buffer);
 
   if(abort)
     return;
+
+  tonemapImage();
+
+  timer.stop();
+  cout << timer.format(2) << endl;
 }
 
 float Renderer::renderComplete() {
@@ -246,6 +269,8 @@ float Renderer::renderComplete() {
     cout << "Render has no tracer!\n";
     return -1;
   }
+  if(initing)
+    return 1;
   return m_tracer->getPixelsLeft();
 }
 

@@ -12,7 +12,7 @@
 #include "../scene/Scene.h"
 #include "../Settings.h"
 #include "../utilities/Ray.h"
-#include "../utilities/DeferredProcesser.h"
+#include "../IDeferredProcesser.h"
 #include "../IRenderPattern.h"
 
 #include <boost/thread/mutex.hpp>
@@ -30,16 +30,20 @@ public:
 
   virtual ~BaseTracer();
 
-  virtual void         traceImage(float* color_buffer);
+  virtual void traceImage(float* color_buffer);
+  void runWithGL();
   virtual void first_bounce();
 
   void         stopTracing();
   float getPixelsLeft();
+  virtual void initTracing();
 
   vec3* posbuff;
 protected:
   virtual vec4 trace(Ray ray, IAccDataStruct::IntersectionData idata, int thread_id);
   virtual vec4 shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata, int thread_id);
+  virtual void initThreads(int nr_threads);
+  size_t* position;
 
   Scene* scene;
   Settings* settings;
@@ -50,10 +54,8 @@ protected:
 
   bool abort;
 
-  DeferredProcesser* first_pass;
+  IDeferredProcesser* first_pass;
   IAccDataStruct::IntersectionData* first_intersections;
-
-  virtual void initTracing();
 
 private:
   void traceImageThread(int id);

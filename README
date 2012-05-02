@@ -29,7 +29,7 @@ The scene file uses xml-syntax. See example:
     <Normal x="0" y="1" z="0"/>
 </Camera>
 
-<Light type="Area" intensity="1.5" falloff="Quadratic">
+<Light type="Area" intensity="1.5" falloff="Quadratic" visible="0">
     <Position x="0.1" y="1.2" z="0.2"/>
     <Color r="1" g="1" b="1"/>
     <Axis1 x="0.5" y="0" z="0" samples="3"/>
@@ -51,14 +51,38 @@ The scene file uses xml-syntax. See example:
 The settings file uses xml-syntax. See example:
 
 <Screen width="200" height="200"/>
-<Tracer version="2" use_fresnel="1" pattern="1" batches="auto"/>
+<Tracer version="2" use_fresnel="1" pattern="1" batches="auto" first_bounce="0"/>
 <Recursion maxDepth="5" attenuationThreshold="0.015625"/>
 <Threading threads="auto"/>
-<Tonemapping key="0.18"/>
+<Tonemapping run="0" key="0.18"/>
 <Tree version="2"/>
 <Wireframe enable="0"/>
 <Supersampling samples="1" pattern="0" />
-<Photonmapper photons="1024" radius="0.5" photonmap_size="1024" />
+<Photonmapper photonmap="1" photonmap_size="65536" final_gather_samples="0" photons="65536" radius="0.3" scaling="256" />
+
+
+Description:
+photonmap:
+ 0 GPU gatherer/arrayPM
+ 1 CPU gatherer/hashPM
+ 2 CPU gatherer/arrayPM
+
+
+############################################################
+
+                     mtl-file
+
+Ka 0.01 0.01 0.01   // ambient rgb
+Kd 0.1 0.1 0.1      // diffuse rgb
+Ks 0.30 0.30 0.30   // specular rgb
+Tf 0.10 0.10 0.10   // Transparancy rgb (but only 1 channel used in our impl.)
+Ns 200              // Specularity constant
+Ni 1.33             // Index of refraction
+f 1.33              // Fresnel index (if not used, default is 0)
+r_spread 0.05       // Glossy reflection
+r_samples 0.05      
+Ni_spread 0.05      // Glossy refraction
+Ni_samples 10
 
 ############################################################
 
@@ -89,7 +113,6 @@ eclipse
      * boost_chrono
      * boost_timer
      * boost_system
-     * # gomp (openmp)
      * GLEW
      * # GL
      * # GLU

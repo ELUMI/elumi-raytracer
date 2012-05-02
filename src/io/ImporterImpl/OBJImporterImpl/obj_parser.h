@@ -55,6 +55,7 @@ struct obj_material
 	double spec[3];
 	double emissive[3];
 	double reflect;
+	double fresnel;
 	double reflect_spread;
 	double reflect_samples;
 	double refract;

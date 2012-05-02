@@ -15,9 +15,9 @@
 
 #include <iostream>
 #include <boost/thread.hpp>
+#include <boost/timer/timer.hpp>
+
 #include "glm/glm.hpp"
-
-
 using namespace glm;
 
 namespace raytracer {
@@ -30,7 +30,7 @@ public:
   Scene* getScene();
   ITracer* getTracer();
 
-  void loadSceneFromXML(const char* filename);
+  void loadSceneFromXML(const char* filename, const char* settingsFileName);
   void loadTriangles(vector<Triangle*> triangles,AABB aabb, bool overwrite=false);
   void loadCamera(Camera& camera);
   void loadLights(ILight** lights, int length, bool overwrite=false);
@@ -41,7 +41,7 @@ public:
   void render();       // synchronic
   void asyncRender();  // asynchronic
   void stopRendering();// synchronic
-  void tonemapImage(bool enable);
+  void tonemapImage();
   
   float renderComplete();
   
@@ -54,9 +54,13 @@ private:
   int open_gl_version;
   float* color_buffer_org;
   float* color_buffer;
+  void doRender();
 
   bool tonemapped;
   boost::thread* renderthread;
+  bool initing;
+
+  boost::timer::cpu_timer timer;
 };
 
 }

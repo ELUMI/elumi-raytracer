@@ -23,6 +23,7 @@ Material::Material() {
   Material::sharpness           = 98; //glossy
   Material::reflection          = 0.0f;
   Material::index_of_refraction = 1.0f;
+  Material::fresnel             = 0.0f;
   Material::diffuse_map         = -1;
   Material::bump_map            = -1;
   Material::specular_map        = -1;
@@ -42,7 +43,7 @@ Material::Material() {
 
 Material::Material(std::string name,glm::vec3 ambient,glm::vec3 diffuse,glm::vec3 specular,
     glm::vec3 emissive,glm::vec3 _opacity,float shininess,float sharpness,
-    float reflection ,float index_of_refraction, int diffuse_map, int bump_map,
+    float reflection ,float index_of_refraction, float fresnel, int diffuse_map, int bump_map,
     int norm_map, int specular_map, int r_map, int d_map,
     float reflect_spread, int reflect_samples,
     float refract_spread, int refract_samples, Projector projector,
@@ -57,6 +58,7 @@ Material::Material(std::string name,glm::vec3 ambient,glm::vec3 diffuse,glm::vec
   Material::shininess           = shininess;
   Material::sharpness           = sharpness;
   Material::index_of_refraction = index_of_refraction;
+  Material::fresnel             = fresnel;
   Material::reflection          = reflection;
   //Material::alpha_texture_map = alpha_texture_map;
   Material::diffuse_map = diffuse_map;
@@ -119,6 +121,10 @@ glm::vec3 Material::getEmissive() const {
 
 float Material::getIndexOfRefraction() const {
   return index_of_refraction;
+}
+
+float Material::getFresnelIndex() const {
+  return fresnel;
 }
 
 float Material::getReflection() const {

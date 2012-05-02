@@ -30,7 +30,6 @@ public:
 
       IntersectionData::triangle = triangle;
       IntersectionData::material = material;
-      IntersectionData::texture = texture;
       IntersectionData::interPoint = interPoint;
       IntersectionData::normal = normal;
       IntersectionData::texcoord = texcoord;

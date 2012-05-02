@@ -46,6 +46,7 @@ void obj_set_material_defaults(obj_material *mtl)
 	mtl->emissive[1] = 0.0; //?
 	mtl->emissive[2] = 0.0; //?
 	mtl->reflect = 0.0;
+	mtl->fresnel = 0.0;
 	mtl->trans[0] = 1;
 	mtl->trans[1] = 1;
 	mtl->trans[2] = 1;
@@ -64,6 +65,11 @@ void obj_set_material_defaults(obj_material *mtl)
   mtl->corresponder = 0.0;
   mtl->relief = false;
   mtl->use_position = false;
+  mtl->reflect_spread = 0.0;
+  mtl->reflect_samples = 0.0;
+  mtl->refract = 0.0;
+  mtl->refract_spread = 0.0;
+  mtl->refract_samples = 0.0;
 }
 
 int obj_parse_vertex_index(int *vertex_index, int *texture_index, int *normal_index)
@@ -301,6 +307,11 @@ int obj_parse_mtl_file(char *filename, list *material_list)
 		{
 			current_mtl->reflect = atof( strtok(NULL, " \t"));
 		}
+    //fresnel
+    else if( strequal(current_token, "f") && material_open)
+    {
+      current_mtl->fresnel = atof( strtok(NULL, " \t"));
+    }
 		//reflection spread
 		else if( strequal(current_token, "r_spread") && material_open)
 		{

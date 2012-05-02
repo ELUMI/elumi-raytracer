@@ -78,6 +78,7 @@ void OBJImporter::loadFile(const char* filename){
 		float _sharpness            = material->glossy;
 		float _reflection           = material->reflect;
 		float _index_of_refraction  = material->refract_index;
+		float fresnel         = material->fresnel;
 		float _refraction           = material->refract;
 		float _reflect_spread       = material->reflect_spread;
 		int   _reflect_samples      = material->reflect_samples;
@@ -310,6 +311,7 @@ void OBJImporter::loadFile(const char* filename){
 				_sharpness,
 				_reflection,
 				_index_of_refraction,
+				fresnel,
 				diff_map_index,
 				bump_map,
 				norm_map,

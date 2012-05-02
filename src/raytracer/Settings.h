@@ -23,7 +23,7 @@ struct Settings {
     height = 300;
 
     opengl_version = 2;
-    background_color = vec4(0.5,0.5,0.5,0);
+    background_color = vec4(0.2,0.2,0.3,0);
     use_first_bounce = false;
     wireframe = 0;
     test = 0 ;
@@ -49,15 +49,19 @@ struct Settings {
     // Tonemapping
     key = 0.18;
     white = 1e20;
+    tonemap = true;
 
     //Supersampling
     super_sampler_pattern = 0;
     samples = 1;
 
     //Photon mapper
-    photons = 32*1024;
-    gather_radius = 0.5f;
+    photonmap = 1;
     photonmap_size = 1024;
+    photons = 32*1024;
+    final_gather_samples = 0;
+    gather_radius = 0.5f;
+    photonmap_scaling = 128.0f;
   }
 
   // Screen
@@ -70,6 +74,7 @@ struct Settings {
   vec4 background_color;
   float test;
   int debug_mode;
+  bool area_light_quad;
 
   // Data acc
   int tree;
@@ -91,15 +96,19 @@ struct Settings {
   // Tonemapping
   float key;
   float white;
+  bool tonemap;
 
   //Supersampling
   unsigned int super_sampler_pattern;
   unsigned int samples;
 
   //Photon mapper
-  size_t photons; //32*1024;
-  float gather_radius;
+  int photonmap;
   size_t photonmap_size;
+  size_t photons;
+  size_t final_gather_samples;
+  float gather_radius;
+  float photonmap_scaling;
 };
 
 }
