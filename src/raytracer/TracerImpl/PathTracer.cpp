@@ -34,7 +34,7 @@ vec4 PathTracer::shade(Ray incoming_ray,
   float transmittance = (1 - material->getOpacity());
   float reflectance = material->getReflection();
 
-  vec2 tex_coords = getTextureCoordinates(material->getDiffuseMap(),material, idata,vec3(0,0,0));
+  vec2 tex_coords = getTextureCoordinates(material, idata,vec3(0,0,0));
 
   if(transmittance < 1.0f && reflectance < 1.0f){
     //color += getAmbient(incoming_ray, idata);

@@ -79,7 +79,11 @@ vec2 Texture::getUVCoordinates(vec3 position, vec3 v1v0, vec3 v2v0) {
   return coords;
 }
 
-vec2 Texture::getUVCoordinates(vec3 position, vec3 normal, double scale, Projector projector, Axis axis) {
+vec2 Texture::getUVCoordinates(vec3 position, vec3 normal, double scale, Projector projector, Axis axis, bool use_position) {
+
+  if(use_position)
+    normal = position;
+
   switch (projector) {
     case PLANE:
       return planeMapping(position, axis);
@@ -177,7 +181,7 @@ vec2 Texture::cylinderMapping(vec3 normal, vec3 position, Axis axis) {
 
 vec3 Texture::getColorAt(vec2 coords) {
   //return repeatImage(coords);
-  return getColorAt(width*coords.u,height*coords.v);
+  return getColorAt(width*coords.x,height*coords.y);
 }
 
 vec3 Texture::repeatImage(vec2 coords) {
@@ -216,18 +220,19 @@ vec3 Texture::getColorAt(vec2 coords, vec3 border_color, float scale) {
   }
 }
 
-vec3 Texture::getColorAt(vec2 coords, Corresponder c) {
+vec3 Texture::getColorAt(vec2 coords, float scale, Corresponder c) {
   switch (c) {
     case REPEAT:
-      return repeatImage(coords);
+      return repeatImage(coords*scale);
       break;
     case MIRROR:
-      return mirrorImage(coords);
+      return mirrorImage(coords*scale);
       break;
     case CLAMP:
-      return clampImage(coords);
+      return clampImage(coords*scale);
       break;
     default:
+      return repeatImage(coords*scale);
       break;
   }
 }

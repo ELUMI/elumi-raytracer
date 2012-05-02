@@ -34,8 +34,10 @@ Material::Material() {
   Material::refract_samples     = 0;
   Material::projector           = CUBE;
   Material::corresponder        = REPEAT;
+  Material::axis                = YAXIS;
   Material::scale               = 1.0f;
   Material::use_relief          = false;
+  Material::use_position        = false;
 }
 
 Material::Material(std::string name,glm::vec3 ambient,glm::vec3 diffuse,glm::vec3 specular,
@@ -44,7 +46,7 @@ Material::Material(std::string name,glm::vec3 ambient,glm::vec3 diffuse,glm::vec
     int norm_map, int specular_map, int r_map, int d_map,
     float reflect_spread, int reflect_samples,
     float refract_spread, int refract_samples, Projector projector,
-    Corresponder corresponder, float scale, bool use_relief){
+    Corresponder corresponder, float scale, bool use_relief, Axis axis, bool use_position){
 
   Material::name                = name;
   Material::ambient             = ambient;
@@ -71,6 +73,8 @@ Material::Material(std::string name,glm::vec3 ambient,glm::vec3 diffuse,glm::vec
   Material::corresponder        = corresponder;
   Material::scale               = scale;
   Material::use_relief          = use_relief;
+  Material::axis                = axis;
+  Material::use_position        = use_position;
 }
 
 Material::~Material() {
@@ -162,12 +166,20 @@ Corresponder Material::getCorresponder() const {
   return corresponder;
 }
 
+Axis Material::getAxis() const {
+  return axis;
+}
+
 float Material::getScale() const {
   return scale;
 }
 
 bool Material::getUseRelief() const {
   return use_relief;
+}
+
+bool Material::getUsePosition() const {
+  return use_position;
 }
 
 

@@ -26,7 +26,7 @@ public:
       int norm_map, int specular_map,int r_map, int d_map,
       float reflect_spread, int reflect_samples,
       float refract_spread, int refract_samples, Projector projector,
-      Corresponder corresponder,float scale, bool use_relief);
+      Corresponder corresponder,float scale, bool use_relief, Axis axis, bool use_position);
   virtual ~Material();
 
   glm::vec3 getColor();
@@ -53,8 +53,10 @@ public:
 
   Projector getProjector() const;
   Corresponder getCorresponder() const;
+  Axis getAxis() const;
   float getScale() const;
   bool getUseRelief() const;
+  bool getUsePosition() const;
 
 private:
   std::string name;
@@ -86,8 +88,10 @@ private:
   float scale;
   Projector projector;
   Corresponder corresponder;
+  Axis axis;
 
   bool use_relief;
+  bool use_position;
 };
 
 }

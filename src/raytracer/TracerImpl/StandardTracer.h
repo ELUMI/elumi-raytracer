@@ -32,7 +32,7 @@ protected:
   vec3 getParallax(Material* material,IAccDataStruct::IntersectionData idata,vec2 tex_coords);
   vec3 getPerturbedNormal(Ray incoming_ray, IAccDataStruct::IntersectionData idata, Material* material,vec2 tex_coords);
   vec3 brdf(vec3 incoming_direction, vec3 outgoing_direction, vec3 normal, Material * material, vec3 texture_color = vec3(1,1,1),vec2 tex_coords = vec2(0,0));
-  vec2 getTextureCoordinates(int texture_index, Material* material, IAccDataStruct::IntersectionData idata, vec3 displacement);
+  vec2 getTextureCoordinates(Material* material, IAccDataStruct::IntersectionData idata, vec3 displacement);
   vec3 getTextureColor(Material* material, IAccDataStruct::IntersectionData idata,vec2 tex_coords);
   vec3 reflection_refraction(Ray incoming_ray, IAccDataStruct::IntersectionData idata, float attenuation,
       unsigned short  depth, Material *material, vec3 normal, vec3 color, vec2 tex_coords, int thread_id);

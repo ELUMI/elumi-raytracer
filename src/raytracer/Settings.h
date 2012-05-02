@@ -30,7 +30,7 @@ struct Settings {
     debug_mode=0;
 
     // Data acc
-    tree = 2;
+    tree = 3;
     draw_data_struct = true;
 
     // Tracer

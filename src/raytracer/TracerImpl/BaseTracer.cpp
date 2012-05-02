@@ -87,7 +87,7 @@ void BaseTracer::first_bounce() {
       assert(material == IAccDataStruct::IntersectionData::NOT_FOUND_INTERNAL || material < scene->getMaterialVector().size());
 
       first_intersections[i] = IAccDataStruct::IntersectionData(NULL, material,
-          vec3(pos) / pos.w, vec3(normals[i]), texcoords[i],vec3(),vec3());
+          vec3(pos) / pos.w, vec3(normals[i]), texcoords[i]);
 
     }
   }

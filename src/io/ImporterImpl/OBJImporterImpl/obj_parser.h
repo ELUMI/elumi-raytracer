@@ -66,7 +66,9 @@ struct obj_material
 	double refract_index;
 	double scale;
 	double corresponder;
+	double axis;
 	bool relief;
+	bool use_position;
 };
 
 struct obj_camera

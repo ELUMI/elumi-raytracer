@@ -59,9 +59,11 @@ void obj_set_material_defaults(obj_material *mtl)
   mtl->r_filename[0] = '\0';
   mtl->d_filename[0] = '\0';
   mtl->projector = 0.0;
+  mtl->axis = 0.0;
   mtl->scale = 1.0;
   mtl->corresponder = 0.0;
   mtl->relief = false;
+  mtl->use_position = false;
 }
 
 int obj_parse_vertex_index(int *vertex_index, int *texture_index, int *normal_index)
@@ -368,6 +370,11 @@ int obj_parse_mtl_file(char *filename, list *material_list)
 		{
 		  current_mtl->projector= atof( strtok(NULL, " \t"));
 		}
+		//Axis
+		else if( strequal(current_token, "axis") && material_open)
+		{
+		  current_mtl->axis= atof( strtok(NULL, " \t"));
+		}
 		//Corresponder
 		else if( strequal(current_token, "corresponder") && material_open)
 		{
@@ -378,10 +385,15 @@ int obj_parse_mtl_file(char *filename, list *material_list)
 		{
 		  current_mtl->scale = atof( strtok(NULL, " \t"));
 		}
-		//Parallax
+		//Relief
 		else if( strequal(current_token, "relief") && material_open)
 		{
 		  current_mtl->relief = true;
+		}
+		//Use position (position will be used instead of normal for projector functions)
+		else if( strequal(current_token, "use_position") && material_open)
+		{
+		  current_mtl->use_position = true;
 		}
 		else
 		{

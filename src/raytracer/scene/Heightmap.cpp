@@ -375,8 +375,7 @@ IAccDataStruct::IntersectionData Heightmap::triangleIntersection(Ray ray, Triang
     v2 = v2v0;
   }
 
-  return IAccDataStruct::IntersectionData(NULL, 0, closest_pos, glm::normalize(inter_normal), vec2(0,0),
-      v1,v2);
+  return IAccDataStruct::IntersectionData(NULL, 0, closest_pos, glm::normalize(inter_normal), vec2(0,0));
 }
 
 }

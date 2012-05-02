@@ -85,8 +85,10 @@ void OBJImporter::loadFile(const char* filename){
 		int   _refract_samples      = material->refract_samples;
 		float _scale                = material->scale;
 		int projector               = material->projector;
+		int axis               = material->axis;
 		int corresponder            = material->corresponder;
 		bool use_relief             = material->relief;
+		bool use_position           = material->use_position;
 		std::string _diffuse_map    = material->diffuse_map;
 		std::string _bump_map       = material->bump_filename;
 		std::string _norm_map       = material->norm_filename;
@@ -96,6 +98,7 @@ void OBJImporter::loadFile(const char* filename){
 
 		Projector _projector         = CUBE;
 		Corresponder _corresponder   = REPEAT;
+		Axis _axis                    = YAXIS;
 
     replace(_diffuse_map.begin(), _diffuse_map.end(), '\n', '\0');
     replace(_bump_map.begin(), _bump_map.end(), '\n', '\0');
@@ -107,6 +110,22 @@ void OBJImporter::loadFile(const char* filename){
 		ILuint image;
 		int diff_map_index = -1, bump_map = -1, ks_map = -1, norm_map = -1,
 		    d_map = -1, r_map = -1;
+
+		//Axis
+		switch (axis) {
+      case 0:
+        _axis = XAXIS;
+        break;
+      case 1:
+        _axis = YAXIS;
+        break;
+      case 2:
+        _axis = ZAXIS;
+        break;
+      default:
+        _axis = YAXIS;
+        break;
+    }
 
 		//Projector function
 		switch (projector) {
@@ -123,7 +142,7 @@ void OBJImporter::loadFile(const char* filename){
         _projector = CYLINDER;
         break;
       default:
-        _projector = CUBE;
+        _projector = UV;
         break;
     }
 
@@ -199,6 +218,7 @@ void OBJImporter::loadFile(const char* filename){
       ilLoadImage(_norm_map.c_str());
 
       if(ilGetError() == IL_NO_ERROR) {
+        cout << "Normal map loaded " << _norm_map << endl;
         ILuint w,h;
 
         w = ilGetInteger(IL_IMAGE_WIDTH);
@@ -303,7 +323,9 @@ void OBJImporter::loadFile(const char* filename){
 				_projector,
 				_corresponder,
 				_scale,
-				use_relief));
+				use_relief,
+				_axis,
+				use_position));
 	}
 
   float inf=std::numeric_limits<float>::infinity();

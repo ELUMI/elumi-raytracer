@@ -146,7 +146,7 @@ void AreaLight::initCaches(size_t nr_of_threads) {
 void AreaLight::addPlane(Scene* scene) {
   std::vector<raytracer::Material*> materials;
   materials.push_back(new Material("Light material",vec3(),color,vec3(),
-      color,vec3(1,1,1), 0, 0, 0, 1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, PLANE,REPEAT,1.0f,false));
+      color,vec3(1,1,1), 0, 0, 0, 1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, PLANE,REPEAT,1.0f,false, YAXIS,false));
   size_t materials_shift = scene->loadMaterials(materials); //load materials BEFORE triangles!
 
   std::vector<raytracer::Triangle*> triangles;
