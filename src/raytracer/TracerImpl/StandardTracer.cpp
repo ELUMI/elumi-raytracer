@@ -52,7 +52,7 @@ vec4 StandardTracer::tracePrim(Ray ray, float attenuation,
   return shade(ray, idata, attenuation, depth, thread_id);
 }
 
-inline vec3 StandardTracer::bumpMap(Ray incoming_ray,
+vec3 StandardTracer::bumpMap(Ray incoming_ray,
     IAccDataStruct::IntersectionData idata, Material* material) {
 
   vec3 normal = idata.normal;

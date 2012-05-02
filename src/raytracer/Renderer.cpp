@@ -177,7 +177,8 @@ void Renderer::stopRendering() {
   }
 }
 
-void Renderer::tonemapImage(bool enable){
+void Renderer::tonemapImage(){
+  bool enable = m_scene->getSettings()->tonemap;
 /*
   if(color_buffer_other==NULL){
     Settings* set = m_scene->getSettings();
@@ -256,7 +257,7 @@ void Renderer::doRender() {
   if(abort)
     return;
 
-  tonemapImage(true);
+  tonemapImage();
 
   timer.stop();
   cout << timer.format(2) << endl;

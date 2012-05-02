@@ -85,6 +85,9 @@ void XML::getSettings(const char* xml_file, Settings* settings) {
     settings->threads = threading.attribute("threads").as_int();
   }
   if (tonemapping) {
+    if (!tonemapping.attribute("on").empty())
+      settings->tonemap = tonemapping.attribute("on").as_bool();
+
     if (!tonemapping.attribute("key").empty())
       settings->key = tonemapping.attribute("key").as_float();
 

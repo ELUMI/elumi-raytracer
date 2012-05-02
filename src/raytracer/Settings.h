@@ -30,7 +30,7 @@ struct Settings {
     debug_mode=0;
 
     // Data acc
-    tree = 2;
+    tree = 3;
     draw_data_struct = true;
 
     // Tracer
@@ -49,6 +49,7 @@ struct Settings {
     // Tonemapping
     key = 0.18;
     white = 1e20;
+    tonemap = true;
 
     //Supersampling
     super_sampler_pattern = 0;
@@ -95,6 +96,7 @@ struct Settings {
   // Tonemapping
   float key;
   float white;
+  bool tonemap;
 
   //Supersampling
   unsigned int super_sampler_pattern;

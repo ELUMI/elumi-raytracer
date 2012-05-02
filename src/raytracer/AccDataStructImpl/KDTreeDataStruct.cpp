@@ -192,6 +192,7 @@ KDTreeDataStruct::findClosestIntersection(Ray ray) {
 void KDTreeDataStruct::build(){
   switch(settings->tree){
   case 2:
+  default:
     KDTreeDataStruct::buildMedianTree(root,0);
     break;
   case 3:
