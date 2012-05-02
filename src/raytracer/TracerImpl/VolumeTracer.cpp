@@ -68,7 +68,7 @@ vec4 VolumeTracer::shade(Ray ray, IAccDataStruct::IntersectionData idata,
     float dist = glm::distance(min, max);
 
     // Add base color:
-    color = glm::exp(-volume->getTau(min, max)) * base_color;
+    color *= glm::exp(-volume->getTau(min, max));
 
     int nr_steps = dist / step_size;
     // Beam transmittance
@@ -88,6 +88,8 @@ vec4 VolumeTracer::shade(Ray ray, IAccDataStruct::IntersectionData idata,
       std::vector<ILight*>* lights = scene->getLightVector();
 
       float in_scattered = 0.0f;
+      vec3 test = vec3(0.0f);
+      vec3 c_test = vec3(1.0f);
       for(unsigned int j = 0; j < lights->size(); j++) {
         ILight* light = lights->at(j);
         vec3 light_pos = light->getPosition();
@@ -98,8 +100,8 @@ vec4 VolumeTracer::shade(Ray ray, IAccDataStruct::IntersectionData idata,
         //float Ld = getIndividualLight(pos, light, thread_id);
         float Ld = light->calcLight(datastruct, pos, thread_id);
 
-        in_scattered += p * Ld * step_size;
 
+        in_scattered += p * Ld * step_size;
       }
 
       color += trans * scattering * in_scattered;
