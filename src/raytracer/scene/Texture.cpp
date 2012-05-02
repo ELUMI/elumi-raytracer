@@ -216,7 +216,7 @@ vec3 Texture::getColorAt(vec2 coords, vec3 border_color, float scale) {
       coords.y >= -half_scale || coords.y < half_scale) {
     return border_color;
   } else {
-    return repeatImage(coords/scale);
+    return glm::clamp(repeatImage(coords/scale),0.0f,1.0f);
   }
 }
 

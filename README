@@ -50,12 +50,12 @@ The scene file uses xml-syntax. See example:
                      Settings-file
 The settings file uses xml-syntax. See example:
 
-<Screen width="200" height="200"/>
-<Tracer version="2" use_fresnel="1" pattern="1" batches="auto" first_bounce="0"/>
+<Screen width="256" height="256"/>
+<Tracer version="4" pattern="1" batches="auto" first_bounce="0"/>
 <Recursion maxDepth="5" attenuationThreshold="0.015625"/>
 <Threading threads="auto"/>
 <Tonemapping run="0" key="0.18"/>
-<Tree version="2"/>
+<Tree version="3"/>
 <Wireframe enable="0"/>
 <Supersampling samples="1" pattern="0" />
 <Photonmapper photonmap="1" photonmap_size="65536" final_gather_samples="0" photons="65536" radius="0.3" scaling="256" />
@@ -83,6 +83,18 @@ r_spread 0.05       // Glossy reflection
 r_samples 0.05      
 Ni_spread 0.05      // Glossy refraction
 Ni_samples 10
+map_Kd path         //Diffuse map
+map_Ks path         //Specular map
+map_Bump path            //Bump map. Used for parallax mapping
+map_Norm path       //Normal map
+map_R path       //Reflection map
+map_D path          //Transparency map
+axis 0           //Axis x,y, or z (0,1,2)
+scale 0.1      //Scale texture (smaller is larger)
+projector 0    //Projector function 0,1,2,3 (Plane,cube,sphere,cylinder)
+corresponder 0   //Corresponder function 0,1,2,3 (repeat,mirror,clamp,border)
+use_position    //Use position instead of normal (used mainly for sphere mapping)
+relief      //Use relief mapping
 
 ############################################################
 
