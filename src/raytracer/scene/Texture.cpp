@@ -10,7 +10,7 @@
 #include "Texture.h"
 
 #include <iostream>
-#include "../utilities/glutil.h"
+#include "../GLData/glutil.h"
 using namespace std;
 
 namespace raytracer {
