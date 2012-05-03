@@ -162,8 +162,8 @@ bool PhotonMapper::bounce(Photon& p, int thread_id, bool store) {
 
 void PhotonMapper::tracePhoton(Photon p, int thread_id)
 {
-  if(!bounce(p, thread_id, false))
-    return;
+  //if(!bounce(p, thread_id, false))
+  //  return;
   for(size_t k = 0;k < settings->max_recursion_depth;++k){
     if(abort)
       break;
@@ -321,7 +321,7 @@ vec4 PhotonMapper::shade(Ray incoming_ray,
   Material* mat = scene->getMaterialVector()[idata.material];
   vec3 l = getAmbient(incoming_ray, idata, thread_id, depth);
   vec3 color = mat->getDiffuse();
-  return vec4(l,1);
+  //return vec4(l,1);
   return vec4(l*color+mat->getEmissive(),1);
 }
 
