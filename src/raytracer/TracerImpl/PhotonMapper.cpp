@@ -98,9 +98,7 @@ bool PhotonMapper::bounce(Photon& p, int thread_id, bool store) {
   p.position = idata.interPoint;
   p.normal = idata.normal;
 
-  if(store) {
-    storeInMap(p);
-  }
+  Photon bp = p;
 
   Material* mat = scene->getMaterialVector()[idata.material];
 
@@ -127,18 +125,30 @@ bool PhotonMapper::bounce(Photon& p, int thread_id, bool store) {
     if (refraction_sign < 0.0f)
       eta = 1 / eta;
     outgoing = glm::refract(-p.direction, refr_normal, eta);
-    //p.power *= vec3(0,1,0);
+    if(outgoing == vec3(0,0,0)) {
+      return false;
+    }
+    //p.power *= vec3(0,1,1);
     //return false;
   } else if (rand < transmittance+reflection) {
     outgoing = glm::reflect(-p.direction, p.normal);
     p.power *= mat->getSpecular();
-    //p.power *= vec3(1,0,0);
+    //p.power *= vec3(1,1,0);
     //return false;
   } else if(rand < transmittance+reflection+diffuse) {  //diffuse interreflection
+    if(store) {
+      storeInMap(bp);
+    }
+
     outgoing = gen_random_hemisphere(p.normal, thread_id);
+    p.power *= 0.1f;
     p.power *= mat->getDiffuse();
     //return false;
   } else { //absorbtion
+    if(store) {
+      storeInMap(p);
+    }
+
     return false;
   }
 

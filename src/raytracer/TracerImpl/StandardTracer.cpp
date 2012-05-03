@@ -371,15 +371,13 @@ vec3 StandardTracer::getLighting(Ray incoming_ray,
         //do nothing, handled in getAmbient()
       } else {
         /**** NON AMBIENT LIGHT, CALCULATE SHADOW RAYS ***/
-        float in_light = light->calcLight(datastruct, idata.interPoint,
-            thread_id);
+        float in_light = light->calcLight(datastruct, idata.interPoint, thread_id);
         if (in_light > 0.0f) {
           // NOT ENTIRELY IN SHADOW! SHADE!
-          Ray light_ray = Ray::generateRay(light->getPosition(),
-              idata.interPoint);
-          color += light->getColor() * in_light * brdf(
-              light_ray.getDirection(), incoming_ray.getDirection(), normal,
-              material, texture_color);
+          Ray light_ray = Ray::generateRay(light->getPosition(), idata.interPoint);
+          color += light->getColor() * in_light *
+              brdf(light_ray.getDirection(), incoming_ray.getDirection(),
+                  normal, material, texture_color);
         }
       }
     }
