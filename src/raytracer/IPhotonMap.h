@@ -91,7 +91,7 @@ public:
         //c = vec4(0,1,0,0);
         //c = glm::normalize(c);
         vec3 v = p.position;
-        glColor3f(c.r, c.b, c.g);
+        glColor3f(c.r, c.g, c.b);
         glVertex3f(v.x, v.y, v.z);
       }
     }

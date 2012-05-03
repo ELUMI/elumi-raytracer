@@ -98,41 +98,57 @@ bool PhotonMapper::bounce(Photon& p, int thread_id, bool store) {
   p.position = idata.interPoint;
   p.normal = idata.normal;
 
-  if(store) {
-    storeInMap(p);
-  }
+  Photon bp = p;
 
   Material* mat = scene->getMaterialVector()[idata.material];
 
-  float reflection = mat->getReflection()/3;
-  float refraction = mat->getReflection()/3;
-  float absorbtion = 1/3;
-  float diffuse    = 1 - reflection - refraction - absorbtion;
-  vec3 outgoing;
+  float absorbtion = 1.0f/10.0f; //fixed probability
+  float reflection =    (1-absorbtion)                            * mat->getReflection();    //first priority
+  float transmittance = (1-(absorbtion+reflection))               * (1 - mat->getOpacity()); //second priority
+  float diffuse =       (1-(absorbtion+reflection+transmittance)) * 1;                       //third priority
 
-  assert(reflection <= 1 && refraction <= 1 && absorbtion <= 1 && diffuse <= 1);
-  assert(reflection+refraction+diffuse+absorbtion==1.0f);
+  assert(reflection <= 1 && transmittance <= 1 && absorbtion <= 1 && diffuse <= 1);
+  assert(reflection >= 0 && transmittance >= 0 && absorbtion >= 0 && diffuse >= 0);
+  assert(reflection+transmittance+diffuse+absorbtion==1.0f);
+
+  //cout << (1-mat->getOpacity()) << "\t";
+  //cout << transmittance << "\t" << reflection << "\t" << diffuse << "\n";
+
+  vec3 outgoing;
+  const float refraction_sign = glm::sign(glm::dot(p.normal, p.direction));
 
   //russian roulette
   float rand = gen_random_float(thread_id);
-  if (rand < reflection) {
-    outgoing = glm::reflect(p.direction, p.normal);
-    p.power *= mat->getSpecular();
-    //return false;
-  } else if (rand < reflection+refraction) {
-    const float refraction_sign = glm::sign(
-        glm::dot(p.normal, p.direction));
-    const vec3 refr_normal = -p.normal * refraction_sign;
+  if (rand < transmittance || refraction_sign<0) {
+    const vec3 refr_normal = p.normal * refraction_sign;
     float eta = mat->getIndexOfRefraction();
-    if (refraction_sign == -1.0f)
+    if (refraction_sign < 0.0f)
       eta = 1 / eta;
-    outgoing = glm::refract(p.direction, refr_normal, eta);
-    //p.power *= mat->getDiffuse();
-  } else if(rand < reflection+refraction+diffuse) {  //diffuse interreflection
+    outgoing = glm::refract(-p.direction, refr_normal, eta);
+    if(outgoing == vec3(0,0,0)) {
+      return false;
+    }
+    //p.power *= vec3(0,1,1);
+    //return false;
+  } else if (rand < transmittance+reflection) {
+    outgoing = glm::reflect(-p.direction, p.normal);
+    p.power *= mat->getSpecular();
+    //p.power *= vec3(1,1,0);
+    //return false;
+  } else if(rand < transmittance+reflection+diffuse) {  //diffuse interreflection
+    if(store) {
+      storeInMap(bp);
+    }
+
     outgoing = gen_random_hemisphere(p.normal, thread_id);
+    p.power *= 0.1f;
     p.power *= mat->getDiffuse();
     //return false;
   } else { //absorbtion
+    if(store) {
+      storeInMap(p);
+    }
+
     return false;
   }
 
@@ -146,6 +162,8 @@ bool PhotonMapper::bounce(Photon& p, int thread_id, bool store) {
 
 void PhotonMapper::tracePhoton(Photon p, int thread_id)
 {
+  if(!bounce(p, thread_id, false))
+    return;
   for(size_t k = 0;k < settings->max_recursion_depth;++k){
     if(abort)
       break;
@@ -303,7 +321,7 @@ vec4 PhotonMapper::shade(Ray incoming_ray,
   Material* mat = scene->getMaterialVector()[idata.material];
   vec3 l = getAmbient(incoming_ray, idata, thread_id, depth);
   vec3 color = mat->getDiffuse();
-  //return vec4(l,1);
+  return vec4(l,1);
   return vec4(l*color+mat->getEmissive(),1);
 }
 

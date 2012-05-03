@@ -23,6 +23,7 @@ public:
 
   IPhotonMap* photonmap;
 protected:
+
   Photon* photons;
   void getPhotons();
   void storeInMap(Photon p);
@@ -39,7 +40,6 @@ protected:
   float filterKernel(vec3 offset, vec3 normal, float r);
 
   PhotonProcesser* photon_processer;
-
   vec3* colors;
   boost::mutex photonmap_mutex;
 

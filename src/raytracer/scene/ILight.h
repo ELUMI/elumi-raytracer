@@ -29,7 +29,7 @@ public:
   virtual float getFalloff(float distance) = 0;
   virtual vec3 getColor() const = 0;
   virtual FalloffType getFalloffType() const {return NONE;}
-  virtual float getPower() { vec3 c = getColor(); return (c.r+c.g+c.b)/3; }
+  virtual float getPower() { vec3 c = getColor() * getIntensity(); return (c.r+c.g+c.b); }
 
   virtual void setPosition(vec3 position) = 0;
   virtual void setIntensity(float intensity) = 0;
