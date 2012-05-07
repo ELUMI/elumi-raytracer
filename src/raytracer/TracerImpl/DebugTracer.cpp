@@ -19,7 +19,7 @@ DebugTracer::~DebugTracer() {
 }
 
 
-vec4 DebugTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata) {
+vec4 DebugTracer::shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata, int thread_id){
 
   switch(settings->debug_mode) {
   case 1:

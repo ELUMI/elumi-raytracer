@@ -89,19 +89,8 @@ ArrayDataStruct::findClosestIntersection(Ray ray) {
                       a1 * *(closest_tri->getTextures()[1]) +
                       a2 * *(closest_tri->getTextures()[2]);
 
-  vec3 v1 = v1v0;
-  vec3 v2 = v2v1;
 
-  if(v1.length() > v2.length()) {
-    v1 = v2v1;
-    v1 = v1v0;
-  }
-  if(v2.length() > v2v0.length()) {
-    v2 = v2v0;
-  }
-
-  return IntersectionData(closest_tri, closest_tri->getMaterial(), closest_pos, glm::normalize(inter_normal), vec2(inter_tex),
-      v1,v2);
+  return IntersectionData(closest_tri, closest_tri->getMaterial(), closest_pos, glm::normalize(inter_normal), vec2(inter_tex));
 }
 
 void ArrayDataStruct::setData(Triangle** triangles,size_t size,AABB aabb) {

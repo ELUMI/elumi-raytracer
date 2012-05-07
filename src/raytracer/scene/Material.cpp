@@ -23,22 +23,31 @@ Material::Material() {
   Material::sharpness           = 98; //glossy
   Material::reflection          = 0.0f;
   Material::index_of_refraction = 1.0f;
+  Material::fresnel             = 0.0f;
   Material::diffuse_map         = -1;
   Material::bump_map            = -1;
   Material::specular_map        = -1;
   Material::transparency_map    = -1;
+  Material::reflection_map      = -1;
   Material::reflect_spread      = 0;
   Material::reflect_samples     = 0;
   Material::reflect_spread      = 0;
   Material::refract_samples     = 0;
+  Material::projector           = CUBE;
+  Material::corresponder        = REPEAT;
+  Material::axis                = YAXIS;
+  Material::scale               = 1.0f;
+  Material::use_relief          = false;
+  Material::use_position        = false;
 }
 
 Material::Material(std::string name,glm::vec3 ambient,glm::vec3 diffuse,glm::vec3 specular,
     glm::vec3 emissive,glm::vec3 _opacity,float shininess,float sharpness,
-    float reflection ,float index_of_refraction, int diffuse_map, int bump_map,
-    int norm_map, int specular_map, int d_map,
+    float reflection ,float index_of_refraction, float fresnel, int diffuse_map, int bump_map,
+    int norm_map, int specular_map, int r_map, int d_map,
     float reflect_spread, int reflect_samples,
-    float refract_spread, int refract_samples){
+    float refract_spread, int refract_samples, Projector projector,
+    Corresponder corresponder, float scale, bool use_relief, Axis axis, bool use_position){
 
   Material::name                = name;
   Material::ambient             = ambient;
@@ -49,6 +58,7 @@ Material::Material(std::string name,glm::vec3 ambient,glm::vec3 diffuse,glm::vec
   Material::shininess           = shininess;
   Material::sharpness           = sharpness;
   Material::index_of_refraction = index_of_refraction;
+  Material::fresnel             = fresnel;
   Material::reflection          = reflection;
   //Material::alpha_texture_map = alpha_texture_map;
   Material::diffuse_map = diffuse_map;
@@ -56,10 +66,17 @@ Material::Material(std::string name,glm::vec3 ambient,glm::vec3 diffuse,glm::vec
   Material::normal_map = norm_map;
   Material::specular_map = specular_map;
   Material::transparency_map = d_map;
+  Material::reflection_map = r_map;
   Material::reflect_spread      = reflect_spread;
   Material::reflect_samples     = reflect_samples;
   Material::refract_spread      = refract_spread;
   Material::refract_samples     = refract_samples;
+  Material::projector           = projector;
+  Material::corresponder        = corresponder;
+  Material::scale               = scale;
+  Material::use_relief          = use_relief;
+  Material::axis                = axis;
+  Material::use_position        = use_position;
 }
 
 Material::~Material() {
@@ -82,6 +99,10 @@ int Material::getTransparencyMap() {
   return transparency_map;
 }
 
+int Material::getReflectionMap() {
+  return reflection_map;
+}
+
 int Material::getNormalMap() {
   return normal_map;
 }
@@ -100,6 +121,10 @@ glm::vec3 Material::getEmissive() const {
 
 float Material::getIndexOfRefraction() const {
   return index_of_refraction;
+}
+
+float Material::getFresnelIndex() const {
+  return fresnel;
 }
 
 float Material::getReflection() const {
@@ -138,5 +163,30 @@ float Material::getRefractionSpread() const {
 int Material::getRefractionSamples() const {
   return refract_samples;
 }
+
+Projector Material::getProjector() const {
+  return projector;
+}
+
+Corresponder Material::getCorresponder() const {
+  return corresponder;
+}
+
+Axis Material::getAxis() const {
+  return axis;
+}
+
+float Material::getScale() const {
+  return scale;
+}
+
+bool Material::getUseRelief() const {
+  return use_relief;
+}
+
+bool Material::getUsePosition() const {
+  return use_position;
+}
+
 
 }

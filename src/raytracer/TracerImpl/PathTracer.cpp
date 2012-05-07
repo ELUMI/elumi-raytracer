@@ -27,12 +27,14 @@ vec4 PathTracer::shade(Ray incoming_ray,
   }
   assert(idata.material < scene->getMaterialVector().size());
   // Intersection!
+  vec3 normal = idata.normal;
   Material *material = scene->getMaterialVector()[idata.material];
-  vec3 normal = bumpMap(incoming_ray, idata, material);
   vec3 color = material->getEmissive();
 
   float transmittance = (1 - material->getOpacity());
   float reflectance = material->getReflection();
+
+  vec2 tex_coords = getTextureCoordinates(material, idata,vec3(0,0,0));
 
   if(transmittance < 1.0f && reflectance < 1.0f){
     //color += getAmbient(incoming_ray, idata);
@@ -40,7 +42,9 @@ vec4 PathTracer::shade(Ray incoming_ray,
 
     if(attenuation < ATTENUATION_THRESHOLD || depth > MAX_RECURSION_DEPTH){
     } else {
-      vec3 texture_color = getTextureColor(material, idata);
+//      vec3 perturbed_normal = getPerturbedNormal(incoming_ray.getDirection(),
+//          idata,material,tex_coords);
+      vec3 texture_color = getTextureColor(material, idata,tex_coords);
 
       Ray new_ray(idata.interPoint, gen_random_hemisphere(normal, thread_id));
       vec3 brdff = brdf(-new_ray.getDirection(), incoming_ray.getDirection(), normal, material, texture_color);
@@ -50,7 +54,7 @@ vec4 PathTracer::shade(Ray incoming_ray,
     }
   }
 
-  color = reflection_refraction(incoming_ray, idata, attenuation, depth, material, normal, color, thread_id);
+  color = reflection_refraction(incoming_ray, idata, attenuation, depth, material, normal, color, tex_coords, thread_id);
 
   return vec4(color,1.0f);
 }

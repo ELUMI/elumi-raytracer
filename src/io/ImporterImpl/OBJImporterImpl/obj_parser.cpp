@@ -46,6 +46,7 @@ void obj_set_material_defaults(obj_material *mtl)
 	mtl->emissive[1] = 0.0; //?
 	mtl->emissive[2] = 0.0; //?
 	mtl->reflect = 0.0;
+	mtl->fresnel = 0.0;
 	mtl->trans[0] = 1;
 	mtl->trans[1] = 1;
 	mtl->trans[2] = 1;
@@ -56,7 +57,19 @@ void obj_set_material_defaults(obj_material *mtl)
 	mtl->bump_filename[0] = '\0';
   mtl->norm_filename[0] = '\0';
   mtl->ks_filename[0] = '\0';
+  mtl->r_filename[0] = '\0';
   mtl->d_filename[0] = '\0';
+  mtl->projector = 0.0;
+  mtl->axis = 0.0;
+  mtl->scale = 1.0;
+  mtl->corresponder = 0.0;
+  mtl->relief = false;
+  mtl->use_position = false;
+  mtl->reflect_spread = 0.0;
+  mtl->reflect_samples = 0.0;
+  mtl->refract = 0.0;
+  mtl->refract_spread = 0.0;
+  mtl->refract_samples = 0.0;
 }
 
 int obj_parse_vertex_index(int *vertex_index, int *texture_index, int *normal_index)
@@ -294,6 +307,11 @@ int obj_parse_mtl_file(char *filename, list *material_list)
 		{
 			current_mtl->reflect = atof( strtok(NULL, " \t"));
 		}
+    //fresnel
+    else if( strequal(current_token, "f") && material_open)
+    {
+      current_mtl->fresnel = atof( strtok(NULL, " \t"));
+    }
 		//reflection spread
 		else if( strequal(current_token, "r_spread") && material_open)
 		{
@@ -344,7 +362,7 @@ int obj_parse_mtl_file(char *filename, list *material_list)
 		  strncpy(current_mtl->bump_filename, strtok(NULL, " \t"), OBJ_FILENAME_LENGTH);
 		}
 		// transparency map
-		else if( strequal(current_token, "map_d") && material_open)
+		else if( strequal(current_token, "map_D") && material_open)
 		{
 		  strncpy(current_mtl->d_filename, strtok(NULL, " \t"), OBJ_FILENAME_LENGTH);
 		}
@@ -352,6 +370,41 @@ int obj_parse_mtl_file(char *filename, list *material_list)
 		else if( strequal(current_token, "map_Ks") && material_open)
 		{
 		  strncpy(current_mtl->ks_filename, strtok(NULL, " \t"), OBJ_FILENAME_LENGTH);
+		}
+		//Reflection map
+		else if( strequal(current_token, "map_R") && material_open)
+		{
+		  strncpy(current_mtl->r_filename, strtok(NULL, " \t"), OBJ_FILENAME_LENGTH);
+		}
+		//Projector
+		else if( strequal(current_token, "projector") && material_open)
+		{
+		  current_mtl->projector= atof( strtok(NULL, " \t"));
+		}
+		//Axis
+		else if( strequal(current_token, "axis") && material_open)
+		{
+		  current_mtl->axis= atof( strtok(NULL, " \t"));
+		}
+		//Corresponder
+		else if( strequal(current_token, "corresponder") && material_open)
+		{
+		  current_mtl->corresponder= atof( strtok(NULL, " \t"));
+		}
+		//Scale
+		else if( strequal(current_token, "scale") && material_open)
+		{
+		  current_mtl->scale = atof( strtok(NULL, " \t"));
+		}
+		//Relief
+		else if( strequal(current_token, "relief") && material_open)
+		{
+		  current_mtl->relief = true;
+		}
+		//Use position (position will be used instead of normal for projector functions)
+		else if( strequal(current_token, "use_position") && material_open)
+		{
+		  current_mtl->use_position = true;
 		}
 		else
 		{

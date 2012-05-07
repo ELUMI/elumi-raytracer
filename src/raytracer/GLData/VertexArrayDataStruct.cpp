@@ -12,7 +12,7 @@
 #include "VertexArrayDataStruct.h"
 #include "../utilities/Triangle.h"
 #include "../utilities/Ray.h"
-#include "../utilities/glutil.h"
+#include "../GLData/glutil.h"
 #include "../scene/Scene.h"
 
 using namespace glm;
@@ -125,10 +125,11 @@ void VertexArrayDataStruct::draw() {
   //glActiveTexture(GL_TEXTURE0);
   //glBindTexture(GL_TEXTURE_2D, m_texture);
   glBindVertexArray(vertexArrayObject);
-  glDrawArrays(GL_TRIANGLES, 0, size/4);
-  glDrawArrays(GL_TRIANGLES, size/4, size/2);
-  glDrawArrays(GL_TRIANGLES, size/2, size/4);
-  glDrawArrays(GL_TRIANGLES, size-size/4, size/4);
+  glDrawArrays(GL_TRIANGLES, 0, size);
+  //  glDrawArrays(GL_TRIANGLES, 0, size/4);
+  //  glDrawArrays(GL_TRIANGLES, size/4, size/2);
+  //  glDrawArrays(GL_TRIANGLES, size/2, size/4);
+  //  glDrawArrays(GL_TRIANGLES, size-size/4, size/4);
 }
 
 }

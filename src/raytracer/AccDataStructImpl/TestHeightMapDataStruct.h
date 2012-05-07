@@ -25,7 +25,7 @@ public:
   TestHeightMapDataStruct();
   virtual ~TestHeightMapDataStruct();
   IAccDataStruct::IntersectionData findClosestIntersection(Ray ray);
-  void setData(Triangle** new_triangles,size_t size,AABB* aabb){};
+  void setData(Triangle** new_triangles,size_t size,AABB aabb){};
   vector<AABB>& getAABBList(){return aabb_list;}
 private:
   Heightmap* heightmap;

@@ -6,12 +6,12 @@
  */
 
 #include "Scene.h"
-#include "../AccDataStructImpl/VertexArrayDataStruct.h"
 #include "../AccDataStructImpl/ArrayDataStruct.h"
 #include "../AccDataStructImpl/KDTreeDataStruct.hpp"
 #include "../AccDataStructImpl/HashDataStruct.h"
-#include "../AccDataStructImpl/TriangleArray.h"
 #include "../AccDataStructImpl/TestHeightMapDataStruct.h"
+#include "../GLData/VertexArrayDataStruct.h"
+#include "../GLData/TriangleArray.h"
 
 namespace raytracer {
 
@@ -24,6 +24,8 @@ Scene::Scene(Settings* settings)
     m_acc_data_struct = new ArrayDataStruct();
     break;
   case 2:
+    m_acc_data_struct = new TestHeightMapDataStruct();
+    break;
   case 3:
   default:
     m_acc_data_struct = new KDTreeDataStruct(settings);

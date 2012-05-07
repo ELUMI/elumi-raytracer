@@ -6,7 +6,7 @@
  */
 
 #include "PhaseSchlick.h"
-#include "../utilities/glutil.h"
+#include "../GLData/glutil.h"
 
 #include "glm/glm.hpp"
 

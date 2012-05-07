@@ -17,7 +17,7 @@ public:
   DebugTracer(Scene* scene);
   virtual ~DebugTracer();
 
-  vec4 shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata);
+  vec4 shade(Ray incoming_ray, IAccDataStruct::IntersectionData idata, int thread_id);
 
 };
 

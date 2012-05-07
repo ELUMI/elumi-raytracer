@@ -7,7 +7,7 @@ namespace po = boost::program_options;
 
 #include "io/ExporterImpl/PNGExporter.h"
 #include "raytracer/Renderer.h"
-#include "raytracer/utilities/glutil.h"
+#include "raytracer/GLData/glutil.h"
 #include "raytracer/utilities/Random.h"
 #include "raytracer/TracerImpl/PhotonMapper.h"
 
@@ -15,7 +15,7 @@ namespace po = boost::program_options;
 #include "raytracer/XMLImpl/XML.h"
 
 #include "raytracer/common.hpp"
-#include "raytracer/AccDataStructImpl/LineArrayDataStruct.hpp"
+#include "raytracer/GLData/LineArrayDataStruct.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -40,8 +40,9 @@ vec2 mousePrev;
 double prevTime;
 int renderMode = 2;
 raytracer::Renderer* myRenderer;
+bool auto_render = false;
 
-enum DebugVariable { TEST, KEY, WHITE };
+enum DebugVariable { TEST, KEY, WHITE, RADIUS };
 DebugVariable var = TEST;
 
 void timedCallback();
@@ -57,17 +58,21 @@ void drawPointsPhoton();
 void writePhotonMap();
 void readPhotonMap();
 
-int open_gl_version = 2;
+int opengl_version = 2;
+bool headless=false;
 unsigned int win_width, win_height;
-string inputFileName, outputFileName;
+string inputFileName, outputFileName, settingsFileName="";
 
 int main(int argc, char* argv[]) {
   init_generators();
   int running = GL_TRUE;
   getArguments(argc, argv);
 
+  if(!opengl_version)
+    headless = true;
+
   // INIT OPEN GL
-  if (open_gl_version) {
+  if (!headless) {
     win_width = 50;
     win_height = 50;
 
@@ -83,26 +88,43 @@ int main(int argc, char* argv[]) {
     CHECK_GL_ERROR();
     glfwSetMouseButtonCallback(mouse);
     glfwSetMousePosCallback(mouseMove);
+  } else if(!opengl_version) {
+      cout << "Not using OpenGL" << endl;
   } else {
-    cout << "Not using OpenGL" << endl;
+    glfwInit();
+    //a window is almost necessary for an opengl context
+    if (!glfwOpenWindow(1, 1, 0, 0, 0, 0, 0, 0,
+        GLFW_WINDOW)) {
+      cerr << "Failed to open window";
+
+      glfwTerminate();
+      exit(EXIT_FAILURE);
+    }
+    initGL();
+    CHECK_GL_ERROR();
   }
-  cout << "OpenGL version: " << open_gl_version << "\n";
+  cout << "OpenGL version: " << opengl_version << "\n";
 
 
 
   // CREATE RENDERER AND LOAD SCENE DATA
-  myRenderer = new Renderer(open_gl_version);
-  myRenderer->loadSceneFromXML(inputFileName.c_str());
+  myRenderer = new Renderer(opengl_version);
+  if(settingsFileName == "") {
+    myRenderer->loadSceneFromXML(inputFileName.c_str(), 0);
+  } else {
+    myRenderer->loadSceneFromXML(inputFileName.c_str(), settingsFileName.c_str());
+  }
   Scene* myScene = myRenderer->getScene();
   settings = myScene->getSettings();
   camera = myScene->getCamera();
+
 
 //
 //  cout << myScene->getEnvironmentMap()->getColor(Ray::generateRay(vec3(0,0,0), vec3(1,0,0))).x;
 //  exit(1);
 
   // RESIZE
-  if (open_gl_version) {
+  if (!headless) {
     glfwSetWindowSize(settings->width, settings->height);
   }
 
@@ -124,7 +146,7 @@ int main(int argc, char* argv[]) {
     buffer[i * 4 + 11] = 0;
   }
 
-  if (!settings->opengl_version) {
+  if (headless) {
     myRenderer->render();
   } else {
     myRenderer->asyncRender();
@@ -141,6 +163,16 @@ int main(int argc, char* argv[]) {
     }
 
     while (running) {
+      if(auto_render) {
+        while(myRenderer->renderComplete())
+          timedCallback();
+
+        if(myRenderer->renderComplete() == 0.0f) {
+          myRenderer->loadCamera(camera);
+          myRenderer->asyncRender();
+        }
+      }
+
       //OpenGl rendering goes here...d
       glViewport(0, 0, win_width, win_height);
 
@@ -166,8 +198,7 @@ int main(int argc, char* argv[]) {
       case 2:
         glRasterPos2f(-1,-1);
         glPixelZoom((float) win_width / settings->width, (float) win_height / settings->height);
-        glDrawPixels(settings->width, settings->height, GL_RGBA,
-            GL_FLOAT, buffer);
+        glDrawPixels(settings->width, settings->height, GL_RGBA, GL_FLOAT, buffer);
         break;
       case 3:
         drawDrawables(drawables, n_drawables);
@@ -240,10 +271,12 @@ void readPhotonMap() {
 void getArguments(int argc, char *argv[]) {
   // Declare the supported options.
   po::options_description desc("Allowed options");
-  desc.add_options()("help,h", "produce help message")("gl-version,v",po::value<int>(),
-      "Open GL version")("input-file,i", po::value<string>(), "Input file")(
-          "output-file,o", po::value<string>(), "Output file")("settings-file,s",
-              po::value<string>(), "Settings file");
+  desc.add_options()("help,h", "produce help message")
+      ("gl-version,v",po::value<int>(),"Open GL version")
+      ("input-file,i", po::value<string>(), "Input file")
+      ("output-file,o", po::value<string>(), "Output file")
+      ("settings-file,s",po::value<string>(), "Settings file")
+      ("headless,l", "run headless");
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
   po::notify(vm);
@@ -264,15 +297,23 @@ void getArguments(int argc, char *argv[]) {
     cout << "Saving file to default destination (out.png)." << endl;
     outputFileName = "out.png";
   }
+  if (vm.count("settings-file")) {
+    settingsFileName = vm["settings-file"].as<string> ();
+  }
   if (vm.count("gl-version")) {
-    open_gl_version = vm["gl-version"].as<int> ();
+    opengl_version = vm["gl-version"].as<int> ();
   } else {
-    cout << "Using default OpenGL version: " << open_gl_version << "\n";
+    cout << "Using default OpenGL version: " << opengl_version << "\n";
+  }
+
+  if (vm.count("headless")) {
+    headless = true;
+    cout << "Running headless\n";
   }
 }
 
 void initGL() {
-  if(open_gl_version == 2) {
+  if(opengl_version == 2) {
     return;
   }
   glewInit();
@@ -402,6 +443,36 @@ void mouse(int button, int action) {
   }
   //mouseMove(pos.x,pos.y);
 }
+
+void adjustValue(double speed) {
+  switch (var) {
+  case TEST:
+    myRenderer->stopRendering();
+    settings->test += speed * 0.1;
+    myRenderer->asyncRender();
+    cout << "test: " << settings->test << "\n";
+    break;
+  case KEY:
+    settings->key += speed * 0.01;
+    settings->tonemap = true;
+    myRenderer->tonemapImage();
+    cout << "key: " << settings->key << "\n";
+    break;
+  case WHITE:
+    settings->white += speed * 0.1;
+    settings->tonemap = true;
+    myRenderer->tonemapImage();
+    cout << "white: " << settings->white << "\n";
+    break;
+  case RADIUS:
+    myRenderer->stopRendering();
+    settings->gather_radius += speed;
+    myRenderer->asyncRender();
+    cout << "photonmap gather radius: " << settings->gather_radius << "\n";
+    break;
+  }
+}
+
 void timedCallback() {
   double diffTime = glfwGetTime() - prevTime;
   prevTime += diffTime;
@@ -410,6 +481,9 @@ void timedCallback() {
 
   if (glfwGetKey(GLFW_KEY_LCTRL)) {
     speed /= 100;
+  }
+  if (glfwGetKey(GLFW_KEY_LSHIFT)) {
+    speed *= 100;
   }
   if (glfwGetKey('W')) {
     camera.translate(vec3(speed, 0, 0));
@@ -433,16 +507,21 @@ void timedCallback() {
     camera.translate(vec3(0, 0, -speed));
   }
   if (glfwGetKey(GLFW_KEY_UP)) {
-    camera.rotate(vec2(0,-1));
+    camera.rotate(vec2(0,-speed));
   }
   if (glfwGetKey(GLFW_KEY_DOWN)) {
-    camera.rotate(vec2(0,1));
-  }
-  if (glfwGetKey(GLFW_KEY_RIGHT)) {
-    camera.rotate(vec2(1,0));
+    camera.rotate(vec2(0,speed));
   }
   if (glfwGetKey(GLFW_KEY_LEFT)) {
-    camera.rotate(vec2(-1,0));
+    camera.rotate(vec2(-speed,0));
+  }
+  if (glfwGetKey(GLFW_KEY_RIGHT)) {
+    camera.rotate(vec2(speed,0));
+  }
+  if (glfwGetKey(GLFW_KEY_TAB)) {
+    auto_render = !auto_render;
+    cout << "Autorender: " << auto_render << "\n";
+    glfwSleep(0.5);
   }
   if (glfwGetKey('1')) {
     renderMode = 1;
@@ -489,10 +568,12 @@ void timedCallback() {
     myRenderer->asyncRender();
   }
   if (glfwGetKey('U')) {
-    myRenderer->tonemapImage(true);
+    settings->tonemap = true;
+    myRenderer->tonemapImage();
   }
   if (glfwGetKey('I')) {
-    myRenderer->tonemapImage(false);
+    settings->tonemap = false;
+    myRenderer->tonemapImage();
   }
   if (glfwGetKey('F')) {
     myRenderer->stopRendering();
@@ -514,37 +595,14 @@ void timedCallback() {
   if (glfwGetKey(GLFW_KEY_F3)) {
     var = WHITE;
   }
+  if (glfwGetKey(GLFW_KEY_F4)) {
+    var = RADIUS;
+  }
   if (glfwGetKey(GLFW_KEY_KP_ADD)) {
-    if (var == TEST) {
-      myRenderer->stopRendering();
-      settings->test += speed/100;
-      myRenderer->asyncRender();
-      cout << "test: " << settings->test << "\n";
-    } else if (var == KEY) {
-      settings->key += 0.01;
-      myRenderer->tonemapImage(true);
-      cout << "key: " << settings->key << "\n";
-    } else if (var == WHITE) {
-      settings->white += 0.1;
-      myRenderer->tonemapImage(true);
-      cout << "white: " << settings->white << "\n";
-    }
+    adjustValue(speed);
   }
   if (glfwGetKey(GLFW_KEY_KP_SUBTRACT)) {
-    if (var == TEST) {
-      myRenderer->stopRendering();
-      settings->test -= speed/100;
-      myRenderer->asyncRender();
-      cout << "test: " << settings->test << "\n";
-    } else if (var == KEY) {
-      settings->key -= 0.01;
-      myRenderer->tonemapImage(true);
-      cout << "key: " << settings->key << "\n";
-    } else if (var == WHITE) {
-      settings->white -= 0.1;
-      myRenderer->tonemapImage(true);
-      cout << "white: " << settings->white << "\n";
-    }
+    adjustValue(-speed);
   }
   if (glfwGetKey(GLFW_KEY_KP_MULTIPLY)) {
     myRenderer->stopRendering();
@@ -571,6 +629,16 @@ void timedCallback() {
   if (glfwGetKey('Q')) {
     cout << "Percent left: " << myRenderer->renderComplete() << endl;
   }
-
+  if (glfwGetKey('C')) {
+    cout << "<Position x=\"" << camera.getPosition().x
+        << "\" y=\"" << camera.getPosition().y
+        << "\" z=\"" << camera.getPosition().z
+        << "\"/>\n<Direction x=\"" << camera.getDirection().x
+        << "\" y=\"" << camera.getDirection().y
+        << "\" z=\"" << camera.getDirection().z
+        << "\"/>\n<Normal x=\"" << camera.getUpVector().x
+        << "\" y=\"" << camera.getUpVector().y
+        << "\" z=\"" << camera.getUpVector().z << "\"/>\n";
+  }
 }
 

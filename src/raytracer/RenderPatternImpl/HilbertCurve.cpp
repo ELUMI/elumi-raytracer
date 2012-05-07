@@ -54,7 +54,7 @@ HilbertCurve::HilbertCurve(int width, int height, int arg_batches) {
   n = nextOrEqualPowerOf2(max_side);
 
   if (arg_batches == 0)
-    nr_of_batches = n/8; // Must be power of 2
+    nr_of_batches = n/4; // Must be power of 2
   else
     nr_of_batches = nextOrEqualPowerOf2(arg_batches);
 
@@ -90,7 +90,6 @@ HilbertCurve::HilbertCurve(int width, int height, int arg_batches) {
 
   // Remove unnessesary coordinates
   for(unsigned int i=0; i<nr_of_batches; ++i) {
-    int apa = batch_errors[i];
     int this_batch_size = max_batch_size-batch_errors[i];
     batch_sizes[i] = this_batch_size;
     int* batch = new int[this_batch_size];

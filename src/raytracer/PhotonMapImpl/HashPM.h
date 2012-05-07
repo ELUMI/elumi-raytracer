@@ -25,13 +25,12 @@ public:
   void addPhoton(Photon p);
   //void gatherFromG(vec3 point, float r, Photon* p, size_t g);
   vector<Photon*> gatherFromR(vec3 point, float r) const;
-  void draw();
   size_t getTotalPhotons() const;
+  size_t getNumberOfBuckets();
+  vector<Photon>& getBucket(size_t t);
 
   Photon* getBucket(vec3 point);
 
-  void write(const char* filename);
-  void read(const char* filename);
 
 private:
   HashPoint<Photon> hashpoint;

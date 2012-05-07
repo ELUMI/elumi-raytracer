@@ -6,7 +6,7 @@
  */
 
 #include "PhaseIsotropic.h"
-#include "../utilities/glutil.h"
+#include "../GLData/glutil.h"
 
 namespace raytracer {
 

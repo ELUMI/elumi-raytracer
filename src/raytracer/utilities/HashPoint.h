@@ -33,8 +33,8 @@ public:
   float getBucketSize() const;
 
   //T* getBucket(vec3 point);
-  vector<T> getBucket(size_t hash) const;
-  vector<T> getBucket(vec3 point) const;
+  vector<T>& getBucket(size_t hash) const;
+  vector<T>& getBucket(vec3 point) const;
 
   virtual size_t hash(vec3 point) const;
 protected:
@@ -114,12 +114,12 @@ float HashPoint<T>::getBucketSize() const {
 }
 
 template <class T>
-vector<T> HashPoint<T>::getBucket(size_t hash) const {
+vector<T>& HashPoint<T>::getBucket(size_t hash) const {
   return buckets[hash];
 }
 
 template <class T>
-vector<T> HashPoint<T>::getBucket(vec3 point) const {
+vector<T>& HashPoint<T>::getBucket(vec3 point) const {
   return buckets[hash(point)];
 }
 

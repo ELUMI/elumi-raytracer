@@ -22,10 +22,11 @@ public:
   Material();
   Material(std::string name,glm::vec3 ambient,glm::vec3 diffuse,glm::vec3 specular,
       glm::vec3 emissive,glm::vec3 opacity,float shininess,float sharpness,
-      float reflection ,float index_of_refraction, int diffuse_map,int bump_map,
-      int norm_map, int specular_map,int d_map,
+      float reflection ,float index_of_refraction, float fresnel, int diffuse_map,int bump_map,
+      int norm_map, int specular_map,int r_map, int d_map,
       float reflect_spread, int reflect_samples,
-      float refract_spread, int refract_samples);
+      float refract_spread, int refract_samples, Projector projector,
+      Corresponder corresponder,float scale, bool use_relief, Axis axis, bool use_position);
   virtual ~Material();
 
   glm::vec3 getColor();
@@ -33,6 +34,7 @@ public:
   glm::vec3 getDiffuse() const;
   glm::vec3 getEmissive() const;
   float getIndexOfRefraction() const;
+  float getFresnelIndex() const;
   float getReflection() const;
   float getSharpness() const;
   float getShininess() const;
@@ -40,6 +42,7 @@ public:
   int getDiffuseMap();
   int getTransparencyMap();
   int getSpecularMap();
+  int getReflectionMap();
   int getBumpMap();
   int getNormalMap();
   float getOpacity() const;
@@ -49,6 +52,12 @@ public:
   float getRefractionSpread() const;
   int getRefractionSamples() const;
 
+  Projector getProjector() const;
+  Corresponder getCorresponder() const;
+  Axis getAxis() const;
+  float getScale() const;
+  bool getUseRelief() const;
+  bool getUsePosition() const;
 
 private:
   std::string name;
@@ -63,6 +72,7 @@ private:
   float shininess;			    // (Ns)
   float index_of_refraction;// (Ni)
   float reflection;         // (r)
+  float fresnel;            // (f)
   float sharpness;			    // ???????????????????????????????????????????????
 
   float reflect_spread;     // (r_spread)
@@ -75,6 +85,15 @@ private:
   int normal_map;
   int specular_map;
   int transparency_map;
+  int reflection_map;
+
+  float scale;
+  Projector projector;
+  Corresponder corresponder;
+  Axis axis;
+
+  bool use_relief;
+  bool use_position;
 };
 
 }
