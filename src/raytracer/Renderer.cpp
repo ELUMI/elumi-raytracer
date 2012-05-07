@@ -239,6 +239,9 @@ void Renderer::tonemapImage(){
     for (size_t s_buffer = 0; s_buffer < buffer_length; s_buffer++) {
       color_buffer[s_buffer] = color_buffer_org[s_buffer];
     }
+
+    ClampOperator clamp = ClampOperator();
+    clamp.run(color_buffer, buffer_length / 4, 4);
   }
 }
 
