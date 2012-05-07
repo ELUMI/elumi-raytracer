@@ -115,8 +115,8 @@ void AreaLight::getRays(Ray* rays, size_t n, int thread_id) {
     size_t j = gen_random_float(0.0f, samples, thread_id);
     Ray ray;
     light_sources[j].getRays(&ray, 1, thread_id);
-    vec3 offset = gen_random_float(thread_id) * delta1 + gen_random_float(
-        thread_id) * delta2;
+    vec3 offset = gen_random_float(thread_id) * delta1
+                + gen_random_float(thread_id) * delta2;
     rays[i] = Ray(ray.getPosition() + offset, ray.getDirection());
   }
 }
@@ -128,8 +128,8 @@ float AreaLight::calcLight(IAccDataStruct* datastruct, vec3 point,
   BaseLight* light = light_sources;
   for (unsigned int i=0; i<samples; ++i) {
     vec3 offset = area_offset
-                + gen_random_float(0.0f, 1.0f, thread_id) * delta1
-                + gen_random_float(0.0f, 1.0f, thread_id) * delta2;
+                + gen_random_float(thread_id) * delta1
+                + gen_random_float(thread_id) * delta2;
     in_light += light[i].calcLight(datastruct, point, thread_id, offset);
   }
 

@@ -62,6 +62,7 @@ struct Settings {
     final_gather_samples = 0;
     gather_radius = 0.5f;
     photonmap_scaling = 128.0f;
+    photon_kernel = 1;
   }
 
   // Screen
@@ -109,6 +110,7 @@ struct Settings {
   size_t final_gather_samples;
   float gather_radius;
   float photonmap_scaling;
+  int photon_kernel;
 };
 
 }

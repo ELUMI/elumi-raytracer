@@ -244,7 +244,9 @@ vector<Photon*> PhotonMapper::gather(float& r, vec3 point){
 }
 
 float PhotonMapper::filterKernel(vec3 offset, vec3 normal, float r) {
-  //return 1/(M_PI*r*r); //simple filter kernel
+  if(settings->photon_kernel == 0) {
+    return 1/(M_PI*r*r); //simple filter kernel
+  }
 
   //advanced filter kernel (ISPM paper)
   const float sz = 0.1;

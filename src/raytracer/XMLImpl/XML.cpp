@@ -117,8 +117,8 @@ void XML::getSettings(const char* xml_file, Settings* settings) {
       settings->photons = photonmapper.attribute("photons").as_int();
 
     if (!photonmapper.attribute("final_gather_samples").empty())
-      settings->final_gather_samples = photonmapper.attribute(
-          "final_gather_samples").as_int();
+      settings->final_gather_samples =
+          photonmapper.attribute("final_gather_samples").as_int();
 
     if (!photonmapper.attribute("radius").empty())
       settings->gather_radius = photonmapper.attribute("radius").as_float();
@@ -126,6 +126,10 @@ void XML::getSettings(const char* xml_file, Settings* settings) {
     if (!photonmapper.attribute("scaling").empty())
       settings->photonmap_scaling =
           photonmapper.attribute("scaling").as_float();
+
+    if (!photonmapper.attribute("kernel").empty())
+      settings->photon_kernel =
+          photonmapper.attribute("kernel").as_int();
   }
   if (settings->opengl_version < 3) {
     settings->wireframe = 0;
@@ -254,9 +258,7 @@ Scene* XML::importScene(const char* fileName, const char* settingsFileName) {
         normal.attribute("z").as_float());
 
     Camera cam = Camera();
-    cam.setDirection(dir);
-    cam.setPosition(pos);
-    cam.setUpVector(norm);
+    cam.set(pos, dir, norm, 0.7845f, settings->width/settings->height);
 
     scene->loadCamera(cam);
   }
@@ -327,6 +329,7 @@ Scene* XML::importScene(const char* fileName, const char* settingsFileName) {
   }
 
   scene->build(); //build everything we have read in
+
   return scene;
 }
 

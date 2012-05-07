@@ -58,7 +58,7 @@ The settings file uses xml-syntax. See example:
 <Tree version="3"/>
 <Wireframe enable="0"/>
 <Supersampling samples="1" pattern="0" />
-<Photonmapper photonmap="1" photonmap_size="65536" final_gather_samples="0" photons="65536" radius="0.3" scaling="256" />
+<Photonmapper photonmap="1" photonmap_size="65536" final_gather_samples="0" photons="65536" radius="0.3" scaling="256" kernel="1" />
 
 
 Description:
