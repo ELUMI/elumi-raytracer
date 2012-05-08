@@ -111,6 +111,7 @@ IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(
     float closest_t = numeric_limits<float>::infinity();
 
     int* node_triangles_pos = node->getTriangles();
+    float closest_u, closest_v, closest_w;
     for(size_t i=0;i<node->getSize();i++){
       Triangle* cur_triangle = triangles[node_triangles_pos[i]]->getTriangle();
       const vector<vec3*> vertices = cur_triangle->getVertices();
@@ -130,49 +131,64 @@ IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(
       float t = res.x;
       float u = res.y;
       float v = res.z;
+      //w = (1.0f - u - v);
 
       if(u >= 0 && v >= 0 && u + v <= 1) {  // Intersection!
         if(t > 0 && t < closest_t) {
           closest_tri = cur_triangle;
           closest_pos = o + t * d;
           closest_t = t;
+          closest_u = u;
+          closest_v = v;
+          //closest_w = (1.0f - u - v);
         }
       }
     }
-    if(closest_t != numeric_limits<float>::infinity( ) && closest_t<best_t) {
+    if(closest_t != numeric_limits<float>::infinity( ) && closest_t < best_t) {
       best_t = closest_t;
-      vec3 v1v0 = *(closest_tri->getVertices()[1]) - *(closest_tri->getVertices()[0]);
-        vec3 v2v1 = *(closest_tri->getVertices()[2]) - *(closest_tri->getVertices()[1]);
-        vec3 v2v0 = *(closest_tri->getVertices()[2]) - *(closest_tri->getVertices()[0]);
-        vec3 pv0 = closest_pos - *(closest_tri->getVertices()[0]);
-        vec3 pv1 = closest_pos - *(closest_tri->getVertices()[1]);
 
-        float a = length(cross(v1v0, v2v0));
-        float a0 = length(cross(v2v1, pv1))/a;
-        float a1 = length(cross(v2v0, pv0))/a;
-        float a2 = length(cross(v1v0, pv0))/a;
+//      vec3 v1v0 = *(closest_tri->getVertices()[1]) - *(closest_tri->getVertices()[0]);
+//      vec3 v2v1 = *(closest_tri->getVertices()[2]) - *(closest_tri->getVertices()[1]);
+//      vec3 v2v0 = *(closest_tri->getVertices()[2]) - *(closest_tri->getVertices()[0]);
+//      vec3 pv0 = closest_pos - *(closest_tri->getVertices()[0]);
+//      vec3 pv1 = closest_pos - *(closest_tri->getVertices()[1]);
+//
+//      float a = length(cross(v1v0, v2v0));
+//      float closest_w = length(cross(v2v1, pv1))/a;
+//      float closest_u = length(cross(v2v0, pv0))/a;
+//      float closest_v = length(cross(v1v0, pv0))/a;
 
-        vec3 inter_normal = a0 * *(closest_tri->getNormals()[0]) +
-                            a1 * *(closest_tri->getNormals()[1]) +
-                            a2 * *(closest_tri->getNormals()[2]);
 
-        vec3 inter_tex =    a0 * *(closest_tri->getTextures()[0]) +
-                            a1 * *(closest_tri->getTextures()[1]) +
-                            a2 * *(closest_tri->getTextures()[2]);
+//      float a0 = closest_w;
+//      float a1 = closest_u;
+//      float a2 = closest_v;
+      closest_w = (1.0f - closest_u - closest_v);
+      //cout << "(" << closest_w << ", " << closest_u << ", " << closest_v << ")\n";
 
-        vec3 v1 = v1v0;
-        vec3 v2 = v2v1;
+      vec3 inter_normal = closest_w * *(closest_tri->getNormals()[0]) +
+                          closest_u * *(closest_tri->getNormals()[1]) +
+                          closest_v * *(closest_tri->getNormals()[2]);
 
-        if(v1.length() > v2.length()) {
-          v1 = v2v1;
-          v1 = v1v0;
-        }
-        if(v2.length() > v2v0.length()) {
-          v2 = v2v0;
-        }
+      vec3 inter_tex =    closest_w * *(closest_tri->getTextures()[0]) +
+                          closest_u * *(closest_tri->getTextures()[1]) +
+                          closest_v * *(closest_tri->getTextures()[2]);
 
-//      return_value = IntersectionData(closest_tri->getMaterial(), closest_pos, glm::normalize(inter_normal), vec2(inter_tex),
-//            v1,v2);
+      inter_normal = glm::normalize(inter_normal);
+
+// todo: WTF är detta?
+//      vec3 v1 = v1v0;
+//      vec3 v2 = v2v1;
+//
+//      if(v1.length() > v2.length()) {
+//        v1 = v2v1;
+//        v1 = v1v0;
+//      }
+//      if(v2.length() > v2v0.length()) {
+//        v2 = v2v0;
+//      }
+
+      //      return_value = IntersectionData(closest_tri->getMaterial(), closest_pos, glm::normalize(inter_normal), vec2(inter_tex),
+      //            v1,v2);
       return_value = IntersectionData(closest_tri, closest_tri->getMaterial(), closest_pos, glm::normalize(inter_normal), vec2(inter_tex));
     }
   }
