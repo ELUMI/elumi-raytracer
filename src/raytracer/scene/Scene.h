@@ -14,6 +14,7 @@
 //#include "../utilities/Triangle.h" // AccData inkluderar förmodligen denna
 #include "Material.h"
 #include "Texture.h"
+#include "IVolume.h"
 #include "Camera.h"
 #include "ILight.h"
 #include "../IEnvironmentMap.h"
@@ -26,15 +27,19 @@ public:
 	Scene(Settings* settings);
 	virtual ~Scene();
 
+	// Setters
 	void loadTriangles(vector<Triangle*> triangles,AABB aabb, size_t material_shift);
 	void loadCamera(Camera camera);
 	void loadLights(ILight** lights, size_t length, bool overwrite=false);
 	size_t loadMaterials(Material* materials, size_t length);
 	size_t loadMaterials(std::vector<raytracer::Material*> materials);
 	void loadTextures(std::vector<raytracer::Texture*> textures);
+	void loadVolumes(std::vector<IVolume*> volumes);
+	void addVolume(IVolume* volume);
 	void setEnvirontmentMap(IEnvironmentMap* environment_map);
 	void setSettings(Settings* settings);
 
+	// Getters
 	Camera& getCamera();
 	IAccDataStruct* getAccDataStruct();
 
@@ -42,6 +47,7 @@ public:
 	std::vector<ILight*>* getLightVector();
 	const std::vector<Material*>& getMaterialVector();
 	const std::vector<Texture*>& getTextures();
+	const std::vector<IVolume*>& getVolumes();
 	IEnvironmentMap* getEnvironmentMap();
 
 	Texture* getTextureAt(int index);
@@ -58,6 +64,7 @@ private:
 	std::vector<ILight*>* m_lights;
 	std::vector<Material*> m_materials;
   std::vector<Texture*> m_textures;
+  std::vector<IVolume*> m_volumes;
 	IDraw* m_drawable;
 	Settings* m_settings;
   IEnvironmentMap* environment_map;

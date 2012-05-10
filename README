@@ -18,7 +18,15 @@ Allowed options:
 ############################################################
 
                      Scene-file
-The scene file uses xml-syntax. See example:
+The scene file uses xml-syntax. 
+
+Descriptions:
+
+- PhaseFunction:
+  type = [isotropic | HG | Schlick]
+
+
+Example:
 
 <Object fileName="data/scenes/cornell1.obj"/>
 <Settings fileName="data/scenes/settings.xml"></Settings>
@@ -44,6 +52,14 @@ The scene file uses xml-syntax. See example:
     <Back src="data/scenes/textures/environment_maps/land_back.png" />
     <Left src="data/scenes/textures/environment_maps/land_left.png" />
 </Environment>
+
+<Volume type="uniform" attenuation="1.5" emission="1.1">
+  <PhaseFunction type="isotropic" />
+  <Position x="0" y="0.75" z="0"/>
+  <U x="0.25" y="0" z="0"/>
+  <V x="0" y="0.25" z="0"/>
+  <W x="0" y="0" z="0.25"/>
+</Volume>
 
 ############################################################
 

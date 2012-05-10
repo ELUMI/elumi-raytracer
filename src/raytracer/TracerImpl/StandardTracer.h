@@ -38,6 +38,7 @@ protected:
   vec3 reflection_refraction(Ray incoming_ray, IAccDataStruct::IntersectionData idata, float attenuation,
       unsigned short  depth, Material *material, vec3 normal, vec3 color, vec2 tex_coords, int thread_id);
   vec3 getLighting(Ray incoming_ray, IAccDataStruct::IntersectionData idata, vec3 normal, Material *material, vec2 tex_coords, int thread_id, vec3 parallax);
+  virtual float getIndividualLight(vec3 pos, ILight* light, int thread_id);
   virtual vec3 getAmbient(Ray incoming_ray, IAccDataStruct::IntersectionData idata, int thread_id, unsigned short depth);
 
 private:

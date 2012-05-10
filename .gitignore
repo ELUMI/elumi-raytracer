@@ -6,7 +6,7 @@
 .cproject
 Debug/**/*
 Release/**/*
-.settings/**/*
+.settings/**
 
 # Typical swap buffers
 *~
@@ -37,6 +37,11 @@ Release/**/*
 /memorial.exr
 /memorial.hdr
 /memorial.png
+settings.xml
+
+# Images
+*.png
+*.jpg
 
 # pdflatex files
 doc/tex/*

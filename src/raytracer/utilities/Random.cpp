@@ -56,7 +56,6 @@ vec3 gen_random_hemisphere(vec3 normal, int thread_id){
   return dir;
 }
 
-// TODO: Find better algorithm
 vec3 gen_random_cone(vec3 normal, float max, int thread_id) {
   //if(max <= 0.0f) // Cone as narrow as the axis
   //  return normal;

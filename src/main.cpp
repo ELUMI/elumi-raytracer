@@ -459,7 +459,7 @@ void adjustValue(double speed) {
     cout << "key: " << settings->key << "\n";
     break;
   case WHITE:
-    settings->white += speed * 1e10;
+    settings->white += speed * 0.1;
     settings->tonemap = true;
     myRenderer->tonemapImage();
     cout << "white: " << settings->white << "\n";

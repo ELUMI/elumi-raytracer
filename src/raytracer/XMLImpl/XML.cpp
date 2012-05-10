@@ -18,7 +18,14 @@ using namespace glm;
 #include "../scene/ILight.h"
 #include "../scene/LightImpl/BaseLight.h"
 #include "../scene/LightImpl/AreaLight.h"
+#include "../scene/LightImpl/SpotLight.h"
 #include "../EnvironmentMapImpl/CubeMap.h"
+
+#include "../scene/VolumeImpl/UniformVolume.h"
+#include "../PhaseFunctorImpl/PhaseIsotropic.h"
+#include "../PhaseFunctorImpl/PhaseHG.h"
+#include "../PhaseFunctorImpl/PhaseSchlick.h"
+
 #include <exception>
 #include <iostream>
 using namespace std;
@@ -58,6 +65,7 @@ void XML::getSettings(const char* xml_file, Settings* settings) {
   xml_node wireframe = settings_doc.child("Wireframe");
   xml_node supersampling = settings_doc.child("Supersampling");
   xml_node photonmapper = settings_doc.child("Photonmapper");
+  xml_node volume = settings_doc.child("Volume");
   if (screen) {
     settings->width = screen.attribute("width").as_int();
     settings->height = screen.attribute("height").as_int();
@@ -131,6 +139,10 @@ void XML::getSettings(const char* xml_file, Settings* settings) {
       settings->photon_kernel =
           photonmapper.attribute("kernel").as_int();
   }
+  if(volume) {
+    if(!volume.attribute("step_size"). empty())
+      settings->step_size = volume.attribute("step_size").as_float();
+  }
   if (settings->opengl_version < 3) {
     settings->wireframe = 0;
   }
@@ -152,14 +164,14 @@ Scene* XML::importScene(const char* fileName, const char* settingsFileName) {
     getSettings(settingsFileName, settings);
   } else if (xml_settings) {
     const char* xml_file = xml_settings.attribute("fileName").value();
+
     getSettings(xml_file, settings);
   }
 
   Scene* scene = new Scene(settings);
 
   //Load objects
-  for (pugi::xml_node obj = doc.child("Object"); obj; obj = obj.next_sibling("Object"))
-  {
+  for (pugi::xml_node obj = doc.child("Object"); obj; obj = obj.next_sibling("Object")) {
     const char* fileName = obj.attribute("fileName").value();
     importer->loadFile(fileName);
     std::vector<raytracer::Triangle*> triangles = importer->getTriangleList();
@@ -170,6 +182,91 @@ Scene* XML::importScene(const char* fileName, const char* settingsFileName) {
       size_t material_shift = scene->loadMaterials(materials); //load materials BEFORE triangles!
       scene->loadTriangles(triangles,importer->getAABB(), material_shift);
       scene->loadTextures(textures);
+    }
+  }
+  //Load objects
+  for (pugi::xml_node vol = doc.child("Volume"); vol; vol = vol.next_sibling("Volume")) {
+
+
+    // Load phase function for volume
+    xml_node phase_node = vol.child("PhaseFunction");
+
+    IPhaseFunctor* functor;
+    string pf_type = phase_node.attribute("type").value();
+    if(pf_type.compare("isotropic") == 0) {
+      functor = new PhaseIsotropic();
+
+    } else if(pf_type.compare("hg") == 0) {
+      float g = 0.0f;
+      if(!phase_node.attribute("g").empty())
+        g = phase_node.attribute("g").as_float();
+      functor = new PhaseHG(g);
+
+    } else if(pf_type.compare("schlick") == 0) {
+      float k = 0.0f;
+      if(!phase_node.attribute("g").empty()){
+        k = phase_node.attribute("g").as_float();
+        functor = new PhaseSchlick(PhaseSchlick::HGtoSchlick(k));
+      } else if(!phase_node.attribute("k").empty()) {
+        k = phase_node.attribute("k").as_float();
+        functor = new PhaseSchlick(k);
+      }
+
+    } else {
+      functor = new PhaseIsotropic();
+    }
+
+
+    // Load the volume
+    string type = vol.attribute("type").value();
+    if(type.compare("uniform") == 0) {
+
+      xml_node pos_node = vol.child("Position");
+      xml_node u_node = vol.child("U");
+      xml_node v_node = vol.child("V");
+      xml_node w_node = vol.child("W");
+
+      vec3 pos, u, v, w;
+
+      if(!pos_node) {
+        cerr << "XMLImporter: no valid position!" << endl;
+      } else if(!u_node) {
+        cerr << "XMLImporter: no valid u vector!" << endl;
+      } else if(!v_node) {
+        cerr << "XMLImporter: no valid v vector!" << endl;
+      } else if(!w_node) {
+        cerr << "XMLImporter: no valid w vector!" << endl;
+      }
+      if(!pos_node || !u_node || !v_node || !w_node)
+        break;
+
+      pos = vec3(pos_node.attribute("x").as_float(),
+                 pos_node.attribute("y").as_float(),
+                 pos_node.attribute("z").as_float());
+
+      u = vec3(u_node.attribute("x").as_float(),
+               u_node.attribute("y").as_float(),
+               u_node.attribute("z").as_float());
+
+      v = vec3(v_node.attribute("x").as_float(),
+               v_node.attribute("y").as_float(),
+               v_node.attribute("z").as_float());
+
+      w = vec3(w_node.attribute("x").as_float(),
+               w_node.attribute("y").as_float(),
+               w_node.attribute("z").as_float());
+
+      OBB obb = OBB(pos, u, v, w);
+
+      float absorption = vol.attribute("absorption").as_float();
+      float scattering = vol.attribute("scattering").as_float();
+      float emission = vol.attribute("emission").as_float();
+
+      IVolume* volume = new UniformVolume(obb, absorption, scattering, emission, functor);
+      scene->addVolume(volume);
+
+    } else {
+      cerr << "XMLImporter: Invalid volume type" << endl;
     }
   }
   //Load lights
@@ -227,6 +324,30 @@ Scene* XML::importScene(const char* fileName, const char* settingsFileName) {
           xml_axis2.attribute("z").as_float());
 
       newLight = new AreaLight(pos,axis1,axis2,samples1,samples2);
+      reinterpret_cast<AreaLight*>(newLight)->addPlane(scene); //add arealight to datastruct
+    } else if(type.compare("Spot") == 0) {
+      xml_node dir_node = light.child("Direction");
+
+      vec3 dir = vec3(dir_node.attribute("x").as_float(),
+                      dir_node.attribute("y").as_float(),
+                      dir_node.attribute("z").as_float());
+
+      float outer;
+      if(!light.attribute("outer").empty())
+        outer = light.attribute("outer").as_float();
+      else
+        outer = -1;
+
+      float inner;
+      if(!light.attribute("inner").empty())
+        inner = light.attribute("inner").as_float();
+      else
+        inner = outer;
+
+      if(outer > 0)
+        newLight = new SpotLight(pos, dir, inner, outer);
+      else
+        newLight = new SpotLight(pos, dir);
     }
 
     if(newLight != NULL) {
@@ -327,6 +448,8 @@ Scene* XML::importScene(const char* fileName, const char* settingsFileName) {
     if(newEnv != NULL)
       scene->setEnvirontmentMap(newEnv);
   }
+
+  // Load volumes
 
   scene->build(); //build everything we have read in
 
