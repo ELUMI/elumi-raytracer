@@ -120,7 +120,7 @@ void BaseTracer::initTracing()
 void BaseTracer::initThreads(int nr_threads) {
   // Init shadow caches
   for (size_t i = 0; i < lights->size(); ++i) {
-    //lights->at(i)->initCaches(nr_threads);
+    lights->at(i)->initCaches(nr_threads);
   }
 
   if(position)

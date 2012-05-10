@@ -131,7 +131,7 @@ IAccDataStruct::IntersectionData KDTreeDataStruct::findClosestIntersectionStack(
       float u = res.y;
       float v = res.z;
 
-      if(u >= 0 && v >= 0 && u + v <= 1) {  // Intersection!
+      if(u >= 0.0f && v >= 0.0f && u + v <= 1.0f) {  // Intersection!
         if(t > 0 && t < closest_t) {
           closest_tri = cur_triangle;
           closest_pos = o + t * d;
