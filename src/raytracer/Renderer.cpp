@@ -222,28 +222,26 @@ void Renderer::tonemapImage(){
       color_buffer_org[s_buffer] = color_buffer[s_buffer];
     }
   }
-  ClampOperator clamp = ClampOperator();
+
+  GammaEncode gamma = GammaEncode();
+
 
   if (enable) {
-    Settings* set = m_scene->getSettings();
-    ReinhardOperator reinhard = ReinhardOperator(set->key, set->white);
-    GammaEncode gamma = GammaEncode();
-
     for (size_t s_buffer = 0; s_buffer < buffer_length; s_buffer++) {
       color_buffer[s_buffer] = color_buffer_org[s_buffer];
     }
 
+    Settings* set = m_scene->getSettings();
+    ReinhardOperator reinhard = ReinhardOperator(set->key, set->white);
     reinhard.run(color_buffer, buffer_length / 4, 4);
   } else {
     for (size_t s_buffer = 0; s_buffer < buffer_length; s_buffer++) {
       color_buffer[s_buffer] = color_buffer_org[s_buffer];
     }
-
-    ClampOperator clamp = ClampOperator();
-    clamp.run(color_buffer, buffer_length / 4, 4);
   }
+  ClampOperator clamp = ClampOperator();
   clamp.run(color_buffer, buffer_length / 4, 4);
-
+  //gamma.run(color_buffer, buffer_length / 4, 4);
 }
 
 void Renderer::doRender() {

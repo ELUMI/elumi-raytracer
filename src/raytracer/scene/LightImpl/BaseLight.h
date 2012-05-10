@@ -45,7 +45,7 @@ protected:
   vec3 color;
   FalloffType falloff_type;
 
-  static const float EPSILON = 0.0001f;
+  static const float EPSILON = 0.001f;
 
 private:
   float distanceToBlocker(IAccDataStruct* datastruct, vec3 point, int thread_id, vec3 offset = vec3(0.0f,0.0f,0.0f));

@@ -74,7 +74,7 @@ public:
     const float u = res.y;
     const float v = res.z;
 
-    if(u >= 0.0f && v >= 0.0f && u + v <= 1.0f) {  // Intersection!
+    if(u >= 0.0f && v >= 0.0f && u + v <= 1.0f && t>0.0f) {  // Intersection!
       return t;
     }
     return -INFINITY;
