@@ -380,7 +380,7 @@ void KDTreeDataStruct::buildSAHTree(){
     SAHValues plane = findPlane(triangles_node,size,V);
 
     // If it is cheaper to not split end
-    if(KD_INTERSECT*size<=plane.cost||depth>20){ // Can add depth test also
+    if(KD_INTERSECT*size<=plane.cost/*||depth>20*/){ // Can add depth test also
       node->setSize(size);
       node->setTriangles(triangles_node);
       node->setAxis(plane.axis); //
