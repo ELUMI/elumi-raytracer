@@ -324,7 +324,7 @@ Scene* XML::importScene(const char* fileName, const char* settingsFileName) {
           xml_axis2.attribute("z").as_float());
 
       newLight = new AreaLight(pos,axis1,axis2,samples1,samples2);
-      reinterpret_cast<AreaLight*>(newLight)->addPlane(scene); //add arealight to datastruct
+      // NEJ! reinterpret_cast<AreaLight*>(newLight)->addPlane(scene); //add arealight to datastruct
     } else if(type.compare("Spot") == 0) {
       xml_node dir_node = light.child("Direction");
 
