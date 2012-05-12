@@ -242,6 +242,7 @@ void Renderer::tonemapImage(){
   ClampOperator clamp = ClampOperator();
   clamp.run(color_buffer, buffer_length / 4, 4);
   //gamma.run(color_buffer, buffer_length / 4, 4);
+
 }
 
 void Renderer::doRender() {
