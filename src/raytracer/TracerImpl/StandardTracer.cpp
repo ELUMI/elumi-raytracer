@@ -361,7 +361,7 @@ vec4 StandardTracer::shade(Ray incoming_ray,
   vec3 parallax = getParallax(material,idata,tex_coords);
   tex_coords = getTextureCoordinates(material,idata,parallax);
 
-  color += getAmbient(incoming_ray, idata, thread_id, depth);
+  color += getAmbient(incoming_ray, idata, thread_id, depth) * getTextureColor(material, idata, tex_coords);
   color += getLighting(incoming_ray, idata, normal, material, tex_coords, thread_id, parallax);
   color = reflection_refraction(incoming_ray, idata, attenuation, depth, material, normal, color, tex_coords,thread_id);
 
