@@ -62,6 +62,7 @@ struct Settings {
     photons = 32*1024;
     final_gather_samples = 0;
     gather_radius = 0.5f;
+    caustics = 0.5f;
     photonmap_scaling = 128.0f;
     photon_kernel = 1;
 
@@ -114,6 +115,7 @@ struct Settings {
   size_t photons;
   size_t final_gather_samples;
   float gather_radius;
+  float caustics;
   float photonmap_scaling;
   int photon_kernel;
 

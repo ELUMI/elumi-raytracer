@@ -16,14 +16,19 @@ out vec3 photon_direction;
 out vec3 photon_position;
 out vec3 photon_normal;
 out vec3 photon_power;
+out float rad;
 
 uniform vec3 camera_position;
 
 uniform mat4 modelViewProjectionMatrix; 
 
 void main() {
+
+  float r = radius*length(direction);
+  rad = r;
+
   vec3 v = vertex;
-  v *= radius * (1.0/0.7557613141); //make inscribed spheres radius = radius
+  v *= r * (1.0/0.7557613141); //make inscribed spheres radius = radius
   v += -normal*dot(v,normal)*(1-sz); //scale by normal
   v += position; //move to position
   vec4 p = vec4(v,1);
@@ -36,7 +41,7 @@ void main() {
   //p = vec4(p.xyz*1/p.w,1);
   //gl_Position = p;
 
-  photon_direction = direction;
+  photon_direction = normalize(direction);
   photon_position = position;
   photon_normal = normal;
   photon_power = power;

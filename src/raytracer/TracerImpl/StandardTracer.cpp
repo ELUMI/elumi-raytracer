@@ -282,16 +282,12 @@ vec3 StandardTracer::getLighting(
     , IAccDataStruct::IntersectionData idata
     , vec3 normal
     , Material *material
-    , vec2 tex_coords
-    , int thread_id
     , vec3 parallax
+    , vec3 texture_color
+    , int thread_id
 )
 {
   vec3 color = vec3(0);
-
-  vec3 perturbed_normal = getPerturbedNormal(incoming_ray,idata,material,tex_coords);
-  //vec3 perturbed_normal = vec3(0,0,0);
-  vec3 texture_color = getTextureColor(material, idata,tex_coords);
 
   /**** For each light source in the scene ****/
   for(unsigned int i = 0;i < lights->size();++i){
@@ -335,7 +331,7 @@ vec3 StandardTracer::getLighting(
 
         // NOT ENTIRELY IN SHADOW! SHADE!
         Ray light_ray = Ray::generateRay(light->getPosition(), idata.interPoint);
-        color += s*light->getColor() * in_light * brdf(light_ray.getDirection(), incoming_ray.getDirection(), normalize(normal+perturbed_normal), material, texture_color);
+        color += s*light->getColor() * in_light * brdf(light_ray.getDirection(), incoming_ray.getDirection(), normal, material, texture_color);
       }
     }
   }
@@ -354,15 +350,19 @@ vec4 StandardTracer::shade(Ray incoming_ray,
   assert(idata.material < scene->getMaterialVector().size());
   // Intersection!
   Material *material = scene->getMaterialVector()[idata.material];
-  vec3 normal = idata.normal;
-  vec3 color = material->getEmissive();
 
   vec2 tex_coords = getTextureCoordinates(material,idata,vec3(0,0,0));
   vec3 parallax = getParallax(material,idata,tex_coords);
   tex_coords = getTextureCoordinates(material,idata,parallax);
+  vec3 texture = getTextureColor(material, idata, tex_coords);
 
-  color += getAmbient(incoming_ray, idata, thread_id, depth) * getTextureColor(material, idata, tex_coords);
-  color += getLighting(incoming_ray, idata, normal, material, tex_coords, thread_id, parallax);
+  vec3 perturbed_normal = getPerturbedNormal(incoming_ray,idata,material,tex_coords);
+  //vec3 perturbed_normal = vec3(0,0,0);
+  vec3 normal = normalize(idata.normal+perturbed_normal);
+
+  vec3 color = material->getEmissive();
+  color += getAmbient(incoming_ray, idata, thread_id, depth)*texture;
+  color += getLighting(incoming_ray, idata, normal, material, parallax, texture, thread_id);
   color = reflection_refraction(incoming_ray, idata, attenuation, depth, material, normal, color, tex_coords,thread_id);
 
   return vec4(color, 1.0f);

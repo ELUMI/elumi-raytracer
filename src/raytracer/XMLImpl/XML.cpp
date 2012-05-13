@@ -131,6 +131,9 @@ void XML::getSettings(const char* xml_file, Settings* settings) {
     if (!photonmapper.attribute("radius").empty())
       settings->gather_radius = photonmapper.attribute("radius").as_float();
 
+    if (!photonmapper.attribute("caustics").empty())
+      settings->caustics = photonmapper.attribute("caustics").as_float();
+
     if (!photonmapper.attribute("scaling").empty())
       settings->photonmap_scaling =
           photonmapper.attribute("scaling").as_float();

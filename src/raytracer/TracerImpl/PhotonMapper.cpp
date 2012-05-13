@@ -89,7 +89,8 @@ void PhotonMapper::storeInMap(Photon p){
 }
 
 bool PhotonMapper::bounce(Photon& p, int thread_id, bool store) {
-  Ray ray(p.position, -p.direction);
+  vec3 dir = normalize(-p.direction);
+  Ray ray(p.position, dir);
   //cout << p.direction.x << " " << p.direction.y << " " << p.direction.z << "\n";
 
   IAccDataStruct::IntersectionData idata = datastruct->findClosestIntersection(ray);
@@ -98,8 +99,8 @@ bool PhotonMapper::bounce(Photon& p, int thread_id, bool store) {
   }
 
   Material* mat = scene->getMaterialVector()[idata.material];
-  if((1 - mat->getOpacity()) == 0 && store==false )
-    return false;
+  //if((1 - mat->getOpacity()) == 0 && store==false )
+  //  return false;
 
   if(settings->wireframe==2){
     photonmap_mutex.lock();
@@ -109,6 +110,7 @@ bool PhotonMapper::bounce(Photon& p, int thread_id, bool store) {
   }
   p.position = idata.interPoint;
   p.normal = idata.normal;
+
 
   Photon bp = p;
 
@@ -125,7 +127,7 @@ bool PhotonMapper::bounce(Photon& p, int thread_id, bool store) {
   //cout << transmittance << "\t" << reflection << "\t" << diffuse << "\n";
 
   vec3 outgoing;
-  const float refraction_sign = glm::sign(glm::dot(p.normal, -p.direction));
+  const float refraction_sign = glm::sign(glm::dot(p.normal, dir));
   float eta = mat->getIndexOfRefraction();
 
   //russian roulette
@@ -134,14 +136,16 @@ bool PhotonMapper::bounce(Photon& p, int thread_id, bool store) {
     const vec3 refr_normal = -p.normal * refraction_sign;
     if (refraction_sign < 0.0f)
       eta = 1 / eta;
-    outgoing = glm::refract(-p.direction, refr_normal, eta);
+    outgoing = glm::refract(dir, refr_normal, eta);
     if(outgoing == vec3(0,0,0)) {
       return false;
     }
+    outgoing = settings->caustics*outgoing;
     //p.power *= vec3(0,1,1);
     //return false;
   } else if (rand < transmittance+reflection) {
-    outgoing = glm::reflect(-p.direction, p.normal);
+    outgoing = glm::reflect(dir, p.normal);
+    outgoing = settings->caustics*outgoing;
     vec3 c = mat->getSpecular();
     float t = (c.r + c.g + c.b)/3;
     if(t!=0)
@@ -296,9 +300,10 @@ vec3 PhotonMapper::getLuminance(Ray incoming_ray,
   for(size_t i=0; i<photons.size(); ++i){
     const Photon* p = photons[i];
 
-    vec3 b = brdf(-p->direction, incoming_ray.getDirection(), idata.normal, material);
-    float k = filterKernel(idata.interPoint - p->position, idata.normal, r);
-    float a = glm::max(0.0f, glm::dot(p->direction, idata.normal));
+    vec3 dir = normalize(-p->direction);
+    vec3 b = brdf(dir, incoming_ray.getDirection(), idata.normal, material);
+    float k = filterKernel(idata.interPoint - p->position, idata.normal, r*length(p->direction));
+    float a = glm::max(0.0f, glm::dot(-dir, idata.normal));
     //cout << p.power.r << " " << p.power.g << " " << p.power.b << "\n";
     //cout << b << " " << a << " " << k << "\n";
     l += b * p->power * a * k;

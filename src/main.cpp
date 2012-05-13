@@ -42,7 +42,7 @@ int renderMode = 2;
 raytracer::Renderer* myRenderer;
 bool auto_render = false;
 
-enum DebugVariable { TEST, KEY, WHITE, RADIUS };
+enum DebugVariable { TEST, KEY, WHITE, RADIUS, CAUSTICS };
 DebugVariable var = TEST;
 
 void timedCallback();
@@ -484,6 +484,12 @@ void adjustValue(double speed) {
     myRenderer->asyncRender();
     cout << "photonmap gather radius: " << settings->gather_radius << "\n";
     break;
+  case CAUSTICS:
+    myRenderer->stopRendering();
+    settings->caustics += speed;
+    myRenderer->asyncRender();
+    cout << "caustics relative gather radius: " << settings->caustics << "\n";
+    break;
   }
 }
 
@@ -611,6 +617,9 @@ void timedCallback() {
   }
   if (glfwGetKey(GLFW_KEY_F4)) {
     var = RADIUS;
+  }
+  if (glfwGetKey(GLFW_KEY_F5)) {
+    var = CAUSTICS;
   }
   if (glfwGetKey(GLFW_KEY_KP_ADD)) {
     adjustValue(speed);
