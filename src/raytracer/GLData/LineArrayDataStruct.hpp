@@ -1,3 +1,5 @@
+#ifndef LineArrayDataStruct_H_
+#define LineArrayDataStruct_H_
 
 #include "../IDraw.h"
 #include "../common.hpp"
@@ -8,6 +10,7 @@ class LineArrayDataStruct: public IDraw {
 public:
   LineArrayDataStruct(){};
   LineArrayDataStruct(std::vector<AABB> aabb);
+  LineArrayDataStruct(std::vector<vec3>& lines);
   virtual ~LineArrayDataStruct();
   void draw();
 private:
@@ -16,3 +19,5 @@ private:
   size_t size;
 };
 }
+
+#endif

@@ -191,6 +191,17 @@ int main(int argc, char* argv[]) {
         drawables[n_drawables++] = myScene->getLightVector()->at(i);
       if(settings->wireframe==1)
         drawables[n_drawables++] = data_struct_drawable;
+      if(settings->wireframe==2) {
+        PhotonMapper* pm = dynamic_cast<PhotonMapper*>(myRenderer->getTracer());
+        if(pm){
+          IDraw* ld = pm->getLinesDrawable();
+          if(ld)
+            if(renderMode==8)
+              drawables[0] = ld;
+            else
+              drawables[n_drawables++] = ld;
+        }
+      }
       switch (renderMode) {
       case 1:
         drawDrawables(drawables, n_drawables);
@@ -219,6 +230,9 @@ int main(int argc, char* argv[]) {
         drawPoints();
         drawPointsPhoton();
         break;
+      case 8:
+        drawDrawables(drawables, n_drawables);
+        drawPointsPhoton();
       }
 
       CHECK_GL_ERROR();

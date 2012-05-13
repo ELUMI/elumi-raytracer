@@ -40,6 +40,21 @@ LineArrayDataStruct::LineArrayDataStruct(std::vector<AABB> aabb){
   size = m_lines.size();
 }
 
+LineArrayDataStruct::LineArrayDataStruct(std::vector<vec3>& lines){
+  glGenBuffers(1, &linesBuffer);
+  glBindBuffer(GL_ARRAY_BUFFER, linesBuffer);
+  glBufferData(GL_ARRAY_BUFFER, lines.size() * sizeof(glm::vec3),
+      &lines[0].x, GL_STATIC_DRAW);
+
+  glGenVertexArrays(1, &vertexArrayObject);
+  glBindVertexArray(vertexArrayObject);
+  glBindBuffer(GL_ARRAY_BUFFER, linesBuffer);
+  glVertexAttribPointer(0, 3, GL_FLOAT, false/*normalized*/, 0/*stride*/, 0/*offset*/);
+  glEnableVertexAttribArray(0);
+
+  size = lines.size();
+}
+
 LineArrayDataStruct::~LineArrayDataStruct(){
 
   glDeleteBuffers(1, &linesBuffer);

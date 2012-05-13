@@ -11,6 +11,7 @@
 #include "StandardTracer.h"
 #include "../IPhotonMap.h"
 #include "../GLData/PhotonProcesser.h"
+#include "../GLData/LineArrayDataStruct.hpp"
 
 #include <boost/thread/mutex.hpp>
 
@@ -22,6 +23,7 @@ public:
   virtual ~PhotonMapper();
 
   IPhotonMap* photonmap;
+  IDraw* getLinesDrawable();
 protected:
 
   Photon* photons;
@@ -43,6 +45,8 @@ protected:
   vec3* colors;
   boost::mutex photonmap_mutex;
 
+  vector<vec3> lines;
+  LineArrayDataStruct* linearray;
 };
 
 }
