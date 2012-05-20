@@ -53,6 +53,10 @@ Example:
     <Left src="data/scenes/textures/environment_maps/land_left.png" />
 </Environment>
 
+<Environment type="Sphere">
+    <Sphere src="data/scenes/textures/angmap24.jpg" />
+</Environment>
+
 <Volume type="uniform" attenuation="1.5" emission="1.1">
   <PhaseFunction type="isotropic" />
   <Position x="0" y="0.75" z="0"/>
