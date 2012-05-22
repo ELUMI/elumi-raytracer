@@ -28,30 +28,42 @@ Descriptions:
 
 Example:
 
-<Object fileName="data/scenes/cornell1.obj"/>
-<Settings fileName="data/scenes/settings.xml"></Settings>
+<Object fileName="cornell.obj"/>
+<Settings fileName="settings.xml"/>
 
 <Camera>
-    <Position x="0" y="0.717527" z="-2.69957"/>
-    <Direction x="0" y="0" z="1"/>
-    <Normal x="0" y="1" z="0"/>
+  <Position x="0" y="0.717527" z="-2.69957"/>
+  <Direction x="0" y="0" z="1"/>
+  <Normal x="0" y="1" z="0"/>
 </Camera>
 
+<Light type="Spot" intensity="1.5" falloff="Linear" visible="1">
+  <Position x="5" y="1.2" z="2.9"/>
+  <Color r="0.5" g="1" b="0.8"/>
+</Light>
+
 <Light type="Area" intensity="1.5" falloff="Quadratic" visible="0">
-    <Position x="0.1" y="1.2" z="0.2"/>
-    <Color r="1" g="1" b="1"/>
-    <Axis1 x="0.5" y="0" z="0" samples="3"/>
-    <Axis2 x="0" y="0" z="0.5" samples="3"/>
+  <Position x="0.1" y="1.2" z="0.2"/>
+  <Color r="1" g="1" b="1"/>
+  <Axis1 x="0.5" y="0" z="0" samples="3"/>
+  <Axis2 x="0" y="0" z="0.5" samples="3"/>
+</Light>
+
+<Light type="Spot" intensity="2" falloff="Linear" outer="45" inner="40">
+  <Position x="-1.5" y="1.0" z="2.1"/>
+  <Direction x="0" y="-1" z="0"/>
+  <Color r="1" g="1" b="1"/>
 </Light>
 
 <Environment type="Cube">
-    <Top src="data/scenes/textures/environment_maps/land_top.png" />
-    <Bottom src="data/scenes/textures/environment_maps/land_bottom.png" />
-    <Front src="data/scenes/textures/environment_maps/land_front.png" />
-    <Right src="data/scenes/textures/environment_maps/land_right.png" />
-    <Back src="data/scenes/textures/environment_maps/land_back.png" />
-    <Left src="data/scenes/textures/environment_maps/land_left.png" />
+    <Top src="land_top.png" />
+    <Bottom src="land_bottom.png" />
+    <Front src="land_front.png" />
+    <Right src="land_right.png" />
+    <Back src="land_back.png" />
+    <Left src="land_left.png" />
 </Environment>
+
 
 <Environment type="Sphere">
     <Sphere src="data/scenes/textures/angmap24.jpg" />
@@ -70,16 +82,16 @@ Example:
                      Settings-file
 The settings file uses xml-syntax. See example:
 
-<Screen width="256" height="256"/>
+<Screen width="1024" height="1024"/>
 <Tracer version="4" pattern="1" batches="auto" first_bounce="0"/>
-<Recursion maxDepth="5" attenuationThreshold="0.015625"/>
+<Recursion maxDepth="10" attenuationThreshold="0.015625"/>
 <Threading threads="auto"/>
 <Tonemapping on="1" key="0.18" white="10"/>
 <Tree version="3"/>
 <Wireframe enable="0"/>
 <Supersampling samples="1" pattern="0" />
-<Photonmapper photonmap="1" photonmap_size="65536" final_gather_samples="0" photons="65536" radius="0.3" scaling="256" kernel="1" />
-
+<Photonmapper photonmap="1" photonmap_size="1024" final_gather_samples="0" photons="65536" radius="0.3" caustics="0.5" scaling="4" kernel="1" />
+<Volume step_size="0.1" />
 
 Description:
 photonmap:
