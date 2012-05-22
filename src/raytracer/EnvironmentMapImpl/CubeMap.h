@@ -19,10 +19,11 @@ public:
   CubeMap(Texture** textures, size_t size);
   virtual ~CubeMap();
 
-  void loadTextures(Texture** textures, size_t size);
-  vec3 getColor(Ray ray);
+  vec3 getSpecularColor(vec3 direction);
+  vec3 getDiffuseColor(vec3 normal);
 
 private:
+  void loadTextures(Texture** textures, size_t size);
   vec3 getColorFromImage(vec2 coord, int quad);
 
   Texture** textures;

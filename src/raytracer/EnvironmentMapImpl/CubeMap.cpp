@@ -36,11 +36,9 @@ void CubeMap::loadTextures(Texture** textures, size_t size) {
   this->textures = textures;
 }
 
-vec3 CubeMap::getColor(Ray ray) {
+vec3 CubeMap::getSpecularColor(vec3 dir) {
   if(textures==NULL)
     return vec3(0,1,0);
-
-  vec3 dir = ray.getDirection();
 
   // 0: top      y
   // 1: bottom  -y
@@ -69,6 +67,10 @@ vec3 CubeMap::getColor(Ray ray) {
   coord = (coord + vec2(1.0f,1.0f)) / 2.0f;
 
   return getColorFromImage(coord, quad);
+}
+
+vec3 CubeMap::getDiffuseColor(vec3 normal) {
+  return vec3();
 }
 
 vec3 CubeMap::getColorFromImage(vec2 coord, int quad) {

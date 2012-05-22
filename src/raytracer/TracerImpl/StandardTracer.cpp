@@ -10,12 +10,13 @@
 #include "StandardTracer.h"
 #include "../utilities/Random.h"
 #include "../EnvironmentMapImpl/CubeMap.h"
+#include "../EnvironmentMapImpl/SphereMap.h"
 
 namespace raytracer {
 
 // TODO report, change threshold comparison images
 StandardTracer::StandardTracer(Scene* scene) :
-  BaseTracer(scene), MAX_RECURSION_DEPTH(settings->max_recursion_depth),
+      BaseTracer(scene), MAX_RECURSION_DEPTH(settings->max_recursion_depth),
       ATTENUATION_THRESHOLD(settings->recursion_attenuation_threshold) {
   using_environment_map = false;
 }
@@ -76,7 +77,7 @@ vec3 StandardTracer::brdf(vec3 incoming_direction,
   vec3 h = normalize(-outgoing_direction - incoming_direction);
   vec3 specular =
       glm::pow(clamp(glm::dot(normal, h)), material->getShininess())
-          * material->getSpecular();
+  * material->getSpecular();
 
   if(material->getSpecularMap() != -1) {
     Texture *spec = scene->getTextureAt(material->getSpecularMap());
@@ -157,12 +158,12 @@ inline vec3 StandardTracer::reflection_refraction(Ray incoming_ray,
 
   //Fresnel reflectance
   if (material->getFresnelIndex() != 0.0f) {
-  //if (settings->use_fresnel) {
+    //if (settings->use_fresnel) {
     //Schlick's approx.
-//    float fresnel_refl = reflectance + (1 - reflectance) * glm::pow(
-//    clamp(1.0f - abs(glm::dot(-incoming_ray.getDirection(), normal))), 5.0f);
-//
-//    cout << fresnel_refl << "\n";
+    //    float fresnel_refl = reflectance + (1 - reflectance) * glm::pow(
+    //    clamp(1.0f - abs(glm::dot(-incoming_ray.getDirection(), normal))), 5.0f);
+    //
+    //    cout << fresnel_refl << "\n";
 
 
     float c = abs(glm::dot(incoming_ray.getDirection(), normal));
@@ -170,10 +171,10 @@ inline vec3 StandardTracer::reflection_refraction(Ray incoming_ray,
     float gMc = g-c;
     float gPc = g+c;
     float fresnel_refl = 0.5 * ((gMc*gMc) / (gPc*gPc)) *
-                         (  1.0f +
-                             ( (c*(gPc)-1)*(c*(gPc)-1) )
-                           / ( (c*(gMc)+1)*(c*(gMc)+1) )
-                         );
+        (  1.0f +
+            ( (c*(gPc)-1)*(c*(gPc)-1) )
+            / ( (c*(gMc)+1)*(c*(gMc)+1) )
+        );
     reflectance = fresnel_refl;
   }
 
@@ -289,6 +290,14 @@ vec3 StandardTracer::getLighting(
 {
   vec3 color = vec3(0);
 
+  // borde kolla att normalen inte intersectar
+  if (using_environment_map) {
+    //    Ray n = Ray(idata.interPoint, idata.normal);
+    //    IAccDataStruct::IntersectionData id = datastruct->findClosestIntersection(n);
+    //    if( id.triangle == NULL )
+    color += scene->getEnvironmentMap()->getDiffuseColor(normal) * texture_color;
+  }
+
   /**** For each light source in the scene ****/
   for(unsigned int i = 0;i < lights->size();++i){
     ILight *light = lights->at(i);
@@ -343,8 +352,9 @@ vec4 StandardTracer::shade(Ray incoming_ray,
     unsigned short depth, int thread_id) {
   if (idata.missed()) {
     // No intersection
-    if (using_environment_map)
-      return vec4(scene->getEnvironmentMap()->getColor(incoming_ray), 1.0f);
+    if (using_environment_map) {
+      return vec4(scene->getEnvironmentMap()->getSpecularColor(incoming_ray.getDirection()), 1.0f);
+    }
     return settings->background_color;
   }
   assert(idata.material < scene->getMaterialVector().size());

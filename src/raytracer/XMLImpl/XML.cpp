@@ -20,6 +20,7 @@ using namespace glm;
 #include "../scene/LightImpl/AreaLight.h"
 #include "../scene/LightImpl/SpotLight.h"
 #include "../EnvironmentMapImpl/CubeMap.h"
+#include "../EnvironmentMapImpl/SphereMap.h"
 
 #include "../scene/VolumeImpl/UniformVolume.h"
 #include "../PhaseFunctorImpl/PhaseIsotropic.h"
@@ -28,9 +29,40 @@ using namespace glm;
 
 #include <exception>
 #include <iostream>
+
 using namespace std;
 
 namespace raytracer {
+
+/* Read in light probe */
+void loadFloatArray(string filename, const int width, float*** hdr) {
+  int swapflag = 0 ;
+  int i,j,k ;
+  FILE *fp ;
+  assert(fp = fopen(filename.c_str(),"rb")) ;
+
+  for (i = 0 ; i < width ; i++)
+    for (j = 0 ; j < width ; j++)
+      for (k = 0 ; k < 3 ; k++) {
+
+        /* This is a little ugly since the input is in binary format
+     and we need to do some tests on endian-ness */
+
+        float val ;
+        unsigned char * c = (unsigned char *) &val ;
+        if (swapflag) { /* Endianness of computer different from input
+         Read in the bytes in reversed order.
+         */
+          assert(fscanf(fp,"%c%c%c%c",&(c[3]),&(c[2]),&(c[1]),&(c[0]))==4);
+        }
+        else { /* Endianness same as input */
+          assert(fscanf(fp,"%c%c%c%c",&(c[0]),&(c[1]),&(c[2]),&(c[3]))==4);
+        }
+        hdr[i][j][k] = val ; /* Remember that c pointed to val */
+
+      }
+  fclose(fp) ;
+}
 
 class file_not_found: public exception
 {
@@ -244,20 +276,20 @@ Scene* XML::importScene(const char* fileName, const char* settingsFileName) {
         break;
 
       pos = vec3(pos_node.attribute("x").as_float(),
-                 pos_node.attribute("y").as_float(),
-                 pos_node.attribute("z").as_float());
+          pos_node.attribute("y").as_float(),
+          pos_node.attribute("z").as_float());
 
       u = vec3(u_node.attribute("x").as_float(),
-               u_node.attribute("y").as_float(),
-               u_node.attribute("z").as_float());
+          u_node.attribute("y").as_float(),
+          u_node.attribute("z").as_float());
 
       v = vec3(v_node.attribute("x").as_float(),
-               v_node.attribute("y").as_float(),
-               v_node.attribute("z").as_float());
+          v_node.attribute("y").as_float(),
+          v_node.attribute("z").as_float());
 
       w = vec3(w_node.attribute("x").as_float(),
-               w_node.attribute("y").as_float(),
-               w_node.attribute("z").as_float());
+          w_node.attribute("y").as_float(),
+          w_node.attribute("z").as_float());
 
       OBB obb = OBB(pos, u, v, w);
 
@@ -332,8 +364,8 @@ Scene* XML::importScene(const char* fileName, const char* settingsFileName) {
       xml_node dir_node = light.child("Direction");
 
       vec3 dir = vec3(dir_node.attribute("x").as_float(),
-                      dir_node.attribute("y").as_float(),
-                      dir_node.attribute("z").as_float());
+          dir_node.attribute("y").as_float(),
+          dir_node.attribute("z").as_float());
 
       float outer;
       if(!light.attribute("outer").empty())
@@ -442,11 +474,54 @@ Scene* XML::importScene(const char* fileName, const char* settingsFileName) {
           textures[i] = new Texture();
           textures[i]->setData(w,h,ilGetData(),Texture::TEXTURE);
         } else {
-          cout << "XML.cpp: Environtment map image not loaded.\n" << endl;
+          cout << "XML.cpp: Environtment cube map image not loaded.\n" << endl;
         }
       }
       newEnv = new CubeMap(textures, 6);
     }
+    else if(type.compare("Sphere") == 0) {
+      string filename = env.child("Sphere").attribute("src").value();
+      unsigned int width = env.child("Sphere").attribute("radius").as_uint();
+
+      //      ILuint image;
+      //      Texture* texture = NULL;
+      //      if(filename.empty())
+      //        throw fnf_exception;
+      //
+      //      image = ilGenImage();
+      //      ilBindImage(image);
+      //
+      //      ilLoadImage((const ILstring)filename.c_str());
+      //
+      //      if(ilGetError() == IL_NO_ERROR) {
+      //        ilConvertImage(IL_RGB, IL_UNSIGNED_BYTE);
+      //        iluRotate(180);
+      //
+      //        ILuint w = ilGetInteger(IL_IMAGE_WIDTH);
+      //        ILuint h = ilGetInteger(IL_IMAGE_HEIGHT);
+      //
+      //        texture = new Texture();
+      //        texture->setData(w,h,ilGetData(),Texture::TEXTURE);
+      //        newEnv = new SphereMap(texture);
+      //      }
+      //      else
+      //        exit(1);
+
+      float*** hdrdata;
+      // Allocate memory
+      hdrdata = new float**[width];
+      for (int i = 0; i < width; ++i) {
+        hdrdata[i] = new float*[width];
+        for (int j = 0; j < width; ++j)
+          hdrdata[i][j] = new float[3];
+      }
+
+      loadFloatArray(filename, width, hdrdata);
+      newEnv = new SphereMap(hdrdata,width);
+
+
+    }
+
 
     if(newEnv != NULL)
       scene->setEnvirontmentMap(newEnv);

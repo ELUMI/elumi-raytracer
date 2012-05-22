@@ -64,12 +64,17 @@ Example:
     <Left src="land_left.png" />
 </Environment>
 
-<Volume type="uniform" absorption="0.0" scattering="1.0" emission="0.1">
- <PhaseFunction type="isotropic" />
- <Position x="-2" y="0.75" z="2"/>
- <U x="1.00725" y="0" z="0"/>
- <V x="0" y="1.00725" z="0"/>
- <W x="0" y="0" z="1.00725"/>
+
+<Environment type="Sphere">
+    <Sphere src="data/scenes/textures/angmap24.jpg" />
+</Environment>
+
+<Volume type="uniform" attenuation="1.5" emission="1.1">
+  <PhaseFunction type="isotropic" />
+  <Position x="0" y="0.75" z="0"/>
+  <U x="0.25" y="0" z="0"/>
+  <V x="0" y="0.25" z="0"/>
+  <W x="0" y="0" z="0.25"/>
 </Volume>
 
 ############################################################
