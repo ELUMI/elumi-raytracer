@@ -32,6 +32,7 @@ PhotonMapper::PhotonMapper(Scene* scene)
   }
   photon_processer = 0;
   colors = 0;
+  linearray = 0;
 }
 
 PhotonMapper::~PhotonMapper() {
@@ -88,24 +89,35 @@ void PhotonMapper::storeInMap(Photon p){
 }
 
 bool PhotonMapper::bounce(Photon& p, int thread_id, bool store) {
-  Ray ray(p.position, -p.direction);
+  vec3 dir = normalize(-p.direction);
+  Ray ray(p.position, dir);
   //cout << p.direction.x << " " << p.direction.y << " " << p.direction.z << "\n";
 
   IAccDataStruct::IntersectionData idata = datastruct->findClosestIntersection(ray);
   if(idata.missed()){
     return false;
   }
+
+  Material* mat = scene->getMaterialVector()[idata.material];
+  //if((1 - mat->getOpacity()) == 0 && store==false )
+  //  return false;
+
+  if(settings->wireframe==2){
+    photonmap_mutex.lock();
+    lines.push_back(p.position);
+    lines.push_back(idata.interPoint);
+    photonmap_mutex.unlock();
+  }
   p.position = idata.interPoint;
   p.normal = idata.normal;
 
+
   Photon bp = p;
 
-  Material* mat = scene->getMaterialVector()[idata.material];
-
-  float absorbtion = 1.0f/10.0f; //fixed probability
-  float reflection =    (1-absorbtion)                            * mat->getReflection();    //first priority
-  float transmittance = (1-(absorbtion+reflection))               * (1 - mat->getOpacity()); //second priority
-  float diffuse =       (1-(absorbtion+reflection+transmittance)) * 1;                       //third priority
+  float reflection =    1                                         * mat->getReflection();    //first priority
+  float transmittance = (1-(reflection))                          * (1 - mat->getOpacity()); //second priority
+  float absorbtion    = (1-(reflection+transmittance))            * 0.1f;                    //third priority
+  float diffuse =       (1-(reflection+transmittance+absorbtion)) * 1;                       //fourth priority
 
   assert(reflection <= 1 && transmittance <= 1 && absorbtion <= 1 && diffuse <= 1);
   assert(reflection >= 0 && transmittance >= 0 && absorbtion >= 0 && diffuse >= 0);
@@ -115,24 +127,29 @@ bool PhotonMapper::bounce(Photon& p, int thread_id, bool store) {
   //cout << transmittance << "\t" << reflection << "\t" << diffuse << "\n";
 
   vec3 outgoing;
-  const float refraction_sign = glm::sign(glm::dot(p.normal, p.direction));
+  const float refraction_sign = glm::sign(glm::dot(p.normal, dir));
+  float eta = mat->getIndexOfRefraction();
 
   //russian roulette
   float rand = gen_random_float(thread_id);
-  if (rand < transmittance || refraction_sign<0) {
-    const vec3 refr_normal = p.normal * refraction_sign;
-    float eta = mat->getIndexOfRefraction();
+  if (rand < transmittance || (eta!=1 && refraction_sign>0)) {
+    const vec3 refr_normal = -p.normal * refraction_sign;
     if (refraction_sign < 0.0f)
       eta = 1 / eta;
-    outgoing = glm::refract(-p.direction, refr_normal, eta);
+    outgoing = glm::refract(dir, refr_normal, eta);
     if(outgoing == vec3(0,0,0)) {
       return false;
     }
+    outgoing = settings->caustics*outgoing;
     //p.power *= vec3(0,1,1);
     //return false;
   } else if (rand < transmittance+reflection) {
-    outgoing = glm::reflect(-p.direction, p.normal);
-    p.power *= mat->getSpecular();
+    outgoing = glm::reflect(dir, p.normal);
+    outgoing = settings->caustics*outgoing;
+    vec3 c = mat->getSpecular();
+    float t = (c.r + c.g + c.b)/3;
+    if(t!=0)
+      p.power *= c/t;
     //p.power *= vec3(1,1,0);
     //return false;
   } else if(rand < transmittance+reflection+diffuse) {  //diffuse interreflection
@@ -141,8 +158,11 @@ bool PhotonMapper::bounce(Photon& p, int thread_id, bool store) {
     }
 
     outgoing = gen_random_hemisphere(p.normal, thread_id);
-    p.power *= 0.1f;
-    p.power *= mat->getDiffuse();
+    //p.power *= 0.1f;
+    vec3 c = mat->getDiffuse();
+    float t = (c.r + c.g + c.b)/3;
+    if(t!=0)
+      p.power *= c/t;
     //return false;
   } else { //absorbtion
     if(store) {
@@ -162,8 +182,8 @@ bool PhotonMapper::bounce(Photon& p, int thread_id, bool store) {
 
 void PhotonMapper::tracePhoton(Photon p, int thread_id)
 {
-  //if(!bounce(p, thread_id, false))
-  //  return;
+  if(!bounce(p, thread_id, false))
+    return;
   for(size_t k = 0;k < settings->max_recursion_depth;++k){
     if(abort)
       break;
@@ -236,6 +256,15 @@ void PhotonMapper::getPhotons() {
     threads[i].join();
   }
   delete [] photons;
+
+  if(settings->wireframe==2){
+    linearray = new LineArrayDataStruct(lines);
+  }
+}
+
+
+IDraw* PhotonMapper::getLinesDrawable(){
+  return linearray;
 }
 
 vector<Photon*> PhotonMapper::gather(float& r, vec3 point){
@@ -271,9 +300,10 @@ vec3 PhotonMapper::getLuminance(Ray incoming_ray,
   for(size_t i=0; i<photons.size(); ++i){
     const Photon* p = photons[i];
 
-    vec3 b = brdf(-p->direction, incoming_ray.getDirection(), idata.normal, material);
-    float k = filterKernel(idata.interPoint - p->position, idata.normal, r);
-    float a = glm::max(0.0f, glm::dot(p->direction, idata.normal));
+    vec3 dir = normalize(-p->direction);
+    vec3 b = brdf(dir, incoming_ray.getDirection(), idata.normal, material);
+    float k = filterKernel(idata.interPoint - p->position, idata.normal, r*length(p->direction));
+    float a = glm::max(0.0f, glm::dot(-dir, idata.normal));
     //cout << p.power.r << " " << p.power.g << " " << p.power.b << "\n";
     //cout << b << " " << a << " " << k << "\n";
     l += b * p->power * a * k;
@@ -323,7 +353,7 @@ vec4 PhotonMapper::shade(Ray incoming_ray,
   Material* mat = scene->getMaterialVector()[idata.material];
   vec3 l = getAmbient(incoming_ray, idata, thread_id, depth);
   vec3 color = mat->getDiffuse();
-  //return vec4(l,1);
+  return vec4(l,1);
   return vec4(l*color+mat->getEmissive(),1);
 }
 

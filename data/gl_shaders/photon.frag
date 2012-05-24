@@ -17,6 +17,7 @@ in vec3 photon_direction;
 in vec3 photon_position;
 in vec3 photon_normal;
 in vec3 photon_power;
+in float rad;
 
 out vec3 ocolor;
 
@@ -59,7 +60,7 @@ void main()
   	discard;
 
   vec3 normal = texelFetch(normal_tex, coord, 0).xyz;
-  float k = filterKernel(vec3(p)-photon_position, photon_normal, radius);
+  float k = filterKernel(vec3(p)-photon_position, photon_normal, rad);
 
   vec3 camera_direction = normalize(vec3(p) - camera_position);
 
