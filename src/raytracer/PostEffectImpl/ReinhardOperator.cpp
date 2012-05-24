@@ -69,8 +69,6 @@ void ReinhardOperator::run(float* color_buffer, int pixels, int channels) {
 
   float log_avg = logAverage(color_buffer, pixels, channels);
   float scale_factor = key / log_avg;
-//  cout << "ReinhardOperator: log_avg: " << log_avg << endl;
-//  cout << "ReinhardOperator: scale_factor: " << scale_factor << endl;
   for(int i = 0; i < length; i += channels) {       // Eq. 2
     color_buffer[i] *= scale_factor;
   }

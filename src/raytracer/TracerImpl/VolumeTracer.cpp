@@ -43,6 +43,27 @@ float VolumeTracer::getIndividualLight(vec3 pos, ILight* light_source, int threa
   return light;
 }
 
+float VolumeTracer::attenuateLight(float base_light, vec3 pos, ILight* light_source) {
+  float light = base_light;
+
+  std::vector<IVolume*> volumes = scene->getVolumes();
+
+  for(unsigned int i = 0; i < volumes.size(); i++) {
+    IVolume* volume = volumes[i];
+
+    Ray ray = Ray::generateRay(pos, light_source->getPosition());
+    Interval inter = getInterval(ray, volume, light_source->getPosition());
+    if(!inter.intersected)
+      continue;
+    vec3 min = inter.min;
+    vec3 max = inter.max;
+    if(glm::distance(pos, min) > glm::distance(pos, light_source->getPosition()))
+      continue;
+    light = glm::exp(-volume->getTau(min, max)) * base_light;
+  }
+  return light;
+}
+
 vec4 VolumeTracer::shade(Ray ray, IAccDataStruct::IntersectionData idata,
                          float attenuation, unsigned short depth, int thread_id) {
 
@@ -103,8 +124,9 @@ vec4 VolumeTracer::shade(Ray ray, IAccDataStruct::IntersectionData idata,
         vec3 w_out = normalize(-ray.getDirection());
         float p = volume->getPhase(w_in, w_out);
 
-        //float Ld = getIndividualLight(pos, light, thread_id);
-        float Ld = light->calcLight(datastruct, pos, thread_id);
+        float Ld = getIndividualLight(pos, light, thread_id);
+        Ld = attenuateLight(Ld, pos, light);
+        //float Ld = light->calcLight(datastruct, pos, thread_id);
 
 
         in_scattered += p * Ld * step_size;
@@ -121,6 +143,7 @@ vec4 VolumeTracer::shade(Ray ray, IAccDataStruct::IntersectionData idata,
   return color;
 }
 
+// inter_point : Poistion where ray intersected with geometry.
 VolumeTracer::Interval VolumeTracer::getInterval(Ray ray, IVolume* volume, vec3 inter_point) {
 
   OBB::IntervalData intersect = volume->getInterval(ray);
@@ -136,6 +159,7 @@ VolumeTracer::Interval VolumeTracer::getInterval(Ray ray, IVolume* volume, vec3 
 
   float dist = glm::distance(min, max);
 
+  // If inter_point is within the volume, move it to max
   if(glm::distance(min, inter_point) < dist)
     max = inter_point;
 
