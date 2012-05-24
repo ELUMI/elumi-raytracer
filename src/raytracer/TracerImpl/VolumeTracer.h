@@ -38,6 +38,7 @@ private:
   Scene* scene;
 
   Interval getInterval(Ray ray, IVolume* volume, vec3 inter_point);
+  float attenuateLight(float base_light, vec3 pos, ILight* light_source);
 };
 
 } /* namespace raytracer */

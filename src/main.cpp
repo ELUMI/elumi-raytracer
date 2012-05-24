@@ -640,5 +640,12 @@ void timedCallback() {
         << "\" y=\"" << camera.getUpVector().y
         << "\" z=\"" << camera.getUpVector().z << "\"/>\n";
   }
+  if (glfwGetKey(GLFW_KEY_F5)) {
+    cout << "Exporting image!" << endl;
+    raytracer::IExporter* exporter = new raytracer::PNGExporter;
+    exporter->exportImage(outputFileName.c_str(), settings->width, settings->height, buffer);
+    delete exporter;
+    glfwSleep(1.0f);
+  }
 }
 
