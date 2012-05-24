@@ -37,7 +37,7 @@ Example:
   <Normal x="0" y="1" z="0"/>
 </Camera>
 
-<Light type="Spot" intensity="1.5" falloff="Linear" visible="1">
+<Light type="Point" intensity="1.5" falloff="Linear" visible="1">
   <Position x="5" y="1.2" z="2.9"/>
   <Color r="0.5" g="1" b="0.8"/>
 </Light>
@@ -112,7 +112,7 @@ Ns 200              // Specularity constant
 Ni 1.33             // Index of refraction
 f 1.33              // Fresnel index (if not used, default is 0)
 r_spread 0.05       // Glossy reflection
-r_samples 0.05      
+r_samples 10      
 Ni_spread 0.05      // Glossy refraction
 Ni_samples 10
 map_Kd path         //Diffuse map

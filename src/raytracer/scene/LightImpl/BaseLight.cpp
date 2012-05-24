@@ -98,14 +98,14 @@ float BaseLight::distanceToBlocker(IAccDataStruct* datastruct, vec3 point, int t
   const float distance_to_light = length(point - (position+offset));
 
   // Shadow cache
-  if(cache!=NULL && cache[thread_id] != NULL) {
-    float t = IAccDataStruct::instersection_distance(&light_ray, cache[thread_id]);
-    if(t>EPSILON) {
-      t = distance_to_light - t;
-      if(t>EPSILON)
-        return t;
-    }
-  }
+//  if(cache!=NULL && cache[thread_id] != NULL) {
+//    float t = IAccDataStruct::instersection_distance(&light_ray, cache[thread_id]);
+//    if(t>EPSILON) {
+//      t = distance_to_light - t;
+//      if(t>EPSILON)
+//        return t;
+//    }
+//  }
 
   IAccDataStruct::IntersectionData light_idata = datastruct->findClosestIntersection(light_ray);
   //assert(!light_idata.missed());
@@ -113,8 +113,8 @@ float BaseLight::distanceToBlocker(IAccDataStruct* datastruct, vec3 point, int t
   const float dtb = distance_to_light - distance_between_light_and_first_hit;
 
   // Shadow cache
-  if( cache!=NULL && light_idata.triangle != NULL && dtb > EPSILON)
-    cache[thread_id] = light_idata.triangle;
+//  if( cache!=NULL && light_idata.triangle != NULL && dtb > EPSILON)
+//    cache[thread_id] = light_idata.triangle;
 
   return dtb;
 }
