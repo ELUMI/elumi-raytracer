@@ -6,7 +6,7 @@
  */
 
 #include "TriangleArray.h"
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
 #include "../scene/Scene.h"
 
 namespace raytracer {

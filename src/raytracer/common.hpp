@@ -7,7 +7,7 @@
 
 #include "utilities/Triangle.h"
 #include "utilities/Ray.h"
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
 
 #ifndef COMMON_HPP_
 #define COMMON_HPP_

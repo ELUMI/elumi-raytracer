@@ -12,7 +12,7 @@
 #include <glm/gtc/matrix_transform.hpp> //translate
 #include <glm/gtc/type_ptr.hpp> //value_ptr
 
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
 
 namespace raytracer {
 

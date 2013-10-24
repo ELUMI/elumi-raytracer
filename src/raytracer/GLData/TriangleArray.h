@@ -10,7 +10,7 @@
 
 #include <vector>
 #include <glm/glm.hpp>
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
 
 #include "../IAccDataStruct.h"
 #include "../utilities/Ray.h"

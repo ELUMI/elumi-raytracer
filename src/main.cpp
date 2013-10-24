@@ -20,7 +20,7 @@ namespace po = boost::program_options;
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
 #include <string>
 #include <sstream>
 #include <vector>
