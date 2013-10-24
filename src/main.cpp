@@ -5,6 +5,8 @@ namespace po = boost::program_options;
 
 #include <boost/algorithm/string.hpp>
 
+#include <boost/thread/thread.hpp>
+
 #include "io/ExporterImpl/PNGExporter.h"
 #include "raytracer/Renderer.h"
 #include "raytracer/GLData/glutil.h"
@@ -17,6 +19,7 @@ namespace po = boost::program_options;
 #include "raytracer/common.hpp"
 #include "raytracer/GLData/LineArrayDataStruct.hpp"
 
+#include <cmath>
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
@@ -46,10 +49,9 @@ enum DebugVariable { TEST, KEY, WHITE, RADIUS, CAUSTICS };
 DebugVariable var = TEST;
 
 void timedCallback();
-void mouse(int button, int action);
-void mouseMove(int x, int y);
-void mouseMove(int x, int y);
-void windowSize(int width, int height);
+void mouse(GLFWwindow* window, int button, int action, int modifiers);
+void mouseMove(GLFWwindow* window, double x, double y);
+void windowSize(GLFWwindow* window, int width, int height);
 void initGL();
 void getArguments(int argc, char *argv[]);
 void drawDrawables(IDraw *drawables[], size_t n);
@@ -63,6 +65,8 @@ bool headless=false;
 unsigned int win_width, win_height;
 string inputFileName, outputFileName, settingsFileName="";
 
+GLFWwindow* window;
+
 int main(int argc, char* argv[]) {
   init_generators();
   int running = GL_TRUE;
@@ -72,29 +76,34 @@ int main(int argc, char* argv[]) {
     headless = true;
 
   // INIT OPEN GL
+  const int NO_MONITOR = 0, NO_SHARED_CONTEXT = 0;
   if (!headless) {
     win_width = 50;
     win_height = 50;
 
     glfwInit();
-    if (!glfwOpenWindow(win_width, win_height, 0, 0, 0, 0, 0, 0,
-        GLFW_WINDOW)) {
+    window = 
+      glfwCreateWindow(win_width, win_height, "ELUMI", NO_MONITOR, NO_SHARED_CONTEXT);
+    if (!window) {
       cerr << "Failed to open window";
 
       glfwTerminate();
       exit(EXIT_FAILURE);
     }
+    glfwMakeContextCurrent(window);
+
     initGL();
     CHECK_GL_ERROR();
-    glfwSetMouseButtonCallback(mouse);
-    glfwSetMousePosCallback(mouseMove);
+    glfwSetMouseButtonCallback(window, mouse);
+    glfwSetCursorPosCallback(window, mouseMove);
   } else if(!opengl_version) {
       cout << "Not using OpenGL" << endl;
   } else {
     glfwInit();
     //a window is almost necessary for an opengl context
-    if (!glfwOpenWindow(1, 1, 0, 0, 0, 0, 0, 0,
-        GLFW_WINDOW)) {
+    window = 
+      glfwCreateWindow(win_width, win_height, "ELUMI", NO_MONITOR, NO_SHARED_CONTEXT);
+    if (!window) {
       cerr << "Failed to open window";
 
       glfwTerminate();
@@ -125,7 +134,7 @@ int main(int argc, char* argv[]) {
 
   // RESIZE
   if (!headless) {
-    glfwSetWindowSize(settings->width, settings->height);
+    glfwSetWindowSize(window, settings->width, settings->height);
   }
 
 
@@ -154,8 +163,7 @@ int main(int argc, char* argv[]) {
     /* WINDOW
      ***************** */
 
-    glfwEnable(GLFW_AUTO_POLL_EVENTS);
-    glfwSetWindowSizeCallback(windowSize); // TODO: In settings
+    glfwSetWindowSizeCallback(window, windowSize); // TODO: In settings
 
     IDraw* data_struct_drawable = NULL;
     if(settings->wireframe==1){
@@ -238,13 +246,14 @@ int main(int argc, char* argv[]) {
       CHECK_GL_ERROR();
 
       //Swap front and back rendering buffers
-      glfwSwapBuffers();
+      glfwPollEvents();
+      glfwSwapBuffers(window);
 
       timedCallback();
-      glfwSleep(1.0f/60.0f);
+      boost::this_thread::sleep(boost::posix_time::milliseconds(1000/60));
 
       //Check if ESC key was pressed or window was closed
-      running = !glfwGetKey(GLFW_KEY_ESC) && glfwGetWindowParam(GLFW_OPENED);
+      running = !glfwGetKey(window, GLFW_KEY_ESCAPE) && !glfwWindowShouldClose(window);
     }
     myRenderer->stopRendering();
 
@@ -433,24 +442,26 @@ void drawPointsPhoton()
   glEnable(GL_DEPTH_TEST);
 }
 
-void windowSize(int width, int height) {
+void windowSize(GLFWwindow* window, int width, int height) {
   win_width=width;
   win_height=height;
 }
 
-void mouseMove(int x, int y) {
+void mouseMove(GLFWwindow* window, double x, double y) {
   vec2 pos = vec2(x, y);
-  if (glfwGetMouseButton(GLFW_MOUSE_BUTTON_LEFT)) {
+  if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
     vec2 diff = pos - mousePrev;
     camera.rotate(0.5f * diff);
     mousePrev = pos;
   }
 }
-void mouse(int button, int action) {
-  int x, y;
-  glfwGetMousePos(&x, &y);
+void mouse(GLFWwindow* window, int button, int action, int modifiers) {
+  double x, y;
+  glfwGetCursorPos(window, &x, &y);
+  x = std::floor(x);
+  y = std::floor(y);
   vec2 pos = vec2(x, y);
-  if (action) {
+  if (action == GLFW_PRESS) {
     if (button == GLFW_MOUSE_BUTTON_LEFT) {
       mousePrev = pos;
     }
@@ -499,160 +510,160 @@ void timedCallback() {
 
   double speed = diffTime * 10.0;
 
-  if (glfwGetKey(GLFW_KEY_LCTRL)) {
+  if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL)) {
     speed /= 100;
   }
-  if (glfwGetKey(GLFW_KEY_LSHIFT)) {
+  if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
     speed *= 100;
   }
-  if (glfwGetKey('W')) {
+  if (glfwGetKey(window, 'W')) {
     camera.translate(vec3(speed, 0, 0));
   }
-  if (glfwGetKey('S')) {
+  if (glfwGetKey(window, 'S')) {
     camera.translate(vec3(-speed, 0, 0));
   }
-  if (glfwGetKey('D')) {
+  if (glfwGetKey(window, 'D')) {
     camera.translate(vec3(0, speed, 0));
   }
-  if (glfwGetKey('A')) {
+  if (glfwGetKey(window, 'A')) {
     camera.translate(vec3(0, -speed, 0));
   }
-  if (glfwGetKey(' ')) {
+  if (glfwGetKey(window, ' ')) {
     camera.translate(vec3(0, 0, speed));
   }
-  if (glfwGetKey('X')) {
+  if (glfwGetKey(window, 'X')) {
     camera.translate(vec3(0, 0, speed));
   }
-  if (glfwGetKey('Z')) {
+  if (glfwGetKey(window, 'Z')) {
     camera.translate(vec3(0, 0, -speed));
   }
-  if (glfwGetKey(GLFW_KEY_UP)) {
+  if (glfwGetKey(window, GLFW_KEY_UP)) {
     camera.rotate(vec2(0,-speed));
   }
-  if (glfwGetKey(GLFW_KEY_DOWN)) {
+  if (glfwGetKey(window, GLFW_KEY_DOWN)) {
     camera.rotate(vec2(0,speed));
   }
-  if (glfwGetKey(GLFW_KEY_LEFT)) {
+  if (glfwGetKey(window, GLFW_KEY_LEFT)) {
     camera.rotate(vec2(-speed,0));
   }
-  if (glfwGetKey(GLFW_KEY_RIGHT)) {
+  if (glfwGetKey(window, GLFW_KEY_RIGHT)) {
     camera.rotate(vec2(speed,0));
   }
-  if (glfwGetKey(GLFW_KEY_TAB)) {
+  if (glfwGetKey(window, GLFW_KEY_TAB)) {
     auto_render = !auto_render;
     cout << "Autorender: " << auto_render << "\n";
-    glfwSleep(0.5);
+    boost::this_thread::sleep(boost::posix_time::milliseconds(500));
   }
-  if (glfwGetKey('1')) {
+  if (glfwGetKey(window, '1')) {
     renderMode = 1;
   }
-  if (glfwGetKey('2')) {
+  if (glfwGetKey(window, '2')) {
     renderMode = 2;
   }
-  if (glfwGetKey('3')) {
+  if (glfwGetKey(window, '3')) {
     renderMode = 3;
   }
-  if (glfwGetKey('4')) {
+  if (glfwGetKey(window, '4')) {
     renderMode = 4;
   }
-  if (glfwGetKey('5')) {
+  if (glfwGetKey(window, '5')) {
     renderMode = 5;
   }
-  if (glfwGetKey('6')) {
+  if (glfwGetKey(window, '6')) {
     renderMode = 6;
   }
-  if (glfwGetKey('7')) {
+  if (glfwGetKey(window, '7')) {
     renderMode = 7;
   }
-  if (glfwGetKey('8')) {
+  if (glfwGetKey(window, '8')) {
     renderMode = 8;
   }
-  if (glfwGetKey('9')) {
+  if (glfwGetKey(window, '9')) {
     renderMode = 9;
   }
-  if (glfwGetKey('E')) {
+  if (glfwGetKey(window, 'E')) {
     myRenderer->stopRendering();
     myRenderer->loadCamera(camera);
     myRenderer->asyncRender();
   }
-  if (glfwGetKey('R')) {
+  if (glfwGetKey(window, 'R')) {
     myRenderer->stopRendering();
     myRenderer->loadCamera(camera);
     myRenderer->asyncRender();
     renderMode = 2;
   }
-  if (glfwGetKey('T')) {
+  if (glfwGetKey(window, 'T')) {
     myRenderer->stopRendering();
   }
-  if (glfwGetKey('Y')) {
+  if (glfwGetKey(window, 'Y')) {
     myRenderer->asyncRender();
   }
-  if (glfwGetKey('U')) {
+  if (glfwGetKey(window, 'U')) {
     settings->tonemap = true;
     myRenderer->tonemapImage();
   }
-  if (glfwGetKey('I')) {
+  if (glfwGetKey(window, 'I')) {
     settings->tonemap = false;
     myRenderer->tonemapImage();
   }
-  if (glfwGetKey('F')) {
+  if (glfwGetKey(window, 'F')) {
     myRenderer->stopRendering();
     settings->use_first_bounce = true;
     myRenderer->asyncRender();
   }
-  if (glfwGetKey('G')) {
+  if (glfwGetKey(window, 'G')) {
     myRenderer->stopRendering();
     settings->use_first_bounce = false;
     myRenderer->asyncRender();
   }
   //////////// DEBUG VARIABLES /////////////
-  if (glfwGetKey(GLFW_KEY_F1)) {
+  if (glfwGetKey(window, GLFW_KEY_F1)) {
     var = TEST;
   }
-  if (glfwGetKey(GLFW_KEY_F2)) {
+  if (glfwGetKey(window, GLFW_KEY_F2)) {
     var = KEY;
   }
-  if (glfwGetKey(GLFW_KEY_F3)) {
+  if (glfwGetKey(window, GLFW_KEY_F3)) {
     var = WHITE;
   }
-  if (glfwGetKey(GLFW_KEY_F4)) {
+  if (glfwGetKey(window, GLFW_KEY_F4)) {
     var = RADIUS;
   }
-  if (glfwGetKey(GLFW_KEY_F5)) {
+  if (glfwGetKey(window, GLFW_KEY_F5)) {
     var = CAUSTICS;
   }
-  if (glfwGetKey(GLFW_KEY_KP_ADD)) {
+  if (glfwGetKey(window, GLFW_KEY_KP_ADD)) {
     adjustValue(speed);
   }
-  if (glfwGetKey(GLFW_KEY_KP_SUBTRACT)) {
+  if (glfwGetKey(window, GLFW_KEY_KP_SUBTRACT)) {
     adjustValue(-speed);
   }
-  if (glfwGetKey(GLFW_KEY_KP_MULTIPLY)) {
+  if (glfwGetKey(window, GLFW_KEY_KP_MULTIPLY)) {
     myRenderer->stopRendering();
     settings->debug_mode += 1;
     myRenderer->asyncRender();
     cout << settings->debug_mode << "\n";
-    glfwSleep(0.5);
+    boost::this_thread::sleep(boost::posix_time::milliseconds(500));
   }
-  if (glfwGetKey(GLFW_KEY_KP_DIVIDE)) {
+  if (glfwGetKey(window, GLFW_KEY_KP_DIVIDE)) {
     myRenderer->stopRendering();
     settings->debug_mode -= 1;
     myRenderer->asyncRender();
     cout << settings->debug_mode << "\n";
-    glfwSleep(0.5);
+    boost::this_thread::sleep(boost::posix_time::milliseconds(500));
   }
-  if (glfwGetKey('O')) {
+  if (glfwGetKey(window, 'O')) {
     myRenderer->stopRendering();
     readPhotonMap();
     myRenderer->asyncRender();
   }
-  if (glfwGetKey('P')) {
+  if (glfwGetKey(window, 'P')) {
     writePhotonMap();
   }
-  if (glfwGetKey('Q')) {
+  if (glfwGetKey(window, 'Q')) {
     cout << "Percent left: " << myRenderer->renderComplete() << endl;
   }
-  if (glfwGetKey('C')) {
+  if (glfwGetKey(window, 'C')) {
     cout << "<Position x=\"" << camera.getPosition().x
         << "\" y=\"" << camera.getPosition().y
         << "\" z=\"" << camera.getPosition().z
@@ -663,12 +674,12 @@ void timedCallback() {
         << "\" y=\"" << camera.getUpVector().y
         << "\" z=\"" << camera.getUpVector().z << "\"/>\n";
   }
-  if (glfwGetKey(GLFW_KEY_F5)) {
+  if (glfwGetKey(window, GLFW_KEY_F5)) {
     cout << "Exporting image!" << endl;
     raytracer::IExporter* exporter = new raytracer::PNGExporter;
     exporter->exportImage(outputFileName.c_str(), settings->width, settings->height, buffer);
     delete exporter;
-    glfwSleep(1.0f);
+    boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
   }
 }
 
